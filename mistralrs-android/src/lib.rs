@@ -157,7 +157,7 @@ pub extern "system" fn Java_ai_duan_demo_NativeBridge_complete<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_ai_duan_demo_NativeBridge_unloadModel(
+pub extern "system" fn Java_ai_duan_demo_NativeBridge_unloadModel<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
 ) {
