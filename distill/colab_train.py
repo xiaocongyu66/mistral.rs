@@ -29,7 +29,6 @@ def fit_temperature(model, calib_examples, pad_token):
             ex["teacher_probs"], device=logits.device)
     best_t, best_nll = 1.0, float("inf")
     for t in [x * 0.25 for x in range(2, 33)]:
-        nll = -(target * logits.float().log_softmax(-1).__truediv__(1.0)).sum(-1)
         p = (logits.float() / t).log_softmax(-1)
         nll = -(target * p).sum(-1)
         score = float(nll.mean())
