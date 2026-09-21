@@ -87,13 +87,6 @@
 - Mxode/Meow-Reasoning-100K（10 万中文推理）
 - 落位 /root/materials/Mxode__*，本地训练用
 
-### 果蝇数据集（用户点名，科学数据，记录在案）
-- FlyWire 全脑连接组（14 万神经元/5000 万突触，Nature 2024）+ FAFB/Hemibrain
-- 30,000+ 果蝇行为轨迹（Scientific Data 2025, DOI:10.1038/s41597-025-04724-3）
-- Tephritid26（38,081 张实蝇图像，26 种）
-- 8 阶段发育分类（Drosophila_stages_models，ResNet-50 85%）
-- 用途：远期多模态任务 #16 的视觉分类种子源
-
 ### 人类决策神经科学数据（行为决策研究链）
 - DfE-DB（380 万条经验决策记录）/ ITC Database（117 万条跨期选择）
 - 100K Choice Dilemmas（10 万真实选择困境，PNAS 2025 属性分析）——文本决策直接素材

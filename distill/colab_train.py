@@ -37,6 +37,19 @@ def fit_temperature(model, calib_examples, pad_token, amp_dtype=torch.float16):
     return best_t, best_nll
 
 
+def _load_balance(logits_list, coef):
+    """Switch-Transformer aux loss over MoE router logits (anti-collapse)."""
+    total = 0.0
+    for logits in logits_list:
+        probs = torch.softmax(logits.float(), dim=-1)
+        k = min(2, probs.shape[-1])
+        _, idx = torch.topk(probs, k, dim=-1)
+        one_hot = torch.zeros_like(probs).scatter_(1, idx, 1.0)
+        frac = one_hot.sum(0) / probs.shape[0]
+        total = total + (frac * probs.mean(0)).sum() * probs.shape[-1]
+    return coef * total / max(len(logits_list), 1)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--nanojev-scripts", required=True,
@@ -57,6 +70,8 @@ def main():
     ap.add_argument("--backbone-lr", type=float, default=1e-5)
     ap.add_argument("--head-lr", type=float, default=1e-4)
     ap.add_argument("--seed", type=int, default=17)
+    ap.add_argument("--adam8bit", action="store_true",
+                    help="8-bit AdamW (bitsandbytes); needed for 1.2B+ MoE on 16GB")
     ap.add_argument("--dtype", default="fp16", choices=["fp16", "bf16"],
                     help="autocast dtype; fp16 uses T4-native tensor cores + GradScaler")
     args = ap.parse_args()
@@ -93,6 +108,17 @@ def main():
 
     model = DecisionModel(lm.model, args.set_head).cuda()
     del lm
+    router_buf = []
+    def _router_hook(module, inputs, output):
+        if inputs and hasattr(module, "gate"):
+            router_buf.append(module.gate(inputs[0]))
+    n_moe = 0
+    for mod in model.backbone.modules():
+        if type(mod).__name__.endswith("SparseMoeBlock"):
+            mod.register_forward_hook(_router_hook)
+            n_moe += 1
+    if n_moe:
+        print(f"moe blocks hooked: {n_moe} (router load-balancing active)", flush=True)
     init_info = "fresh backbone + fresh head"
     if args.init_checkpoint:
         sd = load_file(args.init_checkpoint)
@@ -117,9 +143,13 @@ def main():
     evaluation = sum([bysplit[s] for s in ["dev", "calibration", "test", "ood"]], [])
     head = [p for n, p in model.named_parameters() if not n.startswith("backbone.")]
     body = list(model.backbone.parameters())
-    optimizer = torch.optim.AdamW(
-        [{"params": body, "lr": args.backbone_lr}, {"params": head, "lr": args.head_lr}],
-        weight_decay=0.01)
+    groups = [{"params": body, "lr": args.backbone_lr}, {"params": head, "lr": args.head_lr}]
+    if args.adam8bit:
+        import bitsandbytes as bnb
+        optimizer = bnb.optim.AdamW8bit(groups, weight_decay=0.0)
+        print("optimizer=AdamW8bit wd=0.0", flush=True)
+    else:
+        optimizer = torch.optim.AdamW(groups, weight_decay=0.0)
 
     logs, best, best_step = [], float("inf"), None
     start = time.perf_counter()
@@ -134,6 +164,9 @@ def main():
         with torch.autocast("cuda", dtype=amp_dtype):
             z, _ = model(batch, tokenizer.pad_token_id)
             loss = loss_for(z, batch, args.objective).mean()
+        if router_buf:
+            loss = loss + _load_balance(router_buf, coef=0.01)
+            router_buf.clear()
         if not torch.isfinite(loss):
             raise RuntimeError("Nonfinite training loss")
         scaler.scale(loss).backward()
