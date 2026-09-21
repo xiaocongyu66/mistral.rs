@@ -24,6 +24,16 @@ SOURCES = [
     ("bigcode/the-stack-smol", None, "train", "content", 0.03, "multilingual code"),
     # -- open web --
     ("HuggingFaceFW/fineweb", "sample-10BT", "train", "text", 0.08, "open web"),
+    # -- comprehension: books / wiki / long-form (user batch, verified in registry) --
+    ("HuggingFaceTB/cosmopedia", "stories", "train", "text", 0.04, "synthetic stories"),
+    ("HuggingFaceTB/cosmopedia", "stanford", "train", "text", 0.03, "synthetic textbooks"),
+    ("CohereForAI/aya_collection", "aya_eng", "train", "inputs", 0.03, "multilingual instructions"),
+    ("open-thoughts/OpenThoughts2-1M", None, "train", "conversations", 0.03, "reasoning traces"),
+    ("nvidia/OpenCodeReasoning", None, "train", "input", 0.03, "code reasoning"),
+    ("TIGER-Lab/MathInstruct", None, "train", "instruction", 0.02, "math cot"),
+    ("nguha/legalbench", None, "train", "text", 0.02, "legal reasoning"),
+    ("PolyAI/banking77", None, "train", "text", 0.02, "banking intents"),
+    ("clinc/clinc_oos", "plus", "train", "text", 0.02, "oos utterances"),
 ]
 
 # opus_books yields dict translations, not a plain string field
