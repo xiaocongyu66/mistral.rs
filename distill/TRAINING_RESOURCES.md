@@ -6,11 +6,21 @@
 
 | 资源 | 与我们的关系 | 用法 |
 | --- | --- | --- |
+| **openJev-verdict-2.0**（Heman10x-NGU，MIT） | **151M 编码器学生**（GLiClass+ModernBERT，自报 ECE 0.0144/Brier 0.0636/acc 77.1%）；其 `core/calibration.py` 是严格实现（CE+Brier 复合损失、L-BFGS 温度、10-bin ECE） | ① 移植 calibration.py 到我们的产物分析（predictions.jsonl 离线算 ECE/Brier）② GLiClass 作为 v2 学生架构候选（量化后 ~100MB，原生接口=标签集→logits） |
+| **open-jev-typed-decision-engine**（intikhab49） | 150M 三题型引擎，自报 0.697 vs Jev 0.727、2.5 倍校准、T4 30 分钟 | 与 verdict 互为参照的编码器学生实现 |
+| **modelscope/easydistill**（阿里，2026-09-18） | 系统一/系统二蒸馏工具包 | 蒸馏管线工具化备选；当前自研脚本已跑通，暂不引入 |
 | **腾讯云 TI-ONE GRPO 教程（Qwen3-0.6B 例）** | 底模与我们的完全一致；GRPO≈RLCD 同族，是 Jev 的原训练法，也是 NanoJev roadmap 未做的 RLCD 后训练 | 阶段 5b：SFT 蒸馏完成并验证后，用 GRPO/RLCD 对决策头做校准后训练 |
 | **HuggingFace 训练手册**（200+ 页，SmolLM3 3B @384 H100 实录） | 端到端训练经验（哪些有效哪些失败）+ 调试技巧 | 训练决策遇阻时的对照手册；run2 放宽 max_length、多任务混训前先翻它 |
 | **阿里云 ROLL SFT 流水线**（Ray+Megatron/FSDP、Sequence Packing） | 我们的决策样本全是短序列，**sequence packing 直接提升训练吞吐** | 训练数据量大后（>10 万题）引入 packing；当前 17.7k 题暂不需要 |
 | **DeepSeek 实战资源（训练篇）** | SFT 复现 / GRPO 复现 / 数据蒸馏配套 | 与 TI-ONE 互为参照的 GRPO 实现参考 |
 | **阿里云百炼**（API 调优：SFT/CPT/DPO） | 免运维的训练替代通道（付费） | Colab 不够用时的 B 计划；DPO 可用于置信度偏好校准 |
+
+## 学生架构候选对比（当前决策点）
+
+| 架构 | 体积（量化后） | 接口契合 | 状态 |
+| --- | --- | --- | --- |
+| **NanoJev 0.6B 解码器+头**（当前，run1 训练中） | ~500MB | 首读 logits，需 patch 或自建引擎 | dev acc 83.6%（step 174 best） |
+| **GLiClass 151M 编码器**（verdict 路线） | **~100MB** | 原生「文本+标签集→每标签logit」，无需改造 | v2 实验：等 run1 指标出来后对比 |
 
 ## 暂不需要
 
