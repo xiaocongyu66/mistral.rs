@@ -40,6 +40,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", nargs="+", required=True)
     ap.add_argument("--max-rows", type=int, default=300, help="per-night quota budget")
+    ap.add_argument("--max-chars-per-req", type=int, default=40000,
+                    help="cap on summed input length per HTTP request")
     ap.add_argument("--prefix", default="train-verdict")
     args = ap.parse_args()
 
@@ -65,25 +67,39 @@ def main():
         for key, group in groups.items():
             if n >= args.max_rows:
                 break
-            batch = group[: args.max_rows - n]
             cands = json.loads(key)
-            instructions = next((r["_question"] for r in batch), None)
-            payload = {"model": "jev", "inputs": [r["text"] for r in batch], "labels": cands}
-            if instructions:
-                payload["instructions"] = instructions
-            resp = call(payload)
-            for r, res in zip(batch, resp["results"]):
-                row = {
-                    "id": r["id"], "state": r["text"], "question": r["tag"],
-                    "qtype": "choice", "instructions": r["_question"],
-                    "labels": cands, "answer": res.get("label") or res.get("labels"),
-                    "scores": res.get("scores"), "confidence": res.get("confidence"),
-                    "ms": res.get("ms"), "teacher": res.get("model"),
-                }
-                out.write(json.dumps(row, ensure_ascii=False) + "\n")
-                n += 1
-            print(f"group ({len(cands)} cands): {len(batch)} rows done, total {n}", flush=True)
-            time.sleep(2)
+            instructions = next((r["_question"] for r in group), None)
+            # split group into char-budgeted chunks
+            batch, chars = [], 0
+            chunks = []
+            for r in group:
+                if n + len(batch) >= args.max_rows:
+                    break
+                L = len(r["text"])
+                if batch and chars + L > args.max_chars_per_req:
+                    chunks.append(batch)
+                    batch, chars = [], 0
+                batch.append(r)
+                chars += L
+            if batch:
+                chunks.append(batch)
+            for batch in chunks:
+                payload = {"model": "jev", "inputs": [r["text"] for r in batch], "labels": cands}
+                if instructions:
+                    payload["instructions"] = instructions
+                resp = call(payload)
+                for r, res in zip(batch, resp["results"]):
+                    row = {
+                        "id": r["id"], "state": r["text"], "question": r["tag"],
+                        "qtype": "choice", "instructions": r["_question"],
+                        "labels": cands, "answer": res.get("label") or res.get("labels"),
+                        "scores": res.get("scores"), "confidence": res.get("confidence"),
+                        "ms": res.get("ms"), "teacher": res.get("model"),
+                    }
+                    out.write(json.dumps(row, ensure_ascii=False) + "\n")
+                    n += 1
+                print(f"chunk ({len(cands)} cands): {len(batch)} rows done, total {n}", flush=True)
+                time.sleep(2)
     print(f"wrote {n} rows -> {out_path}", flush=True)
 
 
