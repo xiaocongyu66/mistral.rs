@@ -172,6 +172,7 @@ def main():
             return task, batch, None, str(e)
 
     with ThreadPoolExecutor(args.concurrency) as ex:
+        from concurrent import futures
         from concurrent.futures import as_completed
         futs = {ex.submit(work, t): t for t in tasks}
         for fut in as_completed(futs):
@@ -183,6 +184,8 @@ def main():
                 print(str(e), flush=True)
                 for f in futs:
                     f.cancel()
+                continue
+            except futures.CancelledError:
                 continue
             if err is None:
                 if len(results) != len(batch):
