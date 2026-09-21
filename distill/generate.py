@@ -42,6 +42,10 @@ def call_classify(payload: dict) -> dict:
             raise
 
 
+CHUNK = 250
+CHUNK_SLEEP = 1.5
+
+
 def main() -> None:
     import argparse
 
@@ -61,15 +65,24 @@ def main() -> None:
     t0 = time.time()
     with out_path.open("w") as out:
         for q in questions:
-            payload = {
-                "model": MODEL,
-                "inputs": [s["text"] for s in seeds],
-                "labels": q["labels"],
-                "instructions": q["instructions"],
-            }
-            resp = call_classify(payload)
-            results = resp["results"]
+            inputs = [s["text"] for s in seeds]
+            results = []
+            usage_total = {"classifications": 0, "escalated": 0, "ms": 0}
+            for i in range(0, len(inputs), CHUNK):
+                payload = {
+                    "model": MODEL,
+                    "inputs": inputs[i:i + CHUNK],
+                    "labels": q["labels"],
+                    "instructions": q["instructions"],
+                }
+                resp = call_classify(payload)
+                results.extend(resp["results"])
+                for k in usage_total:
+                    usage_total[k] += resp.get("usage", {}).get(k, 0)
+                if i + CHUNK < len(inputs):
+                    time.sleep(CHUNK_SLEEP)
             assert len(results) == len(seeds), f"{q['name']}: {len(results)} != {len(seeds)}"
+            print(f"{q['name']}: {len(results)} results, usage={json.dumps(usage_total)}", flush=True)
             for seed, r in zip(seeds, results):
                 row = {
                     "id": seed["id"],
@@ -86,7 +99,6 @@ def main() -> None:
                 }
                 out.write(json.dumps(row, ensure_ascii=False) + "\n")
                 n_rows += 1
-            print(f"{q['name']}: {len(results)} results, usage={json.dumps(resp.get('usage', {}))}")
 
     print(f"wrote {n_rows} rows to {out_path} in {time.time() - t0:.1f}s")
     return 0 if n_rows else 1

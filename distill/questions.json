@@ -7,10 +7,34 @@
       "labels": ["billing", "technical", "sales", "other"]
     },
     {
+      "name": "ticket_type",
+      "type": "choice",
+      "instructions": "这条内容的类型是什么？bug=故障或异常行为报告；feature=新功能建议或改进请求；question=咨询求助；complaint=不满或投诉；praise=表扬感谢。",
+      "labels": ["bug", "feature", "question", "complaint", "praise"]
+    },
+    {
+      "name": "sentiment",
+      "type": "choice",
+      "instructions": "文本的情绪倾向。正面=满意/感谢/期待；负面=不满/抱怨/愤怒；中性=客观陈述或中性咨询。",
+      "labels": ["正面", "中性", "负面"]
+    },
+    {
       "name": "urgency",
       "type": "score",
       "instructions": "这条工单的紧急程度如何？不紧急=一般咨询；一般=有影响但不阻塞；紧急=严重影响使用；阻塞用户=完全无法使用或用户强烈不满。",
       "labels": ["不紧急", "一般", "紧急", "阻塞用户"]
+    },
+    {
+      "name": "satisfaction",
+      "type": "score",
+      "instructions": "用户的满意程度如何？满意=表达正面评价；一般=中性体验；不满=有明显抱怨；非常不满=愤怒或威胁离开。",
+      "labels": ["满意", "一般", "不满", "非常不满"]
+    },
+    {
+      "name": "topic",
+      "type": "choice",
+      "instructions": "内容主要围绕哪个主题？product=产品功能/性能/缺陷；pricing=价格/账单/费用；service=客服响应/服务态度；other=其他话题。",
+      "labels": ["product", "pricing", "service", "other"]
     },
     {
       "name": "refund_requested",
@@ -22,6 +46,18 @@
       "name": "churn_risk",
       "type": "probability",
       "instructions": "判断用户是否有流失风险。yes=明确威胁取消订阅/退订/弃用，或表示强烈不满；no=没有流失信号。",
+      "labels": ["yes", "no"]
+    },
+    {
+      "name": "escalation_risk",
+      "type": "probability",
+      "instructions": "判断是否需要升级处理。yes=涉及法律投诉/监管部门/媒体曝光/大规模故障或情绪激烈需主管介入；no=一线客服可正常处理。",
+      "labels": ["yes", "no"]
+    },
+    {
+      "name": "action_needed",
+      "type": "probability",
+      "instructions": "判断是否需要 24 小时内回复处理。yes=有明确诉求待办理或正在影响用户使用；no=纯反馈/表扬/一般咨询可延后。",
       "labels": ["yes", "no"]
     }
   ]
