@@ -2,7 +2,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Instant;
 
-use mistralrs::{BlockingModel, GgufModelBuilder, RequestBuilder, TextMessageRole};
+use mistralrs::blocking::BlockingModel;
+use mistralrs::{GgufModelBuilder, RequestBuilder, TextMessageRole};
 use mistralrs_core::SamplingParams;
 use serde_json::json;
 
