@@ -60,6 +60,10 @@ def convert(rows, id2tag, id2holdout):
             ent = -sum((v / s) * math.log(v / s) for v in probs)
             questions[qname]["teacher_entropy"] = round(ent, 6)
             questions[qname]["teacher_confidence"] = round(max(probs) / s, 6)
+            for lab in labels:
+                ev = r.get("_ev_" + lab.lower())
+                if ev is not None:
+                    questions[qname].setdefault("ev", {})[lab] = ev
         tag = id2tag.get(sid, "")
         if tag.startswith("en"):
             split = "ood"

@@ -18,9 +18,21 @@ ROOT = Path(__file__).parent
 API = "https://classifier.dev/v1/classify"
 
 _print_lock = threading.Lock()
+_pace_last = [0.0]
+_pace_lock = threading.Lock()
 
 
-def call(payload, retries=6):
+def _pace_gate(pace):
+    with _pace_lock:
+        now = time.time()
+        wait = _pace_last[0] + pace - now
+        if wait > 0:
+            time.sleep(wait)
+        _pace_last[0] = time.time()
+        return 0.0
+
+
+def call(payload, retries=12):
     body = json.dumps(payload).encode()
     last = None
     for attempt in range(retries):
@@ -32,7 +44,13 @@ def call(payload, retries=6):
         except urllib.error.HTTPError as e:
             last = e
             if e.code in (429, 503) and attempt < retries - 1:
-                time.sleep(min(2 ** attempt * 4, 60))
+                # classifier.dev throttles in multi-minute cooldown windows;
+                # short backoffs just burn the row, so park and wait it out
+                try:
+                    print(f"[429] attempt={attempt} body={e.read()[:300]!r}", flush=True)
+                except Exception:
+                    pass
+                time.sleep(90 + attempt * 45)
                 continue
             raise
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
@@ -61,6 +79,8 @@ def main():
     ap.add_argument("--max-chars-per-req", type=int, default=40000)
     ap.add_argument("--concurrency", type=int, default=4)
     ap.add_argument("--prefix", default="train-fast")
+    ap.add_argument("--pace", type=float, default=0.0,
+                    help="minimum seconds between request starts (rate-limit friendly)")
     ap.add_argument("--skip-done", default="", help="jsonl files whose ids count as labeled")
     args = ap.parse_args()
 
@@ -135,6 +155,8 @@ def main():
                    "labels": cands_by_group[key]}
         if instructions:
             payload["instructions"] = instructions
+        if args.pace > 0:
+            time.sleep(_pace_gate(args.pace))
         try:
             resp = call(payload)
             return task, batch, resp["results"], None
@@ -142,7 +164,10 @@ def main():
             return task, batch, None, str(e)
 
     with ThreadPoolExecutor(args.concurrency) as ex:
-        for task, batch, results, err in ex.map(work, tasks):
+        from concurrent.futures import as_completed
+        futs = {ex.submit(work, t): t for t in tasks}
+        for fut in as_completed(futs):
+            task, batch, results, err = fut.result()
             if err is None:
                 with wl:
                     for r, res in zip(batch, results):

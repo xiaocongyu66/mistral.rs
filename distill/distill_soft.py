@@ -31,7 +31,8 @@ def probe(model, state, labels, max_probe=20):
     payload = {"model": model,
                "messages": [{"role": "user", "content": prompt}],
                "max_tokens": 8, "temperature": 0,
-               "logprobs": True, "top_logprobs": max_probe}
+               "logprobs": True, "top_logprobs": max_probe,
+               "chat_template_kwargs": {"enable_thinking": False}}
     req = urllib.request.Request(
         BASE + "/chat/completions", data=json.dumps(payload).encode(),
         headers={"Content-Type": "application/json",
