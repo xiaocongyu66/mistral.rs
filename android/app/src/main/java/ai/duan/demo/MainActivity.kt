@@ -8,9 +8,17 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import uniffi.mistralrs_android.complete
-import uniffi.mistralrs_android.loadModel
 import java.io.File
+
+object NativeBridge {
+    init {
+        System.loadLibrary("mistralrs_android")
+    }
+
+    external fun loadModel(modelDir: String, ggufFile: String, tokenizerJson: String?): String
+    external fun complete(prompt: String, maxTokens: Int, temperature: Float): String
+    external fun unloadModel()
+}
 
 class MainActivity : AppCompatActivity() {
 
@@ -87,7 +95,7 @@ class MainActivity : AppCompatActivity() {
         Thread {
             try {
                 val f = File(path)
-                val json = loadModel(f.parent ?: filesDir.absolutePath, f.name, null)
+                val json = NativeBridge.loadModel(f.parent ?: filesDir.absolutePath, f.name, null)
                 sessionMs = System.currentTimeMillis() - t0
                 loaded = true
                 ui { setStatus("已加载 · $json"); setBusy(false) }
@@ -114,7 +122,7 @@ class MainActivity : AppCompatActivity() {
         setStatus("推理中（CPU，耐心等待）...")
         Thread {
             try {
-                val json = complete(prompt, 64U, 0.0f)
+                val json = NativeBridge.complete(prompt, 64, 0.0f)
                 ui { setStatus("完成"); tvResult.text = formatResult(json); setBusy(false) }
                 log("推理完成: $json")
             } catch (e: Throwable) {
