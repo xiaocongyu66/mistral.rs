@@ -43,6 +43,28 @@ runtime 接口同构——训练时的候选集合 = 部署时的候选集合。
 - 产出：LoRA adapter + readout 权重 → 转回 mistral.rs 可加载格式（GGUF/UQFF
   或 safetensors），本地 APK 侧仍走 `return_raw_logits` 读出，推理引擎零改动
 
+## NanoJev 同步（2026-09-21，源：TianyuCodings/NanoJev research/ 训练契约）
+
+读过它的 `algorithm_training_contract_zh.md` 与 unified-games-v1 config 后，
+以下要点直接吸收：
+
+1. **CE ≡ forward KL**：每题候选 categorical CE 与 KL(teacher‖student) 在有完整
+   教师分布时参数梯度相同——我们的损失方向（KL 教师在前）已与契约一致
+2. **损失原子组**：一道题的全部候选必须同批 softmax（归一化分母一致）。
+   我们 schema 每行即一道完整题，天然满足；DataLoader 只按题行 shuffle
+3. **Boolean 语义**：教师 p_true → [1-p, p] 两结果空间，不同 Boolean 题之间
+   不共享 softmax——我们每行独立处理，一致
+4. **分层学习率（unified-games-v1 实锤配方）**：backbone_lr=1e-5、head_lr=1e-4、
+   head_warmup_lr=1e-3、bf16、梯度检查点。train_student.py 已同步为参数组
+5. **calibration 分区**：holdout 不只做测试——温度 T 要在 calibration 子集上
+   拟合（我们的 T=3.0 目前是拍的），test 子集只验证。holdout 800 行按
+   calibration/test 对半再切
+6. **gold 与 teacher 分离**：人工金标永远单独存档（resolved_target 来源可审计），
+   教师分布只做代理目标——与我们金标计划一致
+7. **决策头升级路线**：NanoJev set_head="attention"（候选独立编码+集合注意力）
+   彻底绕开首 token 冲突、支持 2-255 候选，是我们二期训练头的目标形态；
+   它 roadmap 上"共享前缀推理"还没做，mistral.rs 的 prefix cache 是我们后发优势
+
 ## 为什么这条路线成立
 
 教师（70ms 云端 API）→ 学生（同接口，端侧 ~0 网络延迟、无配额、隐私数据不出

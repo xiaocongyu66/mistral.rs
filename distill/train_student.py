@@ -16,8 +16,11 @@ def parse_args():
     p.add_argument("--out", default="checkpoints/student")
     p.add_argument("--epochs", type=int, default=3)
     p.add_argument("--batch-size", type=int, default=8)
-    p.add_argument("--lr", type=float, default=1e-4)
-    p.add_argument("--temperature", type=float, default=3.0, help="KD temperature T")
+    p.add_argument("--lr", type=float, default=1e-4,
+                   help="LoRA/head learning rate (NanoJev head_lr=1e-4)")
+    p.add_argument("--backbone-lr", type=float, default=1e-5,
+                   help="full-FT learning rate, used when peft is absent (NanoJev backbone_lr=1e-5)")
+    p.add_argument("--temperature", type=float, default=3.0, help="KD temperature T (fit on calibration split later)")
     p.add_argument("--alpha", type=float, default=0.7, help="weight of KL vs CE")
     p.add_argument("--conf-threshold", type=float, default=0.9,
                    help="teacher confidence above this -> hard-label dominant sample")
@@ -141,7 +144,9 @@ def main():
     pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
     dl = DataLoader(ds, batch_size=args.batch_size, shuffle=True,
                     collate_fn=lambda b: collate(b, pad_id))
-    opt = torch.optim.AdamW((p for p in model.parameters() if p.requires_grad), lr=args.lr)
+    opt = torch.optim.AdamW(
+        (p for p in model.parameters() if p.requires_grad),
+        lr=args.backbone_lr if "peft" not in type(model).__module__ else args.lr)
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
