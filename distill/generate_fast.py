@@ -43,15 +43,19 @@ def call(payload, retries=12):
                 return json.load(resp)
         except urllib.error.HTTPError as e:
             last = e
-            if e.code in (429, 503) and attempt < retries - 1:
-                # classifier.dev throttles in multi-minute cooldown windows;
-                # short backoffs just burn the row, so park and wait it out
+            if e.code in (429, 503):
                 try:
-                    print(f"[429] attempt={attempt} body={e.read()[:300]!r}", flush=True)
+                    body = e.read().decode(errors="replace")
                 except Exception:
-                    pass
-                time.sleep(90 + attempt * 45)
-                continue
+                    body = ""
+                # a daily-cap 429 counts attempts too: retrying burns the
+                # remaining quota, so stop the whole run instead
+                if "rate_limit_day" in body:
+                    raise SystemExit(f"DAILY_LIMIT: {body[:200]}") from e
+                if attempt < retries - 1:
+                    print(f"[{e.code}] attempt={attempt} body={body[:200]!r}", flush=True)
+                    time.sleep(90 + attempt * 45)
+                    continue
             raise
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
             last = e
@@ -167,7 +171,15 @@ def main():
         from concurrent.futures import as_completed
         futs = {ex.submit(work, t): t for t in tasks}
         for fut in as_completed(futs):
-            task, batch, results, err = fut.result()
+            try:
+                task, batch, results, err = fut.result()
+            except SystemExit as e:
+                # stop firing new requests but keep draining already-completed
+                # ones: their quota was already spent
+                print(str(e), flush=True)
+                for f in futs:
+                    f.cancel()
+                continue
             if err is None:
                 with wl:
                     for r, res in zip(batch, results):
