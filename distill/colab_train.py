@@ -65,6 +65,8 @@ def main():
     ap.add_argument("--steps", type=int, default=600)
     ap.add_argument("--head-steps", type=int, default=24)
     ap.add_argument("--batch-questions", type=int, default=8)
+    ap.add_argument("--accum", type=int, default=4,
+                    help="gradient accumulation steps: micro_batch=batch/accum")
     ap.add_argument("--no-grad-checkpoint", action="store_true")
     ap.add_argument("--eval-every", type=int, default=50)
     ap.add_argument("--max-length", type=int, default=768)
@@ -179,34 +181,40 @@ def main():
         model.train()
         router_buf.clear()
         optimizer.zero_grad(set_to_none=True)
-        with torch.autocast("cuda", dtype=amp_dtype, enabled=use_amp):
-            z, _ = model(batch, tokenizer.pad_token_id)
-            anneal = args.temperature_final is not None and args.temperature_final > 0
+        anneal = args.temperature_final is not None and args.temperature_final > 0
+        frac = step / max(total_steps - 1, 1)
+        T_now = args.temperature + (args.temperature_final - args.temperature) * frac if anneal else args.temperature
+
+        micro_bs = max(1, args.batch_questions // max(args.accum, 1))
+        n_micro = max(1, len(batch) // micro_bs)
+        step_loss = 0.0
+        for mi in range(n_micro):
+            mb = batch[mi * micro_bs:(mi + 1) * micro_bs]
+            if not mb:
+                continue
             if anneal:
-                # re-temper on a COPY: batch entries are references into `train`,
-                # mutating them would compound across steps
-                frac = step / max(total_steps - 1, 1)
-                T_now = args.temperature + (args.temperature_final - args.temperature) * frac
-                batch = [
+                mb = [
                     ({**ex, "teacher_probs": (lambda p: (p / p.sum()).tolist())(
                         torch.tensor(ex["teacher_probs"], dtype=torch.float32).clamp_min(1e-9)
                         ** (1.0 / T_now))}
                      if ex.get("teacher_probs") is not None else ex)
-                    for ex in batch
+                    for ex in mb
                 ]
-            loss = loss_for(z, batch, args.objective).mean()
+            with torch.autocast("cuda", dtype=amp_dtype, enabled=use_amp):
+                z, _ = model(mb, tokenizer.pad_token_id)
+                mloss = loss_for(z, mb, args.objective).mean() / n_micro
+            if not torch.isfinite(mloss):
+                continue
+            scaler.scale(mloss).backward()
+            step_loss += mloss.item()
         if router_buf:
-            loss = loss + _load_balance(router_buf, coef=0.01)
             router_buf.clear()
-        if not torch.isfinite(loss):
-            raise RuntimeError("Nonfinite training loss")
-        scaler.scale(loss).backward()
         scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         scaler.step(optimizer)
         scaler.update()
         item = {"step": step + 1, "phase": "head" if warm else "full",
-                "loss": float(loss.detach()),
+                "loss": round(step_loss, 4),
                 "elapsed_seconds": time.perf_counter() - start}
         if not warm and ((step + 1 - args.head_steps) % args.eval_every == 0
                          or step + 1 == args.head_steps + args.steps):

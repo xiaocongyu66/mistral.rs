@@ -34,6 +34,12 @@ SOURCES = [
     ("nguha/legalbench", None, "train", "text", 0.02, "legal reasoning"),
     ("PolyAI/banking77", None, "train", "text", 0.02, "banking intents"),
     ("clinc/clinc_oos", "plus", "train", "text", 0.02, "oos utterances"),
+    # -- P0 verified from search batch (COIG-CQIA / Nemotron / OpenHermes / UltraFeedback) --
+    ("m-a-p/COIG-CQIA", None, "train", "instruction", 0.03, "chinese human-verified"),
+    ("nvidia/Nemotron-SFT-Agentic-v2", None, "train", "messages", 0.03, "agentic w/ thinking toggle"),
+    ("nvidia/Nemotron-SFT-Multilingual-v1", None, "train", "messages", 0.03, "multilingual reasoning"),
+    ("teknium/OpenHermes-2.5", None, "train", "conversations", 0.03, "1M high-quality general"),
+    ("openbmb/UltraFeedback", None, "train", "prompt", 0.02, "preference calibration"),
 ]
 
 # opus_books yields dict translations, not a plain string field

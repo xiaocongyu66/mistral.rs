@@ -1,0 +1,62 @@
+[
+ {
+  "id": "m-a-p/COIG-CQIA",
+  "config": null,
+  "split": "train",
+  "field": "instruction",
+  "domain": "chinese_cqia",
+  "ok": true,
+  "downloads": 36006,
+  "gated": false
+ },
+ {
+  "id": "nvidia/Nemotron-SFT-Agentic-v2",
+  "config": null,
+  "split": "train",
+  "field": "messages",
+  "domain": "agentic",
+  "ok": true,
+  "downloads": 7171,
+  "gated": false
+ },
+ {
+  "id": "nvidia/Nemotron-SFT-OpenCode-v1",
+  "config": null,
+  "split": "train",
+  "field": "messages",
+  "domain": "code_cli",
+  "ok": true,
+  "downloads": 2004,
+  "gated": false
+ },
+ {
+  "id": "nvidia/Nemotron-SFT-Multilingual-v1",
+  "config": null,
+  "split": "train",
+  "field": "messages",
+  "domain": "multilingual_nem",
+  "ok": true,
+  "downloads": 2780,
+  "gated": false
+ },
+ {
+  "id": "teknium/OpenHermes-2.5",
+  "config": null,
+  "split": "train",
+  "field": "conversations",
+  "domain": "openhermes",
+  "ok": true,
+  "downloads": 32289,
+  "gated": false
+ },
+ {
+  "id": "openbmb/UltraFeedback",
+  "config": null,
+  "split": "train",
+  "field": "prompt",
+  "domain": "preference",
+  "ok": true,
+  "downloads": 13211,
+  "gated": false
+ }
+]

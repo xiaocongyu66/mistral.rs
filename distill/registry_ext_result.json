@@ -1,0 +1,674 @@
+{
+ "usable": [
+  {
+   "id": "HuggingFaceFW/finewiki",
+   "config": null,
+   "split": "train",
+   "field": "text",
+   "domain": "wiki",
+   "ok": true,
+   "downloads": 8908,
+   "gated": false
+  },
+  {
+   "id": "wikimedia/wikipedia",
+   "config": "20231101.zh",
+   "split": "train",
+   "field": "text",
+   "domain": "wiki",
+   "ok": true,
+   "downloads": 261987,
+   "gated": false
+  },
+  {
+   "id": "HuggingFaceTB/cosmopedia",
+   "config": "web_v1",
+   "split": "train",
+   "field": "text",
+   "domain": "books",
+   "ok": true,
+   "downloads": 26751,
+   "gated": false
+  },
+  {
+   "id": "sedthh/gutenberg_multilang",
+   "config": null,
+   "split": "train",
+   "field": "text",
+   "domain": "books",
+   "ok": true,
+   "downloads": 245,
+   "gated": false
+  },
+  {
+   "id": "manu/project_gutenberg",
+   "config": null,
+   "split": "train",
+   "field": "text",
+   "domain": "books",
+   "ok": true,
+   "downloads": 8882,
+   "gated": false
+  },
+  {
+   "id": "HuggingFaceFW/fineweb",
+   "config": "sample-10BT",
+   "split": "train",
+   "field": "text",
+   "domain": "web",
+   "ok": true,
+   "downloads": 388915,
+   "gated": false
+  },
+  {
+   "id": "HuggingFaceFW/fineweb-edu",
+   "config": "sample-10BT",
+   "split": "train",
+   "field": "text",
+   "domain": "web",
+   "ok": true,
+   "downloads": 426834,
+   "gated": false
+  },
+  {
+   "id": "HuggingFaceTB/finemath",
+   "config": "finemath-4plus",
+   "split": "train",
+   "field": "text",
+   "domain": "math",
+   "ok": true,
+   "downloads": 36670,
+   "gated": false
+  },
+  {
+   "id": "PleIAs/common_corpus",
+   "config": null,
+   "split": "train",
+   "field": "text",
+   "domain": "public_domain",
+   "ok": true,
+   "downloads": 189130,
+   "gated": false
+  },
+  {
+   "id": "open-thoughts/OpenThoughts2-1M",
+   "config": null,
+   "split": "train",
+   "field": "conversations",
+   "domain": "reasoning",
+   "ok": true,
+   "downloads": 4407,
+   "gated": false
+  },
+  {
+   "id": "AI-MO/NuminaMath-CoT",
+   "config": null,
+   "split": "train",
+   "field": "problem",
+   "domain": "math",
+   "ok": true,
+   "downloads": 224042,
+   "gated": false
+  },
+  {
+   "id": "AI-MO/NuminaMath-1.5",
+   "config": null,
+   "split": "train",
+   "field": "problem",
+   "domain": "math",
+   "ok": true,
+   "downloads": 48507,
+   "gated": false
+  },
+  {
+   "id": "nvidia/OpenMathReasoning",
+   "config": null,
+   "split": "train",
+   "field": "input",
+   "domain": "math",
+   "ok": true,
+   "downloads": 55293,
+   "gated": false
+  },
+  {
+   "id": "nvidia/OpenMathInstruct-2",
+   "config": null,
+   "split": "train",
+   "field": "problem",
+   "domain": "math",
+   "ok": true,
+   "downloads": 132591,
+   "gated": false
+  },
+  {
+   "id": "TIGER-Lab/MathInstruct",
+   "config": null,
+   "split": "train",
+   "field": "instruction",
+   "domain": "math",
+   "ok": true,
+   "downloads": 22110,
+   "gated": false
+  },
+  {
+   "id": "open-r1/OpenR1-Math-220k",
+   "config": null,
+   "split": "train",
+   "field": "problem",
+   "domain": "math",
+   "ok": true,
+   "downloads": 155971,
+   "gated": false
+  },
+  {
+   "id": "bespokelabs/Bespoke-Stratos-17k",
+   "config": null,
+   "split": "train",
+   "field": "conversations",
+   "domain": "reasoning",
+   "ok": true,
+   "downloads": 22327,
+   "gated": false
+  },
+  {
+   "id": "microsoft/orca-math-word-problems-200k",
+   "config": null,
+   "split": "train",
+   "field": "question",
+   "domain": "math",
+   "ok": true,
+   "downloads": 23167,
+   "gated": false
+  },
+  {
+   "id": "meta-math/MetaMathQA",
+   "config": null,
+   "split": "train",
+   "field": "query",
+   "domain": "math",
+   "ok": true,
+   "downloads": 113687,
+   "gated": false
+  },
+  {
+   "id": "hendrycks/competition_math",
+   "config": null,
+   "split": "train",
+   "field": "problem",
+   "domain": "math",
+   "ok": true,
+   "downloads": 0,
+   "gated": false
+  },
+  {
+   "id": "openai/gsm8k",
+   "config": "main",
+   "split": "train",
+   "field": "question",
+   "domain": "math",
+   "ok": true,
+   "downloads": 1221735,
+   "gated": false
+  },
+  {
+   "id": "nvidia/OpenCodeReasoning",
+   "config": null,
+   "split": "train",
+   "field": "input",
+   "domain": "code",
+   "ok": true,
+   "downloads": 13839,
+   "gated": false
+  },
+  {
+   "id": "codeparrot/codeparrot-clean",
+   "config": null,
+   "split": "train",
+   "field": "content",
+   "domain": "code",
+   "ok": true,
+   "downloads": 41395,
+   "gated": false
+  },
+  {
+   "id": "m-a-p/CodeFeedback-Filtered-Instruction",
+   "config": null,
+   "split": "train",
+   "field": "query",
+   "domain": "code",
+   "ok": true,
+   "downloads": 27961,
+   "gated": false
+  },
+  {
+   "id": "openai/openai_humaneval",
+   "config": null,
+   "split": "test",
+   "field": "prompt",
+   "domain": "code",
+   "ok": true,
+   "downloads": 264113,
+   "gated": false
+  },
+  {
+   "id": "sahil2801/CodeAlpaca-20k",
+   "config": null,
+   "split": "train",
+   "field": "instruction",
+   "domain": "code",
+   "ok": true,
+   "downloads": 42047,
+   "gated": false
+  },
+  {
+   "id": "iamtarun/python_code_instructions_18k_alpaca",
+   "config": null,
+   "split": "train",
+   "field": "instruction",
+   "domain": "code",
+   "ok": true,
+   "downloads": 37131,
+   "gated": false
+  },
+  {
+   "id": "CohereForAI/aya_collection",
+   "config": "aya_eng",
+   "split": "train",
+   "field": "inputs",
+   "domain": "multilingual",
+   "ok": true,
+   "downloads": 32638,
+   "gated": false
+  },
+  {
+   "id": "MBZUAI/Bactrian-X",
+   "config": "zh",
+   "split": "train",
+   "field": "instruction",
+   "domain": "multilingual",
+   "ok": true,
+   "downloads": 2816,
+   "gated": false
+  },
+  {
+   "id": "Helsinki-NLP/opus_books",
+   "config": "en-zh",
+   "split": "train",
+   "field": "translation",
+   "domain": "parallel",
+   "ok": true,
+   "downloads": 9914,
+   "gated": false
+  },
+  {
+   "id": "Helsinki-NLP/opus-100",
+   "config": "en-zh",
+   "split": "train",
+   "field": "translation",
+   "domain": "parallel",
+   "ok": true,
+   "downloads": 22254,
+   "gated": false
+  },
+  {
+   "id": "allenai/nllb",
+   "config": "eng_Latn-zho_Hans",
+   "split": "train",
+   "field": "translation",
+   "domain": "parallel",
+   "ok": true,
+   "downloads": 686,
+   "gated": false
+  },
+  {
+   "id": "nguha/legalbench",
+   "config": null,
+   "split": "train",
+   "field": "text",
+   "domain": "legal",
+   "ok": true,
+   "downloads": 15651,
+   "gated": false
+  },
+  {
+   "id": "PolyAI/banking77",
+   "config": null,
+   "split": "train",
+   "field": "text",
+   "domain": "banking",
+   "ok": true,
+   "downloads": 10833,
+   "gated": false
+  },
+  {
+   "id": "clinc/clinc_oos",
+   "config": "plus",
+   "split": "train",
+   "field": "text",
+   "domain": "intent",
+   "ok": true,
+   "downloads": 20979,
+   "gated": false
+  },
+  {
+   "id": "bitext/Bitext-retail-banking-llm-chatbot-training-dataset",
+   "config": null,
+   "split": "train",
+   "field": "instruction",
+   "domain": "banking",
+   "ok": true,
+   "downloads": 331,
+   "gated": false
+  },
+  {
+   "id": "FinGPT/fingpt-sentiment-train",
+   "config": null,
+   "split": "train",
+   "field": "input",
+   "domain": "finance",
+   "ok": true,
+   "downloads": 1708,
+   "gated": false
+  },
+  {
+   "id": "medalpaca/medical_meadow_medical_flashcards",
+   "config": null,
+   "split": "train",
+   "field": "input",
+   "domain": "medical",
+   "ok": true,
+   "downloads": 7220,
+   "gated": false
+  },
+  {
+   "id": "FreedomIntelligence/medical-o1-reasoning-SFT",
+   "config": "en",
+   "split": "train",
+   "field": "Question",
+   "domain": "medical",
+   "ok": true,
+   "downloads": 20810,
+   "gated": false
+  },
+  {
+   "id": "Mihaiii/qa-assistant",
+   "config": null,
+   "split": "train",
+   "field": "input",
+   "domain": "support",
+   "ok": true,
+   "downloads": 42,
+   "gated": false
+  },
+  {
+   "id": "mteb/amazon_massive_intent",
+   "config": "zh-CN",
+   "split": "train",
+   "field": "text",
+   "domain": "intent",
+   "ok": true,
+   "downloads": 37961,
+   "gated": false
+  },
+  {
+   "id": "amazon_reviews_multi",
+   "config": "zh",
+   "split": "train",
+   "field": "review_body",
+   "domain": "ecom",
+   "ok": true,
+   "downloads": 2117,
+   "gated": false
+  },
+  {
+   "id": "CarperAI/openai_summarize_tldr",
+   "config": null,
+   "split": "train",
+   "field": "prompt",
+   "domain": "summarize",
+   "ok": true,
+   "downloads": 5107,
+   "gated": false
+  },
+  {
+   "id": "KRAFTON/Orak",
+   "config": null,
+   "split": "train",
+   "field": "text",
+   "domain": "decision",
+   "ok": true,
+   "downloads": 170,
+   "gated": false
+  },
+  {
+   "id": "databricks/databricks-dolly-15k",
+   "config": null,
+   "split": "train",
+   "field": "instruction",
+   "domain": "sft",
+   "ok": true,
+   "downloads": 63028,
+   "gated": false
+  },
+  {
+   "id": "tatsu-lab/alpaca",
+   "config": null,
+   "split": "train",
+   "field": "instruction",
+   "domain": "sft",
+   "ok": true,
+   "downloads": 115467,
+   "gated": false
+  },
+  {
+   "id": "teknium/OpenHermes-2.5",
+   "config": null,
+   "split": "train",
+   "field": "conversations",
+   "domain": "sft",
+   "ok": true,
+   "downloads": 32289,
+   "gated": false
+  },
+  {
+   "id": "Open-Orca/OpenOrca",
+   "config": null,
+   "split": "train",
+   "field": "question",
+   "domain": "sft",
+   "ok": true,
+   "downloads": 23483,
+   "gated": false
+  },
+  {
+   "id": "HuggingFaceH4/ultrachat_200k",
+   "config": null,
+   "split": "train_sft",
+   "field": "messages",
+   "domain": "sft",
+   "ok": true,
+   "downloads": 101130,
+   "gated": false
+  },
+  {
+   "id": "allenai/tulu-3-sft-mixture",
+   "config": null,
+   "split": "train",
+   "field": "messages",
+   "domain": "sft",
+   "ok": true,
+   "downloads": 65867,
+   "gated": false
+  },
+  {
+   "id": "carosh/cli-1m",
+   "config": null,
+   "split": "train",
+   "field": "instruction",
+   "domain": "shell",
+   "ok": true,
+   "downloads": 229,
+   "gated": false
+  },
+  {
+   "id": "glaiveai/glaive-function-calling-v2",
+   "config": null,
+   "split": "train",
+   "field": "chat",
+   "domain": "tools",
+   "ok": true,
+   "downloads": 53855,
+   "gated": false
+  },
+  {
+   "id": "nebius/SWE-rebench",
+   "config": null,
+   "split": "train",
+   "field": "problem_statement",
+   "domain": "code",
+   "ok": true,
+   "downloads": 89450,
+   "gated": false
+  },
+  {
+   "id": "ccdv/cnn_dailymail",
+   "config": "3.0.0",
+   "split": "train",
+   "field": "article",
+   "domain": "summarize",
+   "ok": true,
+   "downloads": 30326,
+   "gated": false
+  },
+  {
+   "id": "abisee/cnn_dailymail",
+   "config": "3.0.0",
+   "split": "train",
+   "field": "article",
+   "domain": "summarize",
+   "ok": true,
+   "downloads": 74952,
+   "gated": false
+  },
+  {
+   "id": "EdinburghNLP/xsum",
+   "config": null,
+   "split": "train",
+   "field": "document",
+   "domain": "summarize",
+   "ok": true,
+   "downloads": 15756,
+   "gated": false
+  },
+  {
+   "id": "scientific_papers",
+   "config": "arxiv",
+   "split": "train",
+   "field": "article",
+   "domain": "science",
+   "ok": true,
+   "downloads": 3354,
+   "gated": false
+  }
+ ],
+ "gated": [
+  {
+   "id": "bigcode/the-stack-smol",
+   "config": null,
+   "split": "train",
+   "field": "content",
+   "domain": "code",
+   "ok": true,
+   "downloads": 27103,
+   "gated": true
+  },
+  {
+   "id": "facebook/flores",
+   "config": "eng_Latn-zho_Hans",
+   "split": "devtest",
+   "field": "sentence",
+   "domain": "parallel",
+   "ok": true,
+   "downloads": 5207,
+   "gated": true
+  },
+  {
+   "id": "Salesforce/xlam-function-calling-60k",
+   "config": null,
+   "split": "train",
+   "field": "query",
+   "domain": "tools",
+   "ok": true,
+   "downloads": 35978,
+   "gated": true
+  }
+ ],
+ "missing": [
+  {
+   "id": "HuggingFaceTB/fineweb-2",
+   "domain": "web_zh",
+   "ok": false,
+   "err": "HTTP Error 401: Unauthorized"
+  },
+  {
+   "id": "nvidia/Nemotron-Math",
+   "domain": "math",
+   "ok": false,
+   "err": "HTTP Error 401: Unauthorized"
+  },
+  {
+   "id": "PAI-2026/OmniThought",
+   "domain": "reasoning",
+   "ok": false,
+   "err": "HTTP Error 401: Unauthorized"
+  },
+  {
+   "id": "nvidia/SWE-Zero2Hero",
+   "domain": "code",
+   "ok": false,
+   "err": "HTTP Error 401: Unauthorized"
+  },
+  {
+   "id": "bigcode/stack-dedup-python",
+   "domain": "code",
+   "ok": false,
+   "err": "HTTP Error 401: Unauthorized"
+  },
+  {
+   "id": "windone/FinCorpus",
+   "domain": "finance",
+   "ok": false,
+   "err": "HTTP Error 401: Unauthorized"
+  },
+  {
+   "id": "disc-law-sft",
+   "domain": "legal",
+   "ok": false,
+   "err": "HTTP Error 401: Unauthorized"
+  },
+  {
+   "id": "tasksource/100k-choice-dilemmas",
+   "domain": "decision",
+   "ok": false,
+   "err": "HTTP Error 401: Unauthorized"
+  },
+  {
+   "id": "hails/bias-in-bios",
+   "domain": "decision",
+   "ok": false,
+   "err": "HTTP Error 401: Unauthorized"
+  },
+  {
+   "id": "booksum",
+   "domain": "long_context",
+   "ok": false,
+   "err": "HTTP Error 401: Unauthorized"
+  },
+  {
+   "id": "goyal/arxiv_dataset",
+   "domain": "science",
+   "ok": false,
+   "err": "HTTP Error 401: Unauthorized"
+  }
+ ]
+}
