@@ -30,6 +30,18 @@
 - 团体标准《高质量数据集实施指南》：数据质量控制条目可对照，非操作文档
 - YOLOv5 训练指南：域不相关
 
+## 论文笔记（已学习，可直接落配方）
+
+**[RLCR: Beyond Binary Rewards](https://arxiv.org/abs/2507.16806)**（MIT，Damani/Shenfeld/Choshen/Kim/Andreas）
+- 问题：RL 用二元奖励只罚错误不罚瞎猜 → 校准退化、幻觉率上升
+- 配方：奖励 = 二元正确性 + **Brier 分数**（严格本征评分规则），模型同时输出预测和数值置信度
+- **落点**：阶段 5b 的奖励设计直接采用 RLCR（不是裸 GRPO）——我们决策头的 RLCD 后训练 = 正确性 + Brier 联合优化；verdict 仓库 calibration.py 已有 Brier 实现，配合无墙
+- 关键句："binary reward functions do not penalize guessing"——正是我们在钓鱼任务看到的教师高置信错误问题的 RL 端解法
+
+**[ModernBERT](https://arxiv.org/abs/2412.13663)**（Warner et al.）
+- 2T token 训练、**原生 8192 序列长度**、双向编码器 Pareto 改进、推理速度/显存最优
+- **落点**：确认编码器学生路线（GLiClass 底座即 ModernBERT）的两个优势：①原生 8192 上下文（对比我们 0.6B 解码器学生 768 训练窗 + 前缀 K 倍重复）②速度/显存为移动端友好设计；v2 学生实验有了理论背书
+
 ## 已在用的同类资源（本仓库内）
 
 - `distill/TRAINING_DESIGN.md`：训练契约（含 NanoJev 同步要点）
