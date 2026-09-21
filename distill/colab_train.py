@@ -17,11 +17,11 @@ def dump(path, obj):
     Path(path).write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n")
 
 
-def fit_temperature(model, calib_examples, pad_token):
+def fit_temperature(model, calib_examples, pad_token, amp_dtype=torch.float16):
     """Fit scalar T on the calibration split: minimize CE of softmax(z/T)
     against teacher soft targets. Grid over T in [0.5, 8]."""
     model.eval()
-    with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
+    with torch.no_grad(), torch.autocast("cuda", dtype=amp_dtype):
         logits, _ = model(calib_examples, pad_token)
     target = torch.zeros_like(logits)
     for i, ex in enumerate(calib_examples):
@@ -57,12 +57,17 @@ def main():
     ap.add_argument("--backbone-lr", type=float, default=1e-5)
     ap.add_argument("--head-lr", type=float, default=1e-4)
     ap.add_argument("--seed", type=int, default=17)
+    ap.add_argument("--dtype", default="fp16", choices=["fp16", "bf16"],
+                    help="autocast dtype; fp16 uses T4-native tensor cores + GradScaler")
     args = ap.parse_args()
 
     sys.path.insert(0, args.nanojev_scripts)
     from train_toy_decisions import (DecisionModel, benchmark, dump, evaluate,
                                      load_examples, loss_for)
 
+    amp_dtype = torch.float16 if args.dtype == "fp16" else torch.bfloat16
+    scaler = torch.amp.GradScaler("cuda", enabled=(args.dtype == "fp16"))
+    print(f"autocast={args.dtype} scaler={scaler.is_enabled()}", flush=True)
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
     random.seed(args.seed)
@@ -126,14 +131,16 @@ def main():
         batch = random.sample(train, args.batch_questions)
         model.train()
         optimizer.zero_grad(set_to_none=True)
-        with torch.autocast("cuda", dtype=torch.bfloat16):
+        with torch.autocast("cuda", dtype=amp_dtype):
             z, _ = model(batch, tokenizer.pad_token_id)
             loss = loss_for(z, batch, args.objective).mean()
         if not torch.isfinite(loss):
             raise RuntimeError("Nonfinite training loss")
-        loss.backward()
+        scaler.scale(loss).backward()
+        scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-        optimizer.step()
+        scaler.step(optimizer)
+        scaler.update()
         item = {"step": step + 1, "phase": "head" if warm else "full",
                 "loss": float(loss.detach()),
                 "elapsed_seconds": time.perf_counter() - start}
@@ -156,7 +163,7 @@ def main():
     model.load_state_dict(load_file(out / "best.safetensors"))
 
     temperature, calib_nll = fit_temperature(
-        model, bysplit["calibration"], tokenizer.pad_token_id)
+        model, bysplit["calibration"], tokenizer.pad_token_id, amp_dtype)
     dump(out / "temperature.json", {
         "T": temperature, "calib_nll_at_T": calib_nll,
         "calibration_questions": len(bysplit["calibration"])})
