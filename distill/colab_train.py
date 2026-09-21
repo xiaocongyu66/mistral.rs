@@ -21,7 +21,7 @@ def fit_temperature(model, calib_examples, pad_token, amp_dtype=torch.float16):
     """Fit scalar T on the calibration split: minimize CE of softmax(z/T)
     against teacher soft targets. Grid over T in [0.5, 8]."""
     model.eval()
-    with torch.no_grad(), torch.autocast("cuda", dtype=amp_dtype):
+    with torch.no_grad(), torch.autocast("cuda", dtype=amp_dtype, enabled=amp_dtype in (torch.float16, torch.bfloat16)):
         logits, _ = model(calib_examples, pad_token)
     target = torch.zeros_like(logits)
     for i, ex in enumerate(calib_examples):
@@ -72,7 +72,7 @@ def main():
     ap.add_argument("--seed", type=int, default=17)
     ap.add_argument("--adam8bit", action="store_true",
                     help="8-bit AdamW (bitsandbytes); needed for 1.2B+ MoE on 16GB")
-    ap.add_argument("--dtype", default="fp16", choices=["fp16", "bf16"],
+    ap.add_argument("--dtype", default="fp16", choices=["fp16", "bf16", "fp32"],
                     help="autocast dtype; fp16 uses T4-native tensor cores + GradScaler")
     args = ap.parse_args()
 
@@ -80,9 +80,10 @@ def main():
     from train_toy_decisions import (DecisionModel, benchmark, dump, evaluate,
                                      load_examples, loss_for)
 
+    use_amp = args.dtype in ("fp16", "bf16")
     amp_dtype = torch.float16 if args.dtype == "fp16" else torch.bfloat16
     scaler = torch.amp.GradScaler("cuda", enabled=(args.dtype == "fp16"))
-    print(f"autocast={args.dtype} scaler={scaler.is_enabled()}", flush=True)
+    print(f"autocast={args.dtype} enabled={use_amp} scaler={scaler.is_enabled()}", flush=True)
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
     random.seed(args.seed)
@@ -176,7 +177,7 @@ def main():
             batch = random.sample(train, args.batch_questions)
         model.train()
         optimizer.zero_grad(set_to_none=True)
-        with torch.autocast("cuda", dtype=amp_dtype):
+        with torch.autocast("cuda", dtype=amp_dtype, enabled=use_amp):
             z, _ = model(batch, tokenizer.pad_token_id)
             anneal = args.temperature_final is not None and args.temperature_final > 0
             if anneal:
