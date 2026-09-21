@@ -70,3 +70,48 @@
 
 书文本提取物与版权保留数据**不入 git**；Apache-2.0/MIT/学术公开数据可入；
 标注产物含 state 原文的按来源许可决定。GitHub 只入脚本、统计与许可明确的数据。
+
+## 补充批次（2026-09-21 深夜，第六~九批清单）
+
+### 新克隆（真实，已验证）
+- zwhong714/Hybrid-Policy-Distillation（25★，ICML 2026）：Qwen2.5-1.5B←7B-Thinking 推理蒸馏，LlamaFactory+verl 双实现
+- horus-ai-labs/DistillFlow（169★）：logits/注意力/中间层三策略 + 动态资源分配
+- songmzhang/DSKD（65★，EMNLP 2024）：跨 tokenizer 白盒蒸馏（72B→1.5B 实证）
+- jingyaogong/minimind（61.9k★）：64M 全流程（Pretrain/SFT/LoRA/DPO）
+- bojieli/ai-infra-book（4.8k★）：AI Infra 量化推导开源书
+- 另验证为真未克隆：rasbt/LLMs-from-scratch（105k★）、system-design-primer、UniMoral、OpusDistillery
+
+### HF 数据集直接拉取（现成指令-响应对，无需教师，PID 8856 进行中）
+- Mxode/Chinese-Instruct（中文大规模指令集，含 dpsk-r1-distil/chinese-reasoning-distil 配置）
+- Mxode/Chinese-Reasoning-Distil-Data（中文推理蒸馏）
+- Mxode/Meow-Reasoning-100K（10 万中文推理）
+- 落位 /root/materials/Mxode__*，本地训练用
+
+### 果蝇数据集（用户点名，科学数据，记录在案）
+- FlyWire 全脑连接组（14 万神经元/5000 万突触，Nature 2024）+ FAFB/Hemibrain
+- 30,000+ 果蝇行为轨迹（Scientific Data 2025, DOI:10.1038/s41597-025-04724-3）
+- Tephritid26（38,081 张实蝇图像，26 种）
+- 8 阶段发育分类（Drosophila_stages_models，ResNet-50 85%）
+- 用途：远期多模态任务 #16 的视觉分类种子源
+
+### 人类决策神经科学数据（行为决策研究链）
+- DfE-DB（380 万条经验决策记录）/ ITC Database（117 万条跨期选择）
+- 100K Choice Dilemmas（10 万真实选择困境，PNAS 2025 属性分析）——文本决策直接素材
+- IGT/囚徒困境 EEG、混合赌博 fMRI（OpenNeuro）——神经基线参考
+- 用途：choice 题型与"人类偏好 vs 理性最优"的校准分析素材
+
+### 蒸馏模型成果（可直接下载权重，按需拉取）
+- DeepSeek-R1 蒸馏系列（91.9k★，MIT）：6 规格 SFT 权重（HF: deepseek-ai/*）
+- DistilBERT/TinyBERT/MiniLLM：经典小模型蒸馏检查点
+- Align-TI-1B（25★，ICML 2026 token 交互蒸馏，HF 权重）
+- Siglino（60★，CVPR 2026 视觉编码器蒸馏 5 检查点）
+- Multi-Level-OT（39★，AAAI 2025 Oral，跨 tokenizer 学生检查点）
+- Byrne-VLM-131M（131M VLM，571MB）
+- 记录：mimi_0.6b、PolyDistill、DistillDetect 名字未经验证，拉取前需 probe
+
+### 蒸馏文本数据集（直接 SFT 用，验证后拉取）
+- Chinese-DeepSeek-R1-Distill-data-110k（11 万中文，数学 36,568+通用 58,352，Math-Verify 校验）——P0，与中文学生对口
+- "十万个为什么"中文百科（120 万+指令，general/preference/reasoning 三子集）——P1
+- OpenMathInstruct-1（180 万数学对，商业友好）——P1
+- TART（344k 推理轨迹）/ Reasoning Corpus（500 万条，SupraLabs）——量级大，探测后择要
+- open-distillation-datasets（蒸馏数据目录，持续发现入口）
