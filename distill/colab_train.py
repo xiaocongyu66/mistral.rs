@@ -17,11 +17,12 @@ def dump(path, obj):
     Path(path).write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n")
 
 
-def fit_temperature(model, calib_examples, pad_token, amp_dtype=torch.float16):
+def fit_temperature(model, calib_examples, pad_token, amp_dtype=None):
     """Fit scalar T on the calibration split: minimize CE of softmax(z/T)
     against teacher soft targets. Grid over T in [0.5, 8]."""
     model.eval()
-    with torch.no_grad(), torch.autocast("cuda", dtype=amp_dtype, enabled=amp_dtype in (torch.float16, torch.bfloat16)):
+    use_amp = amp_dtype in (torch.float16, torch.bfloat16)
+    with torch.no_grad(), torch.autocast("cuda", dtype=amp_dtype or torch.float16, enabled=use_amp):
         logits, _ = model(calib_examples, pad_token)
     target = torch.zeros_like(logits)
     for i, ex in enumerate(calib_examples):
@@ -111,7 +112,7 @@ def main():
     del lm
     router_buf = []
     def _router_hook(module, inputs, output):
-        if inputs and hasattr(module, "gate"):
+        if model.training and inputs and hasattr(module, "gate"):
             router_buf.append(module.gate(inputs[0]))
     n_moe = 0
     for mod in model.backbone.modules():
@@ -176,6 +177,7 @@ def main():
         else:
             batch = random.sample(train, args.batch_questions)
         model.train()
+        router_buf.clear()
         optimizer.zero_grad(set_to_none=True)
         with torch.autocast("cuda", dtype=amp_dtype, enabled=use_amp):
             z, _ = model(batch, tokenizer.pad_token_id)
@@ -208,8 +210,10 @@ def main():
                 "elapsed_seconds": time.perf_counter() - start}
         if not warm and ((step + 1 - args.head_steps) % args.eval_every == 0
                          or step + 1 == args.head_steps + args.steps):
+            router_buf.clear()
             metrics = evaluate(model, bysplit["dev"], tokenizer.pad_token_id,
                                args.batch_questions)
+            router_buf.clear()
             item["dev"] = metrics
             score = metrics["teacher_ce" if args.objective == "teacher" else "gold_nll"]
             if score is not None and score < best:

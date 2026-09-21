@@ -1,0 +1,385 @@
+[
+ {
+  "id": "Mxode/Chinese-Instruct",
+  "domain": "chinese",
+  "stage": "sft",
+  "note": "dpsk-r1-distil + reasoning configs",
+  "ok": true,
+  "downloads": 832,
+  "gated": false
+ },
+ {
+  "id": "Mxode/Chinese-Reasoning-Distil-Data",
+  "domain": "chinese",
+  "stage": "sft",
+  "note": "reasoning distill",
+  "ok": true,
+  "downloads": 145,
+  "gated": false
+ },
+ {
+  "id": "Mxode/Meow-Reasoning-100K",
+  "domain": "chinese",
+  "stage": "sft",
+  "note": "100k reasoning",
+  "ok": true,
+  "downloads": 53,
+  "gated": false
+ },
+ {
+  "id": "Chinese-Data-Distill-From-R1",
+  "domain": "chinese",
+  "stage": "sft",
+  "note": "110k w/ math-verify",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "MegaScience/Chinese-Reasoning-Dataset-v1",
+  "domain": "chinese",
+  "stage": "sft",
+  "note": "10k verified math",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "openbmb/UltraData-Math",
+  "domain": "math",
+  "stage": "sft",
+  "note": "curated math",
+  "ok": true,
+  "downloads": 37018,
+  "gated": false
+ },
+ {
+  "id": "hsc-wuxia-200k",
+  "domain": "chinese",
+  "stage": "pretrain",
+  "note": "wuxia style",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "webnovel-chinese",
+  "domain": "chinese",
+  "stage": "pretrain",
+  "note": "9B tokens novels",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "LightNovel5000",
+  "domain": "chinese",
+  "stage": "pretrain",
+  "note": "light novels",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "CAPC-CG",
+  "domain": "chinese",
+  "stage": "sft",
+  "note": "policy instructions",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "tasksource/100k-choice-dilemmas",
+  "domain": "decision",
+  "stage": "sft",
+  "note": "real life dilemmas",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "SamSJackson/Newcomb-like-Questions",
+  "domain": "decision",
+  "stage": "sft",
+  "note": "newcomb problems",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "KRAFTON/Orak",
+  "domain": "decision",
+  "stage": "sft",
+  "note": "expert video-game traces",
+  "ok": true,
+  "downloads": 170,
+  "gated": false
+ },
+ {
+  "id": "Max-Suslov/game-bench",
+  "domain": "decision",
+  "stage": "sft",
+  "note": "slay-the-spire",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "rushes",
+  "domain": "decision",
+  "stage": "sft",
+  "note": "44k human choice events",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "open-thoughts/OpenThoughts2-1M",
+  "domain": "reasoning",
+  "stage": "sft",
+  "note": "ICLR 2026",
+  "ok": true,
+  "downloads": 4407,
+  "gated": false
+ },
+ {
+  "id": "bespokelabs/Bespoke-Stratos-17k",
+  "domain": "reasoning",
+  "stage": "sft",
+  "note": "curated reasoning",
+  "ok": true,
+  "downloads": 22327,
+  "gated": false
+ },
+ {
+  "id": "nvidia/OpenMathReasoning",
+  "domain": "math",
+  "stage": "sft",
+  "note": "3.2M AoPS",
+  "ok": true,
+  "downloads": 55293,
+  "gated": false
+ },
+ {
+  "id": "nvidia/OpenMathInstruct-2",
+  "domain": "math",
+  "stage": "sft",
+  "note": "14M pairs",
+  "ok": true,
+  "downloads": 132591,
+  "gated": false
+ },
+ {
+  "id": "nvidia/Nemotron-Math",
+  "domain": "math",
+  "stage": "sft",
+  "note": "7.5M traces",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "AI-MO/NuminaMath-CoT",
+  "domain": "math",
+  "stage": "sft",
+  "note": "860k cot",
+  "ok": true,
+  "downloads": 224042,
+  "gated": false
+ },
+ {
+  "id": "TIGER-Lab/MathInstruct",
+  "domain": "math",
+  "stage": "sft",
+  "note": "chain-of-thought math",
+  "ok": true,
+  "downloads": 22110,
+  "gated": false
+ },
+ {
+  "id": "open-r1/OpenR1-Math-220k",
+  "domain": "math",
+  "stage": "sft",
+  "note": "220k verified",
+  "ok": true,
+  "downloads": 155971,
+  "gated": false
+ },
+ {
+  "id": "nvidia/OpenCodeReasoning",
+  "domain": "code",
+  "stage": "sft",
+  "note": "736k python",
+  "ok": true,
+  "downloads": 13839,
+  "gated": false
+ },
+ {
+  "id": "nvidia/SWE-Zero2Hero",
+  "domain": "code",
+  "stage": "sft",
+  "note": "two-stage swe",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "SWE-bench/SWE-bench_Multilingual",
+  "domain": "code",
+  "stage": "eval",
+  "note": "multilingual swe",
+  "ok": true,
+  "downloads": 56765,
+  "gated": false
+ },
+ {
+  "id": "openai/openai_humaneval",
+  "domain": "code",
+  "stage": "eval",
+  "note": "humaneval",
+  "ok": true,
+  "downloads": 264113,
+  "gated": false
+ },
+ {
+  "id": "codeparrot/codeparrot-clean",
+  "domain": "code",
+  "stage": "pretrain",
+  "note": "python",
+  "ok": true,
+  "downloads": 41395,
+  "gated": false
+ },
+ {
+  "id": "bigcode/the-stack-smol",
+  "domain": "code",
+  "stage": "pretrain",
+  "note": "multilingual code",
+  "ok": true,
+  "downloads": 27103,
+  "gated": "auto"
+ },
+ {
+  "id": "CohereForAI/aya_dataset",
+  "domain": "multilingual",
+  "stage": "sft",
+  "note": "204k 65 langs",
+  "ok": true,
+  "downloads": 28130,
+  "gated": false
+ },
+ {
+  "id": "MBZUAI/Bactrian-X",
+  "domain": "multilingual",
+  "stage": "sft",
+  "note": "52 langs 3.4M",
+  "ok": true,
+  "downloads": 2816,
+  "gated": false
+ },
+ {
+  "id": "HuggingFaceFW/finewiki",
+  "domain": "multilingual",
+  "stage": "pretrain",
+  "note": "325 langs wiki",
+  "ok": true,
+  "downloads": 8908,
+  "gated": false
+ },
+ {
+  "id": "Helsinki-NLP/opus_books",
+  "domain": "multilingual",
+  "stage": "pretrain",
+  "note": "parallel books",
+  "ok": true,
+  "downloads": 9914,
+  "gated": false
+ },
+ {
+  "id": "sedthh/gutenberg_multilang",
+  "domain": "multilingual",
+  "stage": "pretrain",
+  "note": "7.9k books",
+  "ok": true,
+  "downloads": 245,
+  "gated": false
+ },
+ {
+  "id": "HuggingFaceTB/cosmopedia",
+  "domain": "pretrain",
+  "stage": "pretrain",
+  "note": "25B synth textbooks",
+  "ok": true,
+  "downloads": 26751,
+  "gated": false
+ },
+ {
+  "id": "HuggingFaceFW/fineweb-edu",
+  "domain": "pretrain",
+  "stage": "pretrain",
+  "note": "curated web",
+  "ok": true,
+  "downloads": 426834,
+  "gated": false
+ },
+ {
+  "id": "HuggingFaceTB/finemath",
+  "domain": "math",
+  "stage": "pretrain",
+  "note": "math web",
+  "ok": true,
+  "downloads": 36670,
+  "gated": false
+ },
+ {
+  "id": "wikimedia/wikipedia",
+  "domain": "pretrain",
+  "stage": "pretrain",
+  "note": "wiki multi",
+  "ok": true,
+  "downloads": 261987,
+  "gated": false
+ },
+ {
+  "id": "bitext/Bitext-retail-banking-llm-chatbot-training-dataset",
+  "domain": "domain",
+  "stage": "sft",
+  "note": "banking intents",
+  "ok": true,
+  "downloads": 331,
+  "gated": false
+ },
+ {
+  "id": "PolyAI/banking77",
+  "domain": "domain",
+  "stage": "sft",
+  "note": "77 intents",
+  "ok": true,
+  "downloads": 10833,
+  "gated": false
+ },
+ {
+  "id": "clinc/clinc_oos",
+  "domain": "domain",
+  "stage": "sft",
+  "note": "oos detection",
+  "ok": true,
+  "downloads": 20979,
+  "gated": false
+ },
+ {
+  "id": "osunlp/Adaptive-Clinical-Decision",
+  "domain": "domain",
+  "stage": "sft",
+  "note": "clinical",
+  "ok": false,
+  "err": "HTTP Error 401: Unauthorized"
+ },
+ {
+  "id": "FinGPT/fingpt-sentiment-train",
+  "domain": "domain",
+  "stage": "sft",
+  "note": "finance",
+  "ok": true,
+  "downloads": 1708,
+  "gated": false
+ },
+ {
+  "id": "nguha/legalbench",
+  "domain": "domain",
+  "stage": "sft",
+  "note": "legal",
+  "ok": true,
+  "downloads": 15651,
+  "gated": false
+ }
+]
