@@ -11,6 +11,8 @@ MODEL = "jev"
 TIMEOUT = 120
 RETRIES = 5
 
+ROOT = Path(__file__).parent
+
 
 def call_classify(payload: dict) -> dict:
     body = json.dumps(payload).encode()
@@ -41,11 +43,18 @@ def call_classify(payload: dict) -> dict:
 
 
 def main() -> None:
-    seeds = [json.loads(line) for line in (ROOT / "seeds_zh.jsonl").read_text().splitlines() if line.strip()]
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--seeds", default=str(ROOT / "seeds_zh.jsonl"))
+    ap.add_argument("--prefix", default="teacher")
+    args = ap.parse_args()
+
+    seeds = [json.loads(line) for line in Path(args.seeds).read_text().splitlines() if line.strip()]
     spec = json.loads((ROOT / "questions.json").read_text())
     questions = spec["questions"]
 
-    out_path = ROOT / "data" / f"teacher-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}.jsonl"
+    out_path = ROOT / "data" / f"{args.prefix}-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}.jsonl"
     out_path.parent.mkdir(exist_ok=True)
 
     n_rows = 0
