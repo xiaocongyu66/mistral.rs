@@ -115,3 +115,30 @@
 - OpenMathInstruct-1（180 万数学对，商业友好）——P1
 - TART（344k 推理轨迹）/ Reasoning Corpus（500 万条，SupraLabs）——量级大，探测后择要
 - open-distillation-datasets（蒸馏数据目录，持续发现入口）
+
+## 第十~十二批（CoT/数学/书籍世界观，HF 探测 8/8 真实）
+
+### 已拉取（第三通道，PID 21824）
+- oncu/LiteCoT：10 万简短推理（难度感知蒸馏 DAD，10万 LiteCoT > 80万长 CoT）——效率优先教材
+- Rorosko/Open-CoT-Reasoning-Mini：10,200 条，专为 10B 以下学生设计（input+output 双标签）——**与 0.6B 学生直接对口**
+- AI-MO/NuminaMath-CoT：86 万数学竞赛 CoT——数学域主力
+
+### 验证为真，择要后拉（磁盘约束）
+- nvidia/OpenMathInstruct-2（1400 万对）、nvidia/Nemotron-Math（750 万轨迹，100% maj@16）
+- PAI-2026/OmniThought（200 万 CoT，RV/CD 双指标标注，ACL 2026）
+- openthoughts/OpenThoughts2-1M（ICLR 2026）
+- harvard-lil/institutional-books-1.0（98.3 万本/2420 亿 token，250+ 语言）——世界观语料主力，需分片拉取
+- claude-opus-4.6-4.7-reasoning-8.7k（8,706 条 28 类，Apache-2.0）
+- CODI（EMNLP 2025，CoT 压缩到连续空间，gpt2/llama3.2-1b 权重）
+- mCoT-MATH（630 万 11 语言数学 CoT）
+
+### 书籍世界观语料清单（按版权稳妥度排序）
+1. Project Gutenberg（7 万本公版）+ PG-19 长文本
+2. harvard-lil/institutional-books-1.0（公域，分片拉）
+3. Common Corpus（200-300 万本书）
+4. Academic Textbook Corpora（3.9 万教材/5000 学科/15 语言）
+5. OWL（20 书 × 10 语言对齐摘录）、EvolvingWorld（57 书 13.8 万样本）
+6. ⚠️ Books3（19.7 万本混合版权）——记录但不用，合规风险
+
+### 配比经验（清单给出）
+高质量书籍/教材在预训练中需 3-5 倍过采样；CoT 课程学习（短→长）用全局排序。
