@@ -1,0 +1,28 @@
+{
+  "questions": [
+    {
+      "name": "department",
+      "type": "choice",
+      "instructions": "这条工单应该由哪个部门处理？billing=账单/支付/退款；technical=故障/缺陷/系统问题；sales=购买/报价/演示；other=其他反馈或咨询。",
+      "labels": ["billing", "technical", "sales", "other"]
+    },
+    {
+      "name": "urgency",
+      "type": "score",
+      "instructions": "这条工单的紧急程度如何？不紧急=一般咨询；一般=有影响但不阻塞；紧急=严重影响使用；阻塞用户=完全无法使用或用户强烈不满。",
+      "labels": ["不紧急", "一般", "紧急", "阻塞用户"]
+    },
+    {
+      "name": "refund_requested",
+      "type": "probability",
+      "instructions": "判断文本是否包含明确的退款请求。yes=文本里提到退款/退钱/退回并要求办理；no=未提及退款或只是抱怨扣款。",
+      "labels": ["yes", "no"]
+    },
+    {
+      "name": "churn_risk",
+      "type": "probability",
+      "instructions": "判断用户是否有流失风险。yes=明确威胁取消订阅/退订/弃用，或表示强烈不满；no=没有流失信号。",
+      "labels": ["yes", "no"]
+    }
+  ]
+}
