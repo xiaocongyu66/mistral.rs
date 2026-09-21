@@ -1,0 +1,59 @@
+name: Android Build
+
+on:
+  push:
+    branches: [decide]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: "-C target-cpu=generic -C target-feature=+dotprod,+fp16,+fhm"
+      ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - name: Install cargo-ndk
+        uses: taiki-e/install-action@cargo-ndk
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            .
+
+      - name: Build Android shared library (arm64-v8a)
+        run: cargo ndk -t arm64-v8a -o android/app/src/main/jniLibs build --release -p mistralrs-android --lib
+
+      - name: Generate UniFFI Kotlin bindings
+        run: |
+          cargo run -p mistralrs-android --bin uniffi-bindgen -- \
+            generate \
+            --library android/app/src/main/jniLibs/arm64-v8a/libmistralrs_android.so \
+            --language kotlin \
+            --out-dir android/app/src/main/java
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Assemble debug APK
+        run: gradle -p android assembleDebug --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: duan-demo-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

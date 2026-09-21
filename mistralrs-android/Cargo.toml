@@ -1,0 +1,23 @@
+[package]
+name = "mistralrs-android"
+version = "0.1.0"
+edition = "2021"
+description = "UniFFI bindings for running mistral.rs inference on Android."
+license = "MIT"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+name = "mistralrs_android"
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+
+[dependencies]
+mistralrs = { path = "../mistralrs", version = "0.9.3" }
+mistralrs-core = { path = "../mistralrs-core", version = "0.9.3" }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+uniffi = { version = "0.32.1", features = ["cli"] }

@@ -17,3 +17,11 @@ docs/node_modules/
 docs/dist/
 docs/.astro/
 out/
+
+# Android demo app build outputs (CI generates these)
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties/
+android/app/src/main/jniLibs/
+android/app/src/main/java/uniffi/
