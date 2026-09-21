@@ -1,6 +1,7 @@
 import argparse
 import collections
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -54,6 +55,11 @@ def convert(rows, id2tag, id2holdout):
                                     "criteria": list(labels)}
             best = max(native[qname], key=native[qname].get)
             gold[qname] = {"true": True, "false": False}.get(best, best)
+            probs = [max(v, 1e-9) for v in native[qname].values()]
+            s = sum(probs)
+            ent = -sum((v / s) * math.log(v / s) for v in probs)
+            questions[qname]["teacher_entropy"] = round(ent, 6)
+            questions[qname]["teacher_confidence"] = round(max(probs) / s, 6)
         tag = id2tag.get(sid, "")
         if tag.startswith("en"):
             split = "ood"

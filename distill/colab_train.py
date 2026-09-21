@@ -151,6 +151,18 @@ def main():
     else:
         optimizer = torch.optim.AdamW(groups, weight_decay=0.0)
 
+    sample_weights = None
+    if args.entropy_weighting:
+        sample_weights = []
+        for e in train:
+            q = (e.get("source") or {}).get("questions", {}).get(e.get("qid"), {})
+            ent = float(q.get("teacher_entropy", 0.5))
+            sample_weights.append(max(ent, 0.05))
+        wsum = sum(sample_weights)
+        print(f"entropy weighting on: mean_w={wsum/len(sample_weights):.4f} "
+              f"min={min(sample_weights):.3f} max={max(sample_weights):.3f}", flush=True)
+
+    total_steps = args.head_steps + args.steps
     logs, best, best_step = [], float("inf"), None
     start = time.perf_counter()
     for step in range(args.head_steps + args.steps):
@@ -158,11 +170,27 @@ def main():
         for param in body:
             param.requires_grad_(not warm)
         optimizer.param_groups[1]["lr"] = 1e-3 if warm else args.head_lr
-        batch = random.sample(train, args.batch_questions)
+        if sample_weights is not None:
+            batch = random.choices(train, weights=sample_weights, k=args.batch_questions)
+        else:
+            batch = random.sample(train, args.batch_questions)
         model.train()
         optimizer.zero_grad(set_to_none=True)
         with torch.autocast("cuda", dtype=amp_dtype):
             z, _ = model(batch, tokenizer.pad_token_id)
+            anneal = args.temperature_final is not None and args.temperature_final > 0
+            if anneal:
+                # re-temper on a COPY: batch entries are references into `train`,
+                # mutating them would compound across steps
+                frac = step / max(total_steps - 1, 1)
+                T_now = args.temperature + (args.temperature_final - args.temperature) * frac
+                batch = [
+                    ({**ex, "teacher_probs": (lambda p: (p / p.sum()).tolist())(
+                        torch.tensor(ex["teacher_probs"], dtype=torch.float32).clamp_min(1e-9)
+                        ** (1.0 / T_now))}
+                     if ex.get("teacher_probs") is not None else ex)
+                    for ex in batch
+                ]
             loss = loss_for(z, batch, args.objective).mean()
         if router_buf:
             loss = loss + _load_balance(router_buf, coef=0.01)
