@@ -50,7 +50,8 @@ def main():
     ap.add_argument("--set-head", default="attention", choices=["none", "attention"])
     ap.add_argument("--steps", type=int, default=600)
     ap.add_argument("--head-steps", type=int, default=24)
-    ap.add_argument("--batch-questions", type=int, default=24)
+    ap.add_argument("--batch-questions", type=int, default=8)
+    ap.add_argument("--no-grad-checkpoint", action="store_true")
     ap.add_argument("--eval-every", type=int, default=50)
     ap.add_argument("--max-length", type=int, default=768)
     ap.add_argument("--backbone-lr", type=float, default=1e-5)
@@ -76,6 +77,8 @@ def main():
     lm = AutoModelForCausalLM.from_pretrained(
         args.model, dtype=torch.float32, attn_implementation="sdpa").cuda()
     lm.config.use_cache = False
+    if not args.no_grad_checkpoint:
+        lm.gradient_checkpointing_enable()
     examples, audit = load_examples(args.input, tokenizer, args.max_length)
     dump(out / "target_audit.json", audit)
     bysplit = {s: [e for e in examples if e["split"] == s]
