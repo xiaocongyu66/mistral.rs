@@ -77,6 +77,12 @@ def main():
                     help="8-bit AdamW (bitsandbytes); needed for 1.2B+ MoE on 16GB")
     ap.add_argument("--dtype", default="fp16", choices=["fp16", "bf16", "fp32"],
                     help="autocast dtype; fp16 uses T4-native tensor cores + GradScaler")
+    ap.add_argument("--temperature", type=float, default=1.0,
+                    help="teacher temperature applied to soft targets")
+    ap.add_argument("--temperature-final", type=float, default=None,
+                    help="anneal T linearly from --temperature to this over total steps")
+    ap.add_argument("--entropy-weighting", action="store_true",
+                    help="sample train questions proportional to teacher entropy")
     args = ap.parse_args()
 
     sys.path.insert(0, args.nanojev_scripts)
