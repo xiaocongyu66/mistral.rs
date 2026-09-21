@@ -57,12 +57,11 @@ def main():
     ap.add_argument("--backbone-lr", type=float, default=1e-5)
     ap.add_argument("--head-lr", type=float, default=1e-4)
     ap.add_argument("--seed", type=int, default=17)
-    ap.add_argument("--skip-native-baseline", action="store_true")
     args = ap.parse_args()
 
     sys.path.insert(0, args.nanojev_scripts)
     from train_toy_decisions import (DecisionModel, benchmark, dump, evaluate,
-                                     frozen_native_baseline, load_examples, loss_for)
+                                     load_examples, loss_for)
 
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -111,10 +110,6 @@ def main():
     model.backbone.config.save_pretrained(out / "backbone_config")
 
     evaluation = sum([bysplit[s] for s in ["dev", "calibration", "test", "ood"]], [])
-    if not args.skip_native_baseline:
-        frozen_native_baseline(model.backbone, tokenizer, evaluation,
-                               args.batch_questions, out / "native_baseline.jsonl",
-                               use_chat=False)
     head = [p for n, p in model.named_parameters() if not n.startswith("backbone.")]
     body = list(model.backbone.parameters())
     optimizer = torch.optim.AdamW(

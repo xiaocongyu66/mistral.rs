@@ -62,7 +62,11 @@ def main():
                 break
             batch = group[: args.max_rows - n]
             cands = json.loads(key)
-            resp = call({"model": "jev", "inputs": [r["text"] for r in batch], "labels": cands})
+            instructions = next((r["_question"] for r in batch), None)
+            payload = {"model": "jev", "inputs": [r["text"] for r in batch], "labels": cands}
+            if instructions:
+                payload["instructions"] = instructions
+            resp = call(payload)
             for r, res in zip(batch, resp["results"]):
                 row = {
                     "id": r["id"], "state": r["text"], "question": r["tag"],
