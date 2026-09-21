@@ -1,2 +1,4 @@
 *.jsonl
 !distill/.gitkeep
+*.bak
+*.bak
