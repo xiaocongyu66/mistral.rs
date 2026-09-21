@@ -90,15 +90,21 @@ def main():
 
     id2tag, id2holdout = {}, {}
     for p in args.seeds:
-        for line in Path(p).read_text().splitlines():
-            if line.strip():
-                s = json.loads(line)
-                id2tag[s["id"]] = s.get("tag", "")
-                id2holdout[s["id"]] = bool(s.get("holdout"))
+        with Path(p).open() as f:
+            for line in f:
+                if line.strip():
+                    s = json.loads(line)
+                    id2tag[s["id"]] = s.get("tag", "")
+                    id2holdout[s["id"]] = bool(s.get("holdout"))
 
     rows = []
     for p in args.data:
-        rows += [json.loads(l) for l in Path(p).read_text().splitlines() if l.strip()]
+        # open() iteration, NOT read_text().splitlines(): splitlines() breaks
+        # on Unicode line separators (\u2028/\u2029) inside JSON strings
+        with Path(p).open() as f:
+            for l in f:
+                if l.strip():
+                    rows.append(json.loads(l))
     grouped = convert(rows, id2tag, id2holdout)
     assign_holdout_slices(grouped)
 

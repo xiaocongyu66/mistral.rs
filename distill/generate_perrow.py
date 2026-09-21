@@ -29,7 +29,7 @@ def call(payload, retries=5):
                 time.sleep(2 ** attempt * 5)
                 continue
             raise
-        except urllib.error.URLError:
+        except (urllib.error.URLError, json.JSONDecodeError) as e:
             if attempt < retries - 1:
                 time.sleep(2 ** attempt * 5)
                 continue
@@ -45,7 +45,12 @@ def main():
 
     rows = []
     for p in args.seeds:
-        rows += [json.loads(l) for l in Path(p).read_text().splitlines() if l.strip()]
+        # open() iteration, NOT read_text().splitlines(): splitlines() breaks
+        # on Unicode line separators (\u2028/\u2029) inside JSON strings
+        with Path(p).open() as f:
+            for l in f:
+                if l.strip():
+                    rows.append(json.loads(l))
 
     # group by identical candidate sets
     groups = defaultdict(list)
