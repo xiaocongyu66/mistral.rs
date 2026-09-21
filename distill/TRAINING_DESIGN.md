@@ -1,8 +1,19 @@
 # Student distillation design (mapped to our pipeline)
 
 教师：classifier.dev 的 jev-1.13.0（黑盒 API，拿不到 logits，但 `scores` 存了完整
-概率分布）。学生：Qwen3.5-4B（或 0.8B/2B）+ 读选项 logits 的 decision readout
-（SemIf/kev 式，走 mistral.rs `return_raw_logits` 路径，零生成 token）。
+概率分布）。学生：Qwen3.5-4B（部署定死 4B，用户拍板）+ 读选项 logits 的 decision
+readout（SemIf/kev 式，走 mistral.rs `return_raw_logits` 路径，零生成 token）。
+
+## 训练阶梯（2026-09-21 修订：默认走向动底模）
+
+既然部署锁定 4B，LoRA 只是第一级数据验证手段，不是终态：
+
+1. 第一级 LoRA 蒸馏：验证 17k 行数据质量（金标 + holdout 指标）。成本 ~¥2/时
+2. 第二级 动底模（默认路径）：LoRA merge 进底模 → 全参 FT（BF16 + 8-bit AdamW
+   + 梯度检查点，~24-32GB 显存，17k 样本 1-2h）或直接全参
+3. 部署产物：微调后的权重用 mistralrs ISQ 自己量化出 Q4 单文件（自主量化 +
+   UQFF），APK 单文件加载，FFI 无需 adapter 参数
+4. 灾难性遗忘不影响本部署形态（只做单前向决策读出，不做生成），故全参无顾虑
 
 ## 与标准蒸馏框架的映射
 
