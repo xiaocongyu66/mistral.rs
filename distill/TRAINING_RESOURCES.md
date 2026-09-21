@@ -42,6 +42,28 @@
 - 2T token 训练、**原生 8192 序列长度**、双向编码器 Pareto 改进、推理速度/显存最优
 - **落点**：确认编码器学生路线（GLiClass 底座即 ModernBERT）的两个优势：①原生 8192 上下文（对比我们 0.6B 解码器学生 768 训练窗 + 前缀 K 倍重复）②速度/显存为移动端友好设计；v2 学生实验有了理论背书
 
+## 论文批量学习（11 篇，按命中度排序）
+
+**🎯 直接改我们的数据预处理（三篇）**
+
+1. **[Teacher Calibration in KD](https://arxiv.org/abs/2508.20224)**：教师校准误差与学生性能强相关 → **蒸馏前先量教师 ECE、先校准教师分布再喂学生**。行动：convert 阶段对 fixtures 上的教师分布做温度拟合（我们已有 temperize，缺"先测后用"的顺序）
+2. **[LoCa: Logit Calibration](https://arxiv.org/abs/2409.04778)**：发现 **mis-instruction**——教师 logits 与标签冲突时会误导学生；提出校准教师 logits 的方法。行动：对 verdict 摄入数据（有**外部金标** target_id，非教师代理）套用：教师软标签与金标冲突处修正后再入训练——直接治理我们钓鱼 62.6% 的高置信错误传播
+3. **[UNDO: Distillation as Optimization](https://arxiv.org/abs/2504.02521)**：one-shot 蒸馏的教师产物与学生需求错配 → 迭代蒸馏、按学生错误定向合成数据。行动：run2 起用 holdout 上学生的错误清单驱动 cron 的种子合成方向
+
+**有道参考（三篇）**
+
+4. **[EasyDistill 论文](https://arxiv.org/abs/2505.20888)**：工具包的正式论文（System 1/2、数据合成+SFT+排序+RL 全家桶）
+5. **[BiLD: Bi-directional Logits Difference](https://aclanthology.org/2025.coling-main.78/)**：LLM 蒸馏损失创新（双向 logits 差）
+6. **[Encoder-only Cross-Encoders 控制研究](https://arxiv.org/abs/2603.03010)**（2026-03）：**LLM ranker 蒸馏 vs 强 cross-encoder 教师 vs 纯监督**的受控对比——直接回答"该选哪种教师通道"的方法论问题
+
+**索引/工具（五项）**
+
+7. **[KD 综述](https://arxiv.org/abs/2503.12067)**：全景参考
+8. **[distillKitPlus](https://github.com/agokrani/distillKitPlus)**：**Pre-Computed Logits**（预生成 logits 省显存——正对我们 2-3GB 约束）、跨 tokenizer 损失（ULD/multi-OT）、LoRA+4bit
+9. **[Soft Decision Tree](https://arxiv.org/abs/1711.09784)**（Hinton 经典）：蒸馏到可解释软决策树——"可审计决策"产品叙事的先例，二期可给决策头加树状解释层
+10. **[ModernBERT-small-v2](https://huggingface.co/johnnyboycurtis/ModernBERT-small-v2)**：MSE 蒸馏的句子向量模型（编码器路线上限参考）
+11. KD 综述与 distillKit 的关系：distillKitPlus ≈ DistillKit + 低算力 PEFT 强化
+
 ## 已在用的同类资源（本仓库内）
 
 - `distill/TRAINING_DESIGN.md`：训练契约（含 NanoJev 同步要点）
