@@ -8,14 +8,26 @@ mixed-domain distribution instead of one corpus.
 
 SOURCES = [
     # (repo, config, split, preferred field, weight, note)
-    ("HuggingFaceTB/cosmopedia", "web_v1", "train", "text", 0.20, "synthetic textbooks"),
-    ("HuggingFaceFW/fineweb-edu", "sample-10BT", "train", "text", 0.20, "curated web"),
-    ("wikimedia/wikipedia", "20231101.zh", "train", "text", 0.20, "chinese wiki"),
-    ("wikimedia/wikipedia", "20231101.en", "train", "text", 0.10, "english wiki"),
-    ("HuggingFaceTB/finemath", "finemath-4plus", "train", "text", 0.10, "math web"),
-    ("codeparrot/codeparrot-clean", None, "train", "content", 0.10, "python code"),
-    ("HuggingFaceFW/fineweb", "sample-10BT", "train", "text", 0.10, "open web"),
+    # -- comprehension capacity: the backbone must UNDERSTAND before it can decide --
+    ("HuggingFaceFW/finewiki", None, "train", "text", 0.16, "325-lang wiki (clean)"),
+    ("wikimedia/wikipedia", "20231101.zh", "train", "text", 0.14, "chinese wiki"),
+    ("HuggingFaceTB/cosmopedia", "web_v1", "train", "text", 0.12, "synthetic textbooks"),
+    ("HuggingFaceFW/fineweb-edu", "sample-10BT", "train", "text", 0.12, "curated web"),
+    ("Helsinki-NLP/opus_books", "en-zh", "train", "translation", 0.06, "parallel books zh/en"),
+    ("wikimedia/wikipedia", "20231101.en", "train", "text", 0.06, "english wiki"),
+    ("sedthh/gutenberg_multilang", None, "train", "text", 0.04, "multilingual books"),
+    # -- reasoning / math --
+    ("HuggingFaceTB/finemath", "finemath-4plus", "train", "text", 0.08, "math web"),
+    ("AI-MO/NuminaMath-CoT", None, "train", "problem", 0.03, "competition math"),
+    # -- code --
+    ("codeparrot/codeparrot-clean", None, "train", "content", 0.08, "python code"),
+    ("bigcode/the-stack-smol", None, "train", "content", 0.03, "multilingual code"),
+    # -- open web --
+    ("HuggingFaceFW/fineweb", "sample-10BT", "train", "text", 0.08, "open web"),
 ]
+
+# opus_books yields dict translations, not a plain string field
+PARALLEL = {"Helsinki-NLP/opus_books"}
 
 ALIASES = ("text", "content", "raw_content", "raw", "body", "document", "markdown")
 
