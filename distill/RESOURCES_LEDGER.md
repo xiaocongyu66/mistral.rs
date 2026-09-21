@@ -142,3 +142,46 @@
 
 ### 配比经验（清单给出）
 高质量书籍/教材在预训练中需 3-5 倍过采样；CoT 课程学习（短→长）用全局排序。
+
+## 第十三~二十批（游戏/Galgame/Minecraft/代码审查/ClaudeCode 学习资源，全量克隆）
+
+**仓库总量：62 个（/root/research/），覆盖九批清单全部点名项。**
+
+### 游戏/Galgame/剧本杀（决策事件语料）
+- Rushes（44,226 决策事件）、MACHIAVELLI（134 游戏 50 万场景）、CHADPOD（1,462 决策点分类）
+- FIREBALL（D&D 800 万话语）、DDD（5,600 万 token RPG）、Klondike 28,904 轨迹
+- Jubensha 剧本杀数据集（1,100+ 实例，中文）、YMgal data-export（JSONL galgame 数据）
+- Orak/SpireEval/Game Reasoning Arena/TowerMind/LudoBench：战略决策基准族
+- 中文游戏：SVFSearch、ZZZDialog/GenshinDialog 提取器、Mini Trade Game NPC（繁中 JSON NPC）
+
+### Minecraft（服务端反编译代码，用户点名"jar 已无混淆"）
+- MGOA 25,000 视频/3,000 万三元组（CVPR 2025）、PLAICraft 万小时五模态、VPT 5,390 万帧
+- MineDojo 知识库（73 万视频/6 千 Wiki/34 万 Reddit）、MineMA 39 万指令、Odyssey 数据全开
+- Forge Coder（22,916 Java 文件微调）、MinecraftModSources（2,000 插件 50 万源文件）
+- CraftGround（300 TPS 高性能 RL 环境）、MineLand 48 智能体、MineStudio 全流程包
+- 提炼动作：官方无混淆 jar → CFR/Vineflower 反编译 → 代码决策语料（用户确认可行，排入队列）
+
+### 代码审查（与 decide 层/OCR 工作流对口）
+- alibaba/open-code-review（工业级混合架构）、aacr-bench（200 PR/10 语言金标）
+- CuREV/PR-Review-Bench/HistoryCR（17.7 万 PR）等 8 个数据集
+- reviewdog/semgrep/static-analysis 静态分析链
+
+### Claude Code 学习资源（lintsinghua/claude-code-book + zhang588/Claude-Code-OrangeBook 已克隆）
+- claude-code-book：四部分结构（基础/核心系统/高级模式/工程实践）
+- OrangeBook：橙皮书 v2.0.0 PDF
+- 社区生态：claude-code-tips(6k★)/Learn Claude Code(26.7k★)/internals-orange-book 等 20+ 指南记录
+
+### 世界观开源项目（第十批补充）
+- EvolvingWorld（57 书 13.8 万样本）、RLVR-World、stable-worldmodel、LingBot-World 2.0（1.3B/14B）
+- CSKG/ConceptNet/FactNet（17 亿断言/30 亿证据指针）、NovaCOMET、Theogony
+- Cosmopedia（3000 万样本/250 亿 token）、Common Corpus（1.99T token）
+- 评估：EWoK-core-1.0（4,374 条 11 域）、KoLA、WorldVQA、BeQu
+
+### 四阶段整合策略（采纳为提炼路线图）
+1. 基础决策：Good Thinking(逻辑)+choices13k(交互)+SpireEval(战略)
+2. 领域注入：电商 CASCADE + 客服 CSConv/CCSE-CS/BANKING77 + 烹饪 RecipeLLM
+3. 多模态推理：LongPerceptualThoughts + DriveLMM-oL + Cosmopedia
+4. 世界模型+蒸馏：stable-worldmodel + EasyDistill 收口；多语言 CUTE/WanJuanSiLu
+
+### 格式统一铁律（提炼终点）
+全部数据 → prompt + response + 可选 reasoning 三元组 → 3-5 倍过采样决策/CoT 数据 → GAMEBoT/Arena 定期评估闭环。
