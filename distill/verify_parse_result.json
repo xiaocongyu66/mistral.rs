@@ -1,0 +1,819 @@
+[
+ {
+  "id": "HuggingFaceFW/finewiki",
+  "config": null,
+  "split": "train",
+  "field": "text",
+  "domain": "wiki",
+  "ok": true,
+  "downloads": 8908,
+  "gated": false,
+  "keys": [
+   "text",
+   "id",
+   "wikiname",
+   "page_id",
+   "title",
+   "url",
+   "date_modified",
+   "in_language",
+   "wikidata_id",
+   "bytes_html",
+   "wikitext",
+   "version"
+  ],
+  "text_len": 1809,
+  "preview": "# 11665 Dirichlet 11665 Dirichlet, provisional designation 1997 GL28, is a Griqua asteroid and a 2:1 Jupiter librator fr",
+  "err": ""
+ },
+ {
+  "id": "wikimedia/wikipedia",
+  "config": "20231101.zh",
+  "split": "train",
+  "field": "text",
+  "domain": "wiki",
+  "ok": true,
+  "downloads": 261987,
+  "gated": false,
+  "keys": [
+   "id",
+   "url",
+   "title",
+   "text"
+  ],
+  "text_len": 5231,
+  "preview": "文學（），在狭义上，是一种语言艺术，亦即使用语言文字为手段，形象化地反映客观社会生活、表达主观作者思想感情的一种艺术。文学不仅强调传达思想观念，更强调传达方式的独特性，且讲究辞章的美感。  文学，在广义上，是任何單一的書面作品，或用文字写作",
+  "err": ""
+ },
+ {
+  "id": "HuggingFaceTB/cosmopedia",
+  "config": "web_v1",
+  "split": "train",
+  "field": "text",
+  "domain": "books",
+  "ok": false,
+  "downloads": 26751,
+  "gated": false,
+  "err": "ValueError: BuilderConfig 'web_v1' not found. Available: ['auto_math_text', 'khanacademy', 'openstax', 'stanford', 'stories', 'web_s"
+ },
+ {
+  "id": "sedthh/gutenberg_multilang",
+  "config": null,
+  "split": "train",
+  "field": "text",
+  "domain": "books",
+  "ok": false,
+  "downloads": 245,
+  "gated": false,
+  "keys": [
+   "TEXT",
+   "SOURCE",
+   "METADATA"
+  ],
+  "text_len": 0,
+  "preview": "",
+  "err": "no usable text field"
+ },
+ {
+  "id": "manu/project_gutenberg",
+  "config": null,
+  "split": "train",
+  "field": "text",
+  "domain": "books",
+  "ok": false,
+  "downloads": 8882,
+  "gated": false,
+  "err": "ValueError: Bad split: train. Available splits: ['de', 'en', 'es', 'fr', 'it', 'nl', 'pl', 'pt', 'ru', 'sv', 'zh']"
+ },
+ {
+  "id": "HuggingFaceFW/fineweb",
+  "config": "sample-10BT",
+  "split": "train",
+  "field": "text",
+  "domain": "web",
+  "ok": true,
+  "downloads": 388915,
+  "gated": false,
+  "keys": [
+   "text",
+   "id",
+   "dump",
+   "url",
+   "date",
+   "file_path",
+   "language",
+   "language_score",
+   "token_count"
+  ],
+  "text_len": 2825,
+  "preview": "A novel two-step immunotherapy approach has shown clinically beneficial responses in patients with advanced ovarian canc",
+  "err": ""
+ },
+ {
+  "id": "HuggingFaceFW/fineweb-edu",
+  "config": "sample-10BT",
+  "split": "train",
+  "field": "text",
+  "domain": "web",
+  "ok": true,
+  "downloads": 426834,
+  "gated": false,
+  "keys": [
+   "text",
+   "id",
+   "dump",
+   "url",
+   "file_path",
+   "language",
+   "language_score",
+   "token_count",
+   "score",
+   "int_score"
+  ],
+  "text_len": 628,
+  "preview": "How do you get HIV? HIV can be passed on when infected bodily fluid, such as blood or semen, is passed into an uninfecte",
+  "err": ""
+ },
+ {
+  "id": "HuggingFaceTB/finemath",
+  "config": "finemath-4plus",
+  "split": "train",
+  "field": "text",
+  "domain": "math",
+  "ok": true,
+  "downloads": 36670,
+  "gated": false,
+  "keys": [
+   "url",
+   "fetch_time",
+   "content_mime_type",
+   "warc_filename",
+   "warc_record_offset",
+   "warc_record_length",
+   "text",
+   "token_count",
+   "char_count",
+   "metadata",
+   "score",
+   "int_score"
+  ],
+  "text_len": 3141,
+  "preview": "# Fractions Bundle \"Twist\" 12 Worksheets  Subject Resource Type Product Rating File Type  Word Document File  181 KB|20 ",
+  "err": ""
+ },
+ {
+  "id": "PleIAs/common_corpus",
+  "config": null,
+  "split": "train",
+  "field": "text",
+  "domain": "public_domain",
+  "ok": true,
+  "downloads": 189130,
+  "gated": false,
+  "keys": [
+   "identifier",
+   "collection",
+   "open_type",
+   "curator",
+   "license",
+   "date",
+   "title",
+   "creator",
+   "language",
+   "language_type",
+   "word_count",
+   "token_count"
+  ],
+  "text_len": 377,
+  "preview": "Ahmed Abdel Mougod Soliman (born 19 December 1970) is an Egyptian long-distance runner. He competed in the men's maratho",
+  "err": ""
+ },
+ {
+  "id": "open-thoughts/OpenThoughts2-1M",
+  "config": null,
+  "split": "train",
+  "field": "conversations",
+  "domain": "reasoning",
+  "ok": true,
+  "downloads": 4407,
+  "gated": false,
+  "field_fallback": "question",
+  "keys": [
+   "conversations",
+   "question",
+   "source",
+   "id"
+  ],
+  "text_len": 330,
+  "preview": "5. The length of the diagonal $AC$ of the rhombus $ABCD$ with an acute angle at vertex $A$ is 12. Points $M$ and $N$ on ",
+  "err": ""
+ },
+ {
+  "id": "AI-MO/NuminaMath-CoT",
+  "config": null,
+  "split": "train",
+  "field": "problem",
+  "domain": "math",
+  "ok": true,
+  "downloads": 224042,
+  "gated": false,
+  "keys": [
+   "source",
+   "problem",
+   "solution",
+   "messages"
+  ],
+  "text_len": 167,
+  "preview": "A farmer has a rectangular field with dimensions $3m+8$ and $m-3$ where $m$ is a positive integer. If the field has an a",
+  "err": ""
+ },
+ {
+  "id": "AI-MO/NuminaMath-1.5",
+  "config": null,
+  "split": "train",
+  "field": "problem",
+  "domain": "math",
+  "ok": true,
+  "downloads": 48507,
+  "gated": false,
+  "keys": [
+   "problem",
+   "solution",
+   "answer",
+   "problem_type",
+   "question_type",
+   "problem_is_valid",
+   "solution_is_valid",
+   "source",
+   "synthetic"
+  ],
+  "text_len": 362,
+  "preview": " Problem 3. Triangle $A B C$ is such that $A B<A C$. The perpendicular bisector of side $B C$ intersects lines $A B$ and",
+  "err": ""
+ },
+ {
+  "id": "nvidia/OpenMathReasoning",
+  "config": null,
+  "split": "train",
+  "field": "input",
+  "domain": "math",
+  "ok": false,
+  "downloads": 55293,
+  "gated": false,
+  "err": "ValueError: Bad split: train. Available splits: ['cot', 'tir', 'genselect', 'additional_problems']"
+ },
+ {
+  "id": "nvidia/OpenMathInstruct-2",
+  "config": null,
+  "split": "train",
+  "field": "problem",
+  "domain": "math",
+  "ok": true,
+  "downloads": 132591,
+  "gated": false,
+  "keys": [
+   "problem",
+   "generated_solution",
+   "expected_answer",
+   "problem_source"
+  ],
+  "text_len": 90,
+  "preview": "What is the largest number, all of whose digits are 1 or 4, and whose digits add up to 12?",
+  "err": ""
+ },
+ {
+  "id": "TIGER-Lab/MathInstruct",
+  "config": null,
+  "split": "train",
+  "field": "instruction",
+  "domain": "math",
+  "ok": true,
+  "downloads": 22110,
+  "gated": false,
+  "keys": [
+   "source",
+   "output",
+   "instruction"
+  ],
+  "text_len": 311,
+  "preview": "A team of six entered for a shooting competition. The best marks man scored 85 points. If he had scored 92 points, the a",
+  "err": ""
+ },
+ {
+  "id": "open-r1/OpenR1-Math-220k",
+  "config": null,
+  "split": "train",
+  "field": "problem",
+  "domain": "math",
+  "ok": true,
+  "downloads": 155971,
+  "gated": false,
+  "keys": [
+   "problem",
+   "solution",
+   "answer",
+   "problem_type",
+   "question_type",
+   "source",
+   "uuid",
+   "is_reasoning_complete",
+   "generations",
+   "correctness_math_verify",
+   "correctness_llama",
+   "finish_reasons"
+  ],
+  "text_len": 249,
+  "preview": "Prove that number $1$ can be represented as a sum of a finite number $n$ of real numbers, less than $1,$ not necessarily",
+  "err": ""
+ },
+ {
+  "id": "bespokelabs/Bespoke-Stratos-17k",
+  "config": null,
+  "split": "train",
+  "field": "conversations",
+  "domain": "reasoning",
+  "ok": false,
+  "downloads": 22327,
+  "gated": false,
+  "keys": [
+   "system",
+   "conversations"
+  ],
+  "text_len": 0,
+  "preview": "",
+  "err": "no usable text field"
+ },
+ {
+  "id": "microsoft/orca-math-word-problems-200k",
+  "config": null,
+  "split": "train",
+  "field": "question",
+  "domain": "math",
+  "ok": true,
+  "downloads": 23167,
+  "gated": false,
+  "keys": [
+   "question",
+   "answer"
+  ],
+  "text_len": 473,
+  "preview": "Dongju selects a piece of paper with a number written on it, and wants to make a three-digit number by placing the first",
+  "err": ""
+ },
+ {
+  "id": "meta-math/MetaMathQA",
+  "config": null,
+  "split": "train",
+  "field": "query",
+  "domain": "math",
+  "ok": true,
+  "downloads": 113687,
+  "gated": false,
+  "keys": [
+   "type",
+   "query",
+   "original_question",
+   "response"
+  ],
+  "text_len": 188,
+  "preview": "Diego baked 12 cakes for his sister's birthday. Donald also baked 4 cakes, but ate x while waiting for the party to star",
+  "err": ""
+ },
+ {
+  "id": "hendrycks/competition_math",
+  "config": null,
+  "split": "train",
+  "field": "problem",
+  "domain": "math",
+  "ok": false,
+  "downloads": 0,
+  "gated": false,
+  "err": "DatasetNotFoundError: Dataset 'hendrycks/competition_math' doesn't exist on the Hub or cannot be accessed."
+ },
+ {
+  "id": "openai/gsm8k",
+  "config": "main",
+  "split": "train",
+  "field": "question",
+  "domain": "math",
+  "ok": true,
+  "downloads": 1221735,
+  "gated": false,
+  "keys": [
+   "question",
+   "answer"
+  ],
+  "text_len": 260,
+  "preview": "Betty is saving money for a new wallet which costs $100. Betty has only half of the money she needs. Her parents decided",
+  "err": ""
+ },
+ {
+  "id": "nvidia/OpenCodeReasoning",
+  "config": null,
+  "split": "train",
+  "field": "input",
+  "domain": "code",
+  "ok": false,
+  "downloads": 13839,
+  "gated": false,
+  "err": "ValueError: Config name is missing.\nPlease pick one among the available configs: ['split_0', 'split_1']\nExample of usage:\n\t`load_dat"
+ },
+ {
+  "id": "codeparrot/codeparrot-clean",
+  "config": null,
+  "split": "train",
+  "field": "content",
+  "domain": "code",
+  "ok": true,
+  "downloads": 41395,
+  "gated": false,
+  "keys": [
+   "repo_name",
+   "path",
+   "copies",
+   "size",
+   "content",
+   "license",
+   "hash",
+   "line_mean",
+   "line_max",
+   "alpha_frac",
+   "autogenerated"
+  ],
+  "text_len": 10094,
+  "preview": "\"\"\" The :mod:`sklearn.utils` module includes various utilites. \"\"\"  from collections import Sequence  import numpy as np",
+  "err": ""
+ },
+ {
+  "id": "m-a-p/CodeFeedback-Filtered-Instruction",
+  "config": null,
+  "split": "train",
+  "field": "query",
+  "domain": "code",
+  "ok": true,
+  "downloads": 27961,
+  "gated": false,
+  "keys": [
+   "query",
+   "answer",
+   "resource",
+   "lang"
+  ],
+  "text_len": 825,
+  "preview": "Write code that removes spaces and punctuation marks from a given string and returns the modified string. The input stri",
+  "err": ""
+ },
+ {
+  "id": "openai/openai_humaneval",
+  "config": null,
+  "split": "test",
+  "field": "prompt",
+  "domain": "code",
+  "ok": true,
+  "downloads": 264113,
+  "gated": false,
+  "keys": [
+   "task_id",
+   "prompt",
+   "canonical_solution",
+   "test",
+   "entry_point"
+  ],
+  "text_len": 331,
+  "preview": "  def truncate_number(number: float) -> float:     \"\"\" Given a positive floating point number, it can be decomposed into",
+  "err": ""
+ },
+ {
+  "id": "sahil2801/CodeAlpaca-20k",
+  "config": null,
+  "split": "train",
+  "field": "instruction",
+  "domain": "code",
+  "ok": true,
+  "downloads": 42047,
+  "gated": false,
+  "keys": [
+   "output",
+   "instruction",
+   "input"
+  ],
+  "text_len": 105,
+  "preview": "Write a replace method for a string class which replaces the given string with a given set of characters.",
+  "err": ""
+ },
+ {
+  "id": "iamtarun/python_code_instructions_18k_alpaca",
+  "config": null,
+  "split": "train",
+  "field": "instruction",
+  "domain": "code",
+  "ok": true,
+  "downloads": 37131,
+  "gated": false,
+  "keys": [
+   "instruction",
+   "input",
+   "output",
+   "prompt"
+  ],
+  "text_len": 91,
+  "preview": "Create a Python list comprehension to get the squared values of a list [1, 2, 3, 5, 8, 13].",
+  "err": ""
+ },
+ {
+  "id": "CohereForAI/aya_collection",
+  "config": "aya_eng",
+  "split": "train",
+  "field": "inputs",
+  "domain": "multilingual",
+  "ok": false,
+  "downloads": 32638,
+  "gated": false,
+  "err": "ValueError: BuilderConfig 'aya_eng' not found. Available: ['aya_dataset', 'templated_afriqa', 'templated_afrisenti', 'templated_amha"
+ },
+ {
+  "id": "MBZUAI/Bactrian-X",
+  "config": "zh",
+  "split": "train",
+  "field": "instruction",
+  "domain": "multilingual",
+  "ok": false,
+  "downloads": 2816,
+  "gated": false,
+  "err": "RuntimeError: Dataset scripts are no longer supported, but found Bactrian-X.py"
+ },
+ {
+  "id": "Helsinki-NLP/opus_books",
+  "config": "en-zh",
+  "split": "train",
+  "field": "translation",
+  "domain": "parallel",
+  "ok": false,
+  "downloads": 9914,
+  "gated": false,
+  "err": "ValueError: BuilderConfig 'en-zh' not found. Available: ['ca-de', 'ca-en', 'ca-hu', 'ca-nl', 'de-en', 'de-eo', 'de-es', 'de-fr', 'de"
+ },
+ {
+  "id": "Helsinki-NLP/opus-100",
+  "config": "en-zh",
+  "split": "train",
+  "field": "translation",
+  "domain": "parallel",
+  "ok": false,
+  "downloads": 22254,
+  "gated": false,
+  "keys": [
+   "translation"
+  ],
+  "text_len": 0,
+  "preview": "",
+  "err": "no usable text field"
+ },
+ {
+  "id": "allenai/nllb",
+  "config": "eng_Latn-zho_Hans",
+  "split": "train",
+  "field": "translation",
+  "domain": "parallel",
+  "ok": false,
+  "downloads": 686,
+  "gated": false,
+  "err": "RuntimeError: Dataset scripts are no longer supported, but found nllb.py"
+ },
+ {
+  "id": "nguha/legalbench",
+  "config": null,
+  "split": "train",
+  "field": "text",
+  "domain": "legal",
+  "ok": true,
+  "downloads": 15651,
+  "gated": false,
+  "keys": [
+   "index",
+   "answer",
+   "text"
+  ],
+  "text_len": 32,
+  "preview": "The mark \"Caress\" for body soap.",
+  "err": ""
+ },
+ {
+  "id": "PolyAI/banking77",
+  "config": null,
+  "split": "train",
+  "field": "text",
+  "domain": "banking",
+  "ok": false,
+  "downloads": 10833,
+  "gated": false,
+  "err": "RuntimeError: Dataset scripts are no longer supported, but found banking77.py"
+ },
+ {
+  "id": "clinc/clinc_oos",
+  "config": "plus",
+  "split": "train",
+  "field": "text",
+  "domain": "intent",
+  "ok": true,
+  "downloads": 20979,
+  "gated": false,
+  "keys": [
+   "text",
+   "intent"
+  ],
+  "text_len": 51,
+  "preview": "what is the equivalent of, 'life is good' in french",
+  "err": ""
+ },
+ {
+  "id": "bitext/Bitext-retail-banking-llm-chatbot-training-dataset",
+  "config": null,
+  "split": "train",
+  "field": "instruction",
+  "domain": "banking",
+  "ok": true,
+  "downloads": 331,
+  "gated": false,
+  "keys": [
+   "tags",
+   "instruction",
+   "category",
+   "intent",
+   "response"
+  ],
+  "text_len": 43,
+  "preview": "I'd like to actiate a card where do i do it",
+  "err": ""
+ },
+ {
+  "id": "FinGPT/fingpt-sentiment-train",
+  "config": null,
+  "split": "train",
+  "field": "input",
+  "domain": "finance",
+  "ok": true,
+  "downloads": 1708,
+  "gated": false,
+  "keys": [
+   "input",
+   "output",
+   "instruction"
+  ],
+  "text_len": 140,
+  "preview": "Starbucks says the workers violated safety policies while workers said they'd never heard of the policy before and are a",
+  "err": ""
+ },
+ {
+  "id": "medalpaca/medical_meadow_medical_flashcards",
+  "config": null,
+  "split": "train",
+  "field": "input",
+  "domain": "medical",
+  "ok": true,
+  "downloads": 7220,
+  "gated": false,
+  "keys": [
+   "input",
+   "output",
+   "instruction"
+  ],
+  "text_len": 88,
+  "preview": "What does low REM sleep latency and experiencing hallucinations/sleep paralysis suggest?",
+  "err": ""
+ },
+ {
+  "id": "FreedomIntelligence/medical-o1-reasoning-SFT",
+  "config": "en",
+  "split": "train",
+  "field": "Question",
+  "domain": "medical",
+  "ok": true,
+  "downloads": 20810,
+  "gated": false,
+  "keys": [
+   "Question",
+   "Complex_CoT",
+   "Response"
+  ],
+  "text_len": 299,
+  "preview": "A 61-year-old woman with a long history of involuntary urine loss during activities like coughing or sneezing but no lea",
+  "err": ""
+ },
+ {
+  "id": "Mihaiii/qa-assistant",
+  "config": null,
+  "split": "train",
+  "field": "input",
+  "domain": "support",
+  "ok": true,
+  "downloads": 42,
+  "gated": false,
+  "field_fallback": "question",
+  "keys": [
+   "question",
+   "answer",
+   "score"
+  ],
+  "text_len": 57,
+  "preview": "How is big data used to improve business decision-making?",
+  "err": ""
+ },
+ {
+  "id": "mteb/amazon_massive_intent",
+  "config": "zh-CN",
+  "split": "train",
+  "field": "text",
+  "domain": "intent",
+  "ok": false,
+  "downloads": 37961,
+  "gated": false,
+  "keys": [
+   "id",
+   "label",
+   "label_text",
+   "text",
+   "lang"
+  ],
+  "text_len": 7,
+  "preview": "olly 安静",
+  "err": "no usable text field"
+ },
+ {
+  "id": "amazon_reviews_multi",
+  "config": "zh",
+  "split": "train",
+  "field": "review_body",
+  "domain": "ecom",
+  "ok": false,
+  "downloads": 2117,
+  "gated": false,
+  "err": "RuntimeError: Dataset scripts are no longer supported, but found amazon_reviews_multi.py"
+ },
+ {
+  "id": "CarperAI/openai_summarize_tldr",
+  "config": null,
+  "split": "train",
+  "field": "prompt",
+  "domain": "summarize",
+  "ok": true,
+  "downloads": 5107,
+  "gated": false,
+  "keys": [
+   "prompt",
+   "label"
+  ],
+  "text_len": 1191,
+  "preview": "SUBREDDIT: r/relationships TITLE: Me [19F] with my friend [19M] 10 months, Insecurities - Show or Tell? POST: What are y",
+  "err": ""
+ },
+ {
+  "id": "KRAFTON/Orak",
+  "config": null,
+  "split": "train",
+  "field": "text",
+  "domain": "decision",
+  "ok": false,
+  "downloads": 170,
+  "gated": false,
+  "err": "ValueError: Config name is missing.\nPlease pick one among the available configs: ['2048', 'ace_attorney', 'baba_is_you', 'darkest_du"
+ },
+ {
+  "id": "databricks/databricks-dolly-15k",
+  "config": null,
+  "split": "train",
+  "field": "instruction",
+  "domain": "sft",
+  "ok": true,
+  "downloads": 63028,
+  "gated": false,
+  "keys": [
+   "instruction",
+   "context",
+   "response",
+   "category"
+  ],
+  "text_len": 46,
+  "preview": "Why can camels survive for long without water?",
+  "err": ""
+ },
+ {
+  "id": "tatsu-lab/alpaca",
+  "config": null,
+  "split": "train",
+  "field": "instruction",
+  "domain": "sft",
+  "ok": true,
+  "downloads": 115467,
+  "gated": false,
+  "keys": [
+   "instruction",
+   "input",
+   "output",
+   "text"
+  ],
+  "text_len": 34,
+  "preview": "Describe the structure of an atom.",
+  "err": ""
+ }
+]
