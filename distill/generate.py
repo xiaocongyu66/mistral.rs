@@ -1,6 +1,7 @@
 import json
 import sys
 import time
+import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -8,20 +9,35 @@ from pathlib import Path
 API = "https://classifier.dev/v1/classify"
 MODEL = "jev"
 TIMEOUT = 120
-
-ROOT = Path(__file__).parent
+RETRIES = 5
 
 
 def call_classify(payload: dict) -> dict:
     body = json.dumps(payload).encode()
-    req = urllib.request.Request(
-        API,
-        data=body,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
-        return json.load(resp)
+    for attempt in range(RETRIES):
+        req = urllib.request.Request(
+            API,
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+                return json.load(resp)
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 503) and attempt < RETRIES - 1:
+                wait = 2 ** attempt * 5
+                print(f"HTTP {e.code}, retry in {wait}s (attempt {attempt + 1}/{RETRIES})")
+                time.sleep(wait)
+                continue
+            raise
+        except urllib.error.URLError as e:
+            if attempt < RETRIES - 1:
+                wait = 2 ** attempt * 5
+                print(f"network error ({e.reason}), retry in {wait}s")
+                time.sleep(wait)
+                continue
+            raise
 
 
 def main() -> None:

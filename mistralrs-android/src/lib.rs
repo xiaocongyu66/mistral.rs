@@ -1,3 +1,4 @@
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Instant;
 
@@ -21,6 +22,7 @@ pub enum FfiError {
 }
 
 static MODEL: OnceLock<Mutex<Option<Arc<BlockingModel>>>> = OnceLock::new();
+static LOADING: AtomicBool = AtomicBool::new(false);
 
 fn model_slot() -> &'static Mutex<Option<Arc<BlockingModel>>> {
     MODEL.get_or_init(|| Mutex::new(None))
@@ -32,22 +34,30 @@ fn load_model(
     gguf_file: String,
     tokenizer_json: Option<String>,
 ) -> Result<String, FfiError> {
-    let t0 = Instant::now();
-    let mut builder = GgufModelBuilder::new(model_dir, vec![gguf_file]).with_force_cpu();
-    if let Some(tok) = tokenizer_json {
-        builder = builder.with_tokenizer_json(tok);
+    if LOADING.swap(true, Ordering::SeqCst) {
+        return Err(FfiError::Load("load_model already in progress".to_string()));
     }
-    let rt = tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()
-        .map_err(|e| FfiError::Load(e.to_string()))?;
-    let model = rt
-        .block_on(builder.build())
-        .map_err(|e| FfiError::Load(e.to_string()))?;
-    *model_slot()
-        .lock()
-        .map_err(|e| FfiError::Load(e.to_string()))? = Some(Arc::new(BlockingModel::new(model, Arc::new(rt))));
-    Ok(json!({ "load_ms": t0.elapsed().as_millis() as u64 }).to_string())
+    let t0 = Instant::now();
+    let result = (|| {
+        let mut builder = GgufModelBuilder::new(model_dir, vec![gguf_file]).with_force_cpu();
+        if let Some(tok) = tokenizer_json {
+            builder = builder.with_tokenizer_json(tok);
+        }
+        let rt = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .map_err(|e| FfiError::Load(e.to_string()))?;
+        let model = rt
+            .block_on(builder.build())
+            .map_err(|e| FfiError::Load(e.to_string()))?;
+        *model_slot()
+            .lock()
+            .map_err(|e| FfiError::Load(e.to_string()))? =
+            Some(Arc::new(BlockingModel::new(model, Arc::new(rt))));
+        Ok(json!({ "load_ms": t0.elapsed().as_millis() as u64 }).to_string())
+    })();
+    LOADING.store(false, Ordering::SeqCst);
+    result
 }
 
 #[uniffi::export]

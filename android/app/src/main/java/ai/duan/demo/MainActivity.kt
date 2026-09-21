@@ -86,7 +86,8 @@ class MainActivity : AppCompatActivity() {
         val t0 = System.currentTimeMillis()
         Thread {
             try {
-                val json = loadModel(path, null)
+                val f = File(path)
+                val json = loadModel(f.parent ?: filesDir.absolutePath, f.name, null)
                 sessionMs = System.currentTimeMillis() - t0
                 loaded = true
                 ui { setStatus("已加载 · $json"); setBusy(false) }
@@ -152,9 +153,11 @@ class MainActivity : AppCompatActivity() {
     private fun setStatus(s: String) = ui { tvStatus.text = s }
 
     private fun log(s: String) {
-        val line = "[${System.currentTimeMillis() - sessionMs}] $s"
-        logLines.appendLine(line)
-        ui { tvLog.text = logLines.toString() }
+        runOnUiThread {
+            val line = "[${System.currentTimeMillis() - sessionMs}] $s"
+            logLines.appendLine(line)
+            tvLog.text = logLines.toString()
+        }
     }
 
     private fun ui(f: () -> Unit) {

@@ -138,7 +138,7 @@ def main():
     except ImportError:
         print("peft not installed: full finetune")
 
-    pad_id = tokenizer.pad_token_id or tokenizer.eos_token_id
+    pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
     dl = DataLoader(ds, batch_size=args.batch_size, shuffle=True,
                     collate_fn=lambda b: collate(b, pad_id))
     opt = torch.optim.AdamW((p for p in model.parameters() if p.requires_grad), lr=args.lr)
