@@ -1,0 +1,28 @@
+# 训练资源索引（按我们的相关性过滤）
+
+外部资源清单经评估后入库，只留与我们管线直接相关的，并标注用途。
+
+## 立即可用
+
+| 资源 | 与我们的关系 | 用法 |
+| --- | --- | --- |
+| **腾讯云 TI-ONE GRPO 教程（Qwen3-0.6B 例）** | 底模与我们的完全一致；GRPO≈RLCD 同族，是 Jev 的原训练法，也是 NanoJev roadmap 未做的 RLCD 后训练 | 阶段 5b：SFT 蒸馏完成并验证后，用 GRPO/RLCD 对决策头做校准后训练 |
+| **HuggingFace 训练手册**（200+ 页，SmolLM3 3B @384 H100 实录） | 端到端训练经验（哪些有效哪些失败）+ 调试技巧 | 训练决策遇阻时的对照手册；run2 放宽 max_length、多任务混训前先翻它 |
+| **阿里云 ROLL SFT 流水线**（Ray+Megatron/FSDP、Sequence Packing） | 我们的决策样本全是短序列，**sequence packing 直接提升训练吞吐** | 训练数据量大后（>10 万题）引入 packing；当前 17.7k 题暂不需要 |
+| **DeepSeek 实战资源（训练篇）** | SFT 复现 / GRPO 复现 / 数据蒸馏配套 | 与 TI-ONE 互为参照的 GRPO 实现参考 |
+| **阿里云百炼**（API 调优：SFT/CPT/DPO） | 免运维的训练替代通道（付费） | Colab 不够用时的 B 计划；DPO 可用于置信度偏好校准 |
+
+## 暂不需要
+
+- Azure ML / Vertex AI：托管流程重，我们已有 Colab 遥控体系
+- Windows ML ONNX 训练指南：目标平台是 Android，不走 ONNX 训练路径（推理侧 candle）
+- Happy-LLM / LLM design patterns：教材向，认知补充
+- 团体标准《高质量数据集实施指南》：数据质量控制条目可对照，非操作文档
+- YOLOv5 训练指南：域不相关
+
+## 已在用的同类资源（本仓库内）
+
+- `distill/TRAINING_DESIGN.md`：训练契约（含 NanoJev 同步要点）
+- `distill/RUNTIME_CONTRACT.md`：decide 层接口契约 + 教师审计口径
+- `distill/COLAB.md`：云上训练运行手册
+- NanoJev `research/algorithm_training_contract_zh.md`：损失与批处理契约（已吸收）

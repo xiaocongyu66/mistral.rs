@@ -67,6 +67,25 @@ for _ in range(10):
 {random.choice(['王经理', '刘工', '张总监'])}""", "long_email")
 
 random.shuffle(rows)
+
+# 变体扩展（同 v3 手法）：语境前缀 + 语气后缀，扩到目标规模
+PREFIXES = ["你好，", "您好，", "客服你好，", "", "", "", "从昨天起，", "最近，", "升级后，", "手机端，"]
+SUFFIXES = ["，请尽快回复。", "，在线等。", "，谢谢。", "。", "", "", "，麻烦了。", "，急。"]
+TARGET = 160
+base = list(rows)
+while len(rows) < TARGET and base:
+    src = random.choice(base)
+    text = src["text"]
+    if len(text) + 30 > 900:
+        continue
+    variant = f"{random.choice(PREFIXES)}{text}{random.choice(SUFFIXES)}".replace("。。", "。").replace("，，", "，")
+    if variant == text or any(r["text"] == variant for r in rows):
+        continue
+    n += 1
+    rows.append({"id": f"v4-{n:04d}", "text": variant, "tag": src["tag"],
+                 "holdout": random.random() < 0.05})
+
+random.shuffle(rows)
 out = Path(__file__).parent / "seeds_v4.jsonl"
 out.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
 hold = sum(1 for r in rows if r["holdout"])
