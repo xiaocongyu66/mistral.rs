@@ -81,6 +81,9 @@ def main():
     ap.add_argument("--seeds", nargs="+", required=True)
     ap.add_argument("--budget", type=int, default=20000)
     ap.add_argument("--max-chars-per-req", type=int, default=40000)
+    ap.add_argument("--max-rows-per-req", type=int, default=150,
+                    help="cap inputs per request; big batches get silently "
+                         "truncated server-side under load")
     ap.add_argument("--concurrency", type=int, default=4)
     ap.add_argument("--prefix", default="train-fast")
     ap.add_argument("--pace", type=float, default=0.0,
@@ -116,7 +119,8 @@ def main():
         batch, chars, chunks = [], 0, []
         for r in group:
             L = len(r["text"])
-            if batch and chars + L > args.max_chars_per_req:
+            if batch and (chars + L > args.max_chars_per_req
+                          or len(batch) >= args.max_rows_per_req):
                 chunks.append(batch)
                 batch, chars = [], 0
             batch.append(r)
@@ -181,6 +185,9 @@ def main():
                     f.cancel()
                 continue
             if err is None:
+                if len(results) != len(batch):
+                    print(f"[TRUNC] server returned {len(results)}/{len(batch)} "
+                          f"results; {len(batch)-len(results)} rows lost", flush=True)
                 with wl:
                     for r, res in zip(batch, results):
                         out.write(json.dumps({
