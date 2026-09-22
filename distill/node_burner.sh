@@ -70,7 +70,7 @@ NODE_IDX=0
 while true; do
     ROUND=$((ROUND+1))
     SKIP="$(ls data/*.jsonl | tr '\n' ',' | sed 's/,$//')"
-    python3 generate_fast.py --seeds "$SEEDS" --budget 19800 --concurrency 2 --pace 4.0 \
+    python3 generate_fast.py --seeds "$SEEDS" --budget 400 --concurrency 1 --pace 3.0 \
         --prefix "${PREFIX}-n${NODE_IDX}r${ROUND}" --skip-done "$SKIP" \
         > /tmp/burn_${PREFIX}_r${ROUND}.log 2>&1
     RC=$?
