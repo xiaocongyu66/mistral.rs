@@ -59,6 +59,17 @@ SOURCES = [
 # opus_books yields dict translations, not a plain string field
 PARALLEL = {"Helsinki-NLP/opus_books"}
 
+TRUST_REMOTE_CODE = {"PolyAI/banking77", "clinc/clinc_oos", "nguha/legalbench"}
+
+# config/split corrections from the v9 kernel run's SKIP log
+SOURCE_FIXES = {
+    "nvidia/Nemotron-SFT-Agentic-v2": {"cfg": None, "split": "search"},
+    "nvidia/Nemotron-SFT-Multilingual-v1": {"cfg": None, "split": "math_zh"},
+    "nvidia/OpenCodeReasoning": {"cfg": "split_0", "split": "train"},
+    "m-a-p/COIG-CQIA": {"cfg": "coig_pc", "split": "train"},
+    "KRAFTON/Orak": {"cfg": "ace_attorney", "split": "train"},
+}
+
 ALIASES = ("text", "content", "raw_content", "raw", "body", "document", "markdown")
 
 
@@ -78,8 +89,15 @@ def build_stream(tokenizer, seed=17, max_sources=None):
     import itertools, random
     streams = []
     for repo, cfg, split, field, w, note in SOURCES[: max_sources or len(SOURCES)]:
+        fx = SOURCE_FIXES.get(repo)
+        if fx:
+            cfg = fx.get("cfg", cfg)
+            split = fx.get("split", split)
         try:
-            ds = load_dataset(repo, cfg, split=split, streaming=True)
+            kw = {}
+            if repo in TRUST_REMOTE_CODE:
+                kw["trust_remote_code"] = True
+            ds = load_dataset(repo, cfg, split=split, streaming=True, **kw)
             streams.append({"it": iter(ds), "field": field, "w": w, "note": note, "repo": repo})
             print(f"[stream] {repo}/{cfg} w={w} ({note})", flush=True)
         except Exception as e:

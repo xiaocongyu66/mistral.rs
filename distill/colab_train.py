@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 
 import torch
+from transformers import AutoConfig
 from safetensors.torch import load_file, save_file
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -123,14 +124,33 @@ def main():
         tokenizer.pad_token = tokenizer.eos_token
     param_dtype = {"fp16": torch.float16, "bf16": torch.bfloat16,
                    "fp32": torch.float32}[args.dtype]
+    _cfg = AutoConfig.from_pretrained(args.model)
+    _mt = getattr(_cfg, "model_type", "")
+    lm = None
+    if _mt == "qwen3_moe":
+        try:
+            from transformers import Qwen3MoeForCausalLM as _Moe
+            kw = dict(torch_dtype=param_dtype, attn_implementation="sdpa")
+            if torch.cuda.device_count() > 1:
+                lm = _Moe.from_pretrained(args.model, device_map="auto", **kw)
+            else:
+                lm = _Moe.from_pretrained(args.model, **kw).cuda()
+            print(f"loaded {_Moe.__name__} (explicit MoE class)", flush=True)
+        except ImportError:
+            print("FATAL: qwen3_moe config but Qwen3MoeForCausalLM missing "
+                  "in this transformers build — refusing dense fallback", flush=True)
+            raise
+    if lm is None:
+        if torch.cuda.device_count() > 1:
+            lm = AutoModelForCausalLM.from_pretrained(
+                args.model, torch_dtype=param_dtype, attn_implementation="sdpa",
+                device_map="auto")
+        else:
+            lm = AutoModelForCausalLM.from_pretrained(
+                args.model, torch_dtype=param_dtype, attn_implementation="sdpa").cuda()
+        print(f"loaded {type(lm).__name__} via AutoModel (model_type={_mt})", flush=True)
     if torch.cuda.device_count() > 1:
-        lm = AutoModelForCausalLM.from_pretrained(
-            args.model, torch_dtype=param_dtype, attn_implementation="sdpa",
-            device_map="auto")
         print(f"device_map=auto across {torch.cuda.device_count()} GPUs", flush=True)
-    else:
-        lm = AutoModelForCausalLM.from_pretrained(
-            args.model, torch_dtype=param_dtype, attn_implementation="sdpa").cuda()
     lm.config.use_cache = False
     if not args.no_grad_checkpoint:
         lm.gradient_checkpointing_enable()
