@@ -271,3 +271,12 @@ MNBVC 60TB、Qidian-Webnovel-Corpus（110 本+读者评论）、MultiGenre-Chine
 - **Superior-Reasoning-SFT**：DASD pipeline（温度调度学习+散度感知采样+混合策略
   蒸馏），HF 趋势榜 #1，少数据 SOTA——与我们"质量优先"路线同向。
 - **The Smol Training Playbook（HF）**：何时从头训练的决策流程图 + SFT/DPO/GRPO 踩坑。
+
+## 模型正式命名（2026-09-22 用户拍板）
+**Apeireth-Decis-2.6B-128k**
+- 2.6B = 总参数（checkpoint 2,446M + tied lm_head 156M；激活 ~1.02B，8 专家 top-2）
+- 128k = YaRN 上下文（原生 40,960 × factor 3.2，theta 1e6）
+- 底座：Qwen3-0.6B 稠密 → 8 专家 upcycling（α 校准 + gate [E,H]）
+- 部署：不量化；APK 下载接口 → 本地加载（FP32 9.8G 或加载时转 BF16 4.9G）
+- HF 归属：congyu778/duan-nanojev（best.safetensors + config）
+- 血统：v9 管线（upcycle→热身→600 步决策微调，143k 题教师数据）
