@@ -151,8 +151,9 @@ def main():
     init_info = "fresh backbone + fresh head"
     if args.init_checkpoint:
         sd = load_file(args.init_checkpoint)
-        model.load_state_dict(sd)
-        init_info = f"warm start from {args.init_checkpoint} ({len(sd)} tensors)"
+        missing, unexpected = model.load_state_dict(sd, strict=False)
+        init_info = (f"warm start from {args.init_checkpoint}: "
+                     f"{len(sd)} tensors, {len(missing)} missing, {len(unexpected)} dropped")
     print(init_info, flush=True)
 
     train = [e for e in bysplit["train"]

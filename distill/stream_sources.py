@@ -40,6 +40,14 @@ SOURCES = [
     ("nvidia/Nemotron-SFT-Multilingual-v1", None, "train", "messages", 0.03, "multilingual reasoning"),
     ("teknium/OpenHermes-2.5", None, "train", "conversations", 0.03, "1M high-quality general"),
     ("openbmb/UltraFeedback", None, "train", "prompt", 0.02, "preference calibration"),
+    # -- user-verified registry batch: chinese long-form / decision / math-scale --
+    ("MegaScience/Chinese-Reasoning-Dataset-v1", None, "train", None, 0.03, "chinese reasoning"),
+    ("Mxode/Meow-Reasoning-100K", None, "train", None, 0.02, "chinese cot 100k"),
+    ("nvidia/OpenMathInstruct-2", None, "train", "problem", 0.02, "14M math scale"),
+    ("open-r1/OpenR1-Math-220k", None, "train", "problem", 0.02, "r1 math traces"),
+    ("bespokelabs/Bespoke-Stratos-17k", None, "train", None, 0.02, "stratos reasoning"),
+    ("MBZUAI/Bactrian-X", "en", "train", "input", 0.02, "52-lang instructions"),
+    ("tasksource/100k-choice-dilemmas", None, "train", None, 0.02, "choice dilemmas"),
 ]
 
 # opus_books yields dict translations, not a plain string field
