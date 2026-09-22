@@ -40,14 +40,17 @@ def fit_temperature(model, calib_examples, pad_token, amp_dtype=None):
 
 def _load_balance(logits_list, coef):
     """Switch-Transformer aux loss over MoE router logits (anti-collapse)."""
-    total = 0.0
+    total = None
     for logits in logits_list:
         probs = torch.softmax(logits.float(), dim=-1)
         k = min(2, probs.shape[-1])
         _, idx = torch.topk(probs, k, dim=-1)
         one_hot = torch.zeros_like(probs).scatter_(1, idx, 1.0)
         frac = one_hot.sum(0) / probs.shape[0]
-        total = total + (frac * probs.mean(0)).sum() * probs.shape[-1]
+        term = (frac * probs.mean(0)).sum() * probs.shape[-1]
+        total = term if total is None else total + term.to(total.device)
+    if total is None:
+        return 0.0
     return coef * total / max(len(logits_list), 1)
 
 
@@ -133,7 +136,9 @@ def main():
         lm.gradient_checkpointing_enable()
     clean_input = out / "unified_clean.jsonl"
     rows = load_unified(args.input)
-    clean_input.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n"
+    # ascii-escaped: NanoJev load_examples reads via read_text().splitlines(),
+    # raw U+2028/U+2029 inside strings would split rows mid-JSON
+    clean_input.write_text("".join(json.dumps(r) + "\n"
                                    for r in rows), encoding="utf-8")
     examples, audit = load_examples(str(clean_input), tokenizer, args.max_length)
     dump(out / "target_audit.json", audit)
@@ -143,14 +148,22 @@ def main():
     if missing:
         raise ValueError(f"empty splits: {missing}")
 
-    model = DecisionModel(lm.model, args.set_head).to(next(lm.parameters()).device).to(param_dtype)
+    model = DecisionModel(lm.model, args.set_head).to(param_dtype)
     if torch.cuda.device_count() > 1:
-        print(f"decision head on {next(model.parameters()).device}", flush=True)
+        # move only the head: a whole-model .to() collapses the device_map=auto
+        # sharding and desyncs accelerate per-layer execution devices
+        tail_dev = next(model.backbone.layers[-1].parameters()).device
+        for name, mod in model.named_modules():
+            if name and not name.startswith("backbone"):
+                mod.to(tail_dev)
+        print(f"decision head on {tail_dev}", flush=True)
+    else:
+        model.to(next(lm.parameters()).device)
     del lm
     router_buf = []
     def _router_hook(module, inputs, output):
         if model.training and inputs and hasattr(module, "gate"):
-            router_buf.append(module.gate(inputs[0]))
+            router_buf.append((module.gate, inputs[0]))
     n_moe = 0
     for mod in model.backbone.modules():
         if type(mod).__name__.endswith("SparseMoeBlock"):
@@ -217,7 +230,10 @@ def main():
         warm = step < args.head_steps
         for param in body:
             param.requires_grad_(not warm)
-        optimizer.param_groups[1]["lr"] = 1e-3 if warm else args.head_lr
+        if warm:
+            # head-phase boost only; else LambdaLR's 30-iter warmup would be
+            # clobbered for this group every step
+            optimizer.param_groups[1]["lr"] = 1e-3
         if sample_weights is not None:
             batch = random.choices(train, weights=sample_weights, k=args.batch_questions)
         else:
@@ -247,9 +263,17 @@ def main():
             with torch.autocast("cuda", dtype=amp_dtype, enabled=use_amp):
                 z, _ = model(mb, tokenizer.pad_token_id)
                 mloss = loss_for(z, mb, args.objective).mean() / n_micro
+            if router_buf:
+                # buffered hidden states are graph-less under reentrant checkpointing
+                # (initial pass runs no_grad); recompute gate logits on detached
+                # inputs so the aux grad reaches gate weights in any mode
+                gates = [fn(h.detach()) for fn, h in router_buf]
+                mloss = mloss + _load_balance(gates, 0.01).to(mloss.device)
+            router_buf.clear()
             if not torch.isfinite(mloss):
                 continue
             scaler.scale(mloss).backward()
+            router_buf.clear()
             step_loss += mloss.item()
         if router_buf:
             router_buf.clear()
