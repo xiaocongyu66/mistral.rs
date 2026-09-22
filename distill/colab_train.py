@@ -118,8 +118,10 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
+    param_dtype = {"fp16": torch.float16, "bf16": torch.bfloat16,
+                   "fp32": torch.float32}[args.dtype]
     lm = AutoModelForCausalLM.from_pretrained(
-        args.model, dtype=torch.float32, attn_implementation="sdpa").cuda()
+        args.model, dtype=param_dtype, attn_implementation="sdpa").cuda()
     lm.config.use_cache = False
     if not args.no_grad_checkpoint:
         lm.gradient_checkpointing_enable()
