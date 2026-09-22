@@ -294,3 +294,14 @@ MNBVC 60TB、Qidian-Webnovel-Corpus（110 本+读者评论）、MultiGenre-Chine
   Pokémon demo——设计参考。
 - **tokenizer 警告**：fix_mistral_regex flag 存在（comment 6 证实），但 Qwen3 预训练
   分词行为未确认——决策：不加 flag，保持基座一致性（训练/推理闭环自洽）。
+
+## NanoJev-Data soft 臂（2026-09-22 接入，本轮真实落盘）
+- **soft/train.jsonl 70MB**：teacher.native_probs 是 jev 教师完整软分布
+  （如 west 0.7/south 0.24/east 0.03）。已转换合并 2,421 题（含评估分区）。
+- **SONIC_PREDICT_POSITION.md**：专家=sonic_doom 的 CNN+GRU 视觉策略，
+  双 ViZDoom 实例同步采集（tick 级对齐、独立 replay 验证）。
+  17,498 决策记录；frozen cohort 896 episodes（train 512/dev 64/cal 64/test 128/OOD 128）。
+  OOD 换决策节奏（8-tick）；监督集中在正弹药状态的可影响轨迹决策。
+- **意义**：predict_position 11,173 题中 6,788 训练题的专家级监督链路完整
+  （专家 logits→四动作分布→replay 验证），episodes 可直接复用出软标签。
+- **fix_mistral_regex**：flag 存在（已证实），决策不加——保持 Qwen3 基座分词一致性。
