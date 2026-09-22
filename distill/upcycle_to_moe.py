@@ -37,6 +37,96 @@ def load_balance_loss(router_logits, num_experts, top_k, coef=0.01):
     return coef * loss / len(router_logits)
 
 
+def compute_neuron_importance(model, tokenizer, samples, hidden_size, n_layers):
+    """Estimate per-neuron importance for each MLP layer.
+
+    importance_j = E[a_j^2] * ||down[:, j]||^2  (UPCYCLE.md convention)
+    where a_j = silu(gate_j·x) * (up_j·x).
+    Returns {layer: [importance scores]}.
+    """
+    model.eval()
+    importance = {l: torch.zeros(intermediate_of(model)) for l in range(n_layers)}
+    counts = {l: 0 for l in range(n_layers)}
+    device = next(model.parameters()).device
+
+    with torch.no_grad():
+        for text in samples:
+            enc = tokenizer(text, return_tensors="pt", truncation=True,
+                            max_length=256).to(device)
+            if enc["input_ids"].numel() < 8:
+                continue
+            # hook every MLP to capture activations
+            hooks, acts = [], {}
+            def _mk(layer_idx):
+                def hook(mod, inp, out):
+                    gate_w = mod.gate_proj.weight  # [inter, hidden]
+                    up_w = mod.up_proj.weight
+                    x = inp[0]                     # [1, seq, hidden]
+                    a = torch.nn.functional.silu(x @ gate_w.T) * (x @ up_w.T)
+                    acts[layer_idx] = a.squeeze(0).mean(0)  # [inter]
+                return hook
+            for i, layer in enumerate(model.model.layers):
+                hooks.append(layer.mlp.register_forward_hook(_mk(i)))
+            model(**enc)
+            for h in hooks:
+                h.remove()
+            for l, a in acts.items():
+                down_w = model.model.layers[l].mlp.down_proj.weight  # [hidden, inter]
+                w_norm = down_w.norm(dim=0)  # [inter]
+                imp = (a ** 2) * w_norm
+                importance[l] += imp.cpu()
+                counts[l] += 1
+    for l in importance:
+        if counts[l] > 0:
+            importance[l] /= counts[l]
+    return importance
+
+
+def intermediate_of(model):
+    return model.config.intermediate_size
+
+
+def split_experts_importance(sd, importance, num_experts, inter, n_layers,
+                              top_shared=None):
+    """Split dense MLP into num_experts by neuron importance.
+
+    expert_0 = shared (top neurons by importance, active on every token).
+    experts 1..N-1 = routed, filled serpentine-style to equalize total mass.
+    """
+    k_shared = top_shared or inter // num_experts
+    new_sd = {}
+    for layer in range(n_layers):
+        imp = importance.get(layer)
+        if imp is None:
+            imp = torch.ones(inter)
+        order = torch.argsort(imp, descending=True)
+        # shared expert: top-k by importance
+        shared_idx = set(order[:k_shared].tolist())
+        # routed: remaining neurons, serpentine fill
+        routed_pool = [i for i in order.tolist() if i not in shared_idx]
+        routed_bins = [[] for _ in range(num_experts - 1)]
+        bin_sums = [0.0] * (num_experts - 1)
+        for idx in routed_pool:
+            # pick the lightest bin (serpentine greedy)
+            b = min(range(len(bin_sums)), key=lambda x: bin_sums[x])
+            routed_bins[b].append(idx)
+            bin_sums[b] += imp[idx].item()
+        # assemble expert weights
+        gate_w = sd[f"model.layers.{layer}.mlp.gate_proj.weight"]   # [inter, hidden]
+        up_w = sd[f"model.layers.{layer}.mlp.up_proj.weight"]
+        down_w = sd[f"model.layers.{layer}.mlp.down_proj.weight"]   # [hidden, inter]
+        for e in range(num_experts):
+            if e == 0:
+                idxs = sorted(shared_idx)
+            else:
+                idxs = sorted(routed_bins[e - 1])
+            gi = torch.tensor(idxs, dtype=torch.long)
+            new_sd[f"model.layers.{layer}.mlp.experts.{e}.gate_proj.weight"] = gate_w[gi].clone()
+            new_sd[f"model.layers.{layer}.mlp.experts.{e}.up_proj.weight"] = up_w[gi].clone()
+            new_sd[f"model.layers.{layer}.mlp.experts.{e}.down_proj.weight"] = down_w[:, gi].clone()
+    return new_sd
+
+
 def calibrate_scale(dense_model, moe_sd, moe_cfg, tokenizer, samples, num_experts, top_k):
     """Least-squares alpha per layer: scale experts' down_proj so that
     y_moe ~= alpha * y_dense in the first forward. Returns {layer: alpha}.
@@ -143,6 +233,10 @@ def main():
     ap.add_argument("--top-k", type=int, default=2)
     ap.add_argument("--noise", type=float, default=1e-3)
     ap.add_argument("--seed", type=int, default=17)
+    ap.add_argument("--split-strategy", default="importance",
+                    choices=["importance", "copy_noise"],
+                    help="importance: neuron-activation split (UPCYCLE.md); "
+                         "copy_noise: legacy duplicate+gaussian")
     ap.add_argument("--no-calibrate", action="store_true",
                     help="skip least-squares alpha scaling (not recommended)")
     a = ap.parse_args()
@@ -152,16 +246,33 @@ def main():
     tok = AutoTokenizer.from_pretrained(a.model)
     donor = AutoModelForCausalLM.from_pretrained(a.model, torch_dtype=torch.float32)
     sd = donor.state_dict()
-    new_sd = {}
-    for name, tensor in sd.items():
-        if ".mlp." in name and name.endswith(".weight"):
-            for e in range(a.num_experts):
-                key = name.replace(".mlp.", f".mlp.experts.{e}.")
-                new_sd[key] = tensor.clone() if e == 0 else tensor.clone() + a.noise * torch.randn_like(tensor)
-        else:
-            new_sd[name] = tensor
+    if a.split_strategy == "importance":
+        print("split strategy: importance (neuron-activation based)", flush=True)
+        samples = ["Customer reports a duplicate charge on invoice 4411 and demands a refund.",
+                   "The app crashes on startup after the latest update on Android 14.",
+                   "Can we get enterprise pricing for 200 seats with SSO support?",
+                   "Our team needs to migrate from the legacy system to your platform.",
+                   "The integration is returning a 500 error when we submit the form."]
+        importance = compute_neuron_importance(donor, tok, samples,
+                                                cfg.hidden_size, cfg.num_hidden_layers)
+        new_sd = split_experts_importance(sd, importance, a.num_experts,
+                                           cfg.intermediate_size, cfg.num_hidden_layers)
+        # copy non-MLP weights
+        for name, tensor in sd.items():
+            if ".mlp." not in name:
+                new_sd[name] = tensor.clone()
+    else:
+        print("split strategy: copy_noise (legacy)", flush=True)
+        new_sd = {}
+        for name, tensor in sd.items():
+            if ".mlp." in name and name.endswith(".weight"):
+                for e in range(a.num_experts):
+                    key = name.replace(".mlp.", f".mlp.experts.{e}.")
+                    new_sd[key] = tensor.clone() if e == 0 else tensor.clone() + a.noise * torch.randn_like(tensor)
+            else:
+                new_sd[name] = tensor
     for layer in range(cfg.num_hidden_layers):
-        new_sd[f"model.layers.{layer}.mlp.gate.weight"] = torch.randn(cfg.hidden_size, a.num_experts) * 1e-3
+        new_sd[f"model.layers.{layer}.mlp.gate.weight"] = torch.randn(a.num_experts, cfg.hidden_size) * 1e-3
 
     if not a.no_calibrate:
         import transformers
