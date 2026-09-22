@@ -54,6 +54,10 @@ SOURCES = [
     ("hsilvosa/hsc-wuxia-200k", None, "train", None, 0.02, "wuxia 200k"),
     ("wdndev/webnovel-chinese", None, "train", None, 0.02, "chinese webnovels"),
     ("bh2821/LightNovel5000", None, "train", None, 0.02, "light novels"),
+    # -- mass-scale corpora (user batch 2026-09-22, streaming pretrain feed) --
+    ("HuggingFaceFW/fineweb-2", "zho_Hans", "train", "text", 0.05, "chinese web mass"),
+    ("liwu/MNBVC", "news2016", "train", "text", 0.04, "MNBVC 60TB zh (news cfg)"),
+    ("BAAI/CCI4.0-M2-Base-v1", None, "train", "text", 0.04, "CCI 4.0 M2 zh"),
 ]
 
 # opus_books yields dict translations, not a plain string field
