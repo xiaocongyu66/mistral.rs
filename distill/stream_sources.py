@@ -48,6 +48,12 @@ SOURCES = [
     ("bespokelabs/Bespoke-Stratos-17k", None, "train", None, 0.02, "stratos reasoning"),
     ("MBZUAI/Bactrian-X", "en", "train", "input", 0.02, "52-lang instructions"),
     ("tasksource/100k-choice-dilemmas", None, "train", None, 0.02, "choice dilemmas"),
+    # -- decision-domain direct hits (registry batch) --
+        ("KRAFTON/Orak", None, "train", None, 0.02, "game decision corpus"),
+    # -- chinese long-form fiction (registry batch) --
+    ("hsilvosa/hsc-wuxia-200k", None, "train", None, 0.02, "wuxia 200k"),
+    ("wdndev/webnovel-chinese", None, "train", None, 0.02, "chinese webnovels"),
+    ("bh2821/LightNovel5000", None, "train", None, 0.02, "light novels"),
 ]
 
 # opus_books yields dict translations, not a plain string field
