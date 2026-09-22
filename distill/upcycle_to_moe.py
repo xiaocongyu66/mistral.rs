@@ -233,7 +233,7 @@ def main():
     ap.add_argument("--top-k", type=int, default=2)
     ap.add_argument("--noise", type=float, default=1e-3)
     ap.add_argument("--seed", type=int, default=17)
-    ap.add_argument("--split-strategy", default="importance",
+    ap.add_argument("--split-strategy", default="copy_noise",
                     choices=["importance", "copy_noise"],
                     help="importance: neuron-activation split (UPCYCLE.md); "
                          "copy_noise: legacy duplicate+gaussian")
