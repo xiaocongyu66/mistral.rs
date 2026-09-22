@@ -113,6 +113,7 @@ def upcycle(src, out_dir, num_experts, top_k, noise, seed):
         new_sd[f"model.layers.{layer}.mlp.gate.weight"] = gate
 
     os.makedirs(out_dir, exist_ok=True)
+    new_sd.pop("lm_head.weight", None)  # tied to embed_tokens; safetensors rejects shared storage
     save_file(new_sd, os.path.join(out_dir, "model.safetensors"))
     tok.save_pretrained(out_dir)
     cfg.model_type = "qwen3_moe"
@@ -172,6 +173,7 @@ def main():
         apply_scale(new_sd, alphas, a.num_experts, cfg.num_hidden_layers)
 
     os.makedirs(a.out, exist_ok=True)
+    new_sd.pop("lm_head.weight", None)  # tied to embed_tokens; safetensors rejects shared storage
     save_file(new_sd, os.path.join(a.out, "model.safetensors"))
     tok.save_pretrained(a.out)
     cfg.model_type = "qwen3_moe"
