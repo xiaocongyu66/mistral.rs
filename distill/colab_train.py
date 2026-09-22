@@ -51,6 +51,21 @@ def _load_balance(logits_list, coef):
     return coef * total / max(len(logits_list), 1)
 
 
+def load_unified(path):
+    """Tolerant reader: skip malformed lines instead of dying mid-training."""
+    rows = []
+    skipped = 0
+    for line in open(path, encoding="utf-8"):
+        if not line.strip():
+            continue
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError:
+            skipped += 1
+    print(f"unified: loaded {len(rows)} rows, skipped {skipped} malformed", flush=True)
+    return rows
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--nanojev-scripts", required=True,
@@ -108,7 +123,11 @@ def main():
     lm.config.use_cache = False
     if not args.no_grad_checkpoint:
         lm.gradient_checkpointing_enable()
-    examples, audit = load_examples(args.input, tokenizer, args.max_length)
+    clean_input = out / "unified_clean.jsonl"
+    rows = load_unified(args.input)
+    clean_input.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n"
+                                   for r in rows), encoding="utf-8")
+    examples, audit = load_examples(str(clean_input), tokenizer, args.max_length)
     dump(out / "target_audit.json", audit)
     bysplit = {s: [e for e in examples if e["split"] == s]
                for s in ["train", "dev", "calibration", "test", "ood"]}
@@ -139,7 +158,7 @@ def main():
     train = [e for e in bysplit["train"]
              if args.objective == "gold" or e["teacher_probs"] is not None]
     config = {**vars(args), "init": init_info,
-              "data_sha256": hashlib.sha256(Path(args.input).read_bytes()).hexdigest(),
+              "data_sha256": hashlib.sha256(clean_input.read_bytes()).hexdigest(),
               "deps": {k: importlib.metadata.version(k)
                        for k in ["torch", "transformers", "safetensors"]},
               "gpu": torch.cuda.get_device_name(0),
