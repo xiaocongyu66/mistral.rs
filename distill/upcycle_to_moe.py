@@ -199,6 +199,9 @@ def main():
     _cj["architectures"] = ["Qwen3MoeForCausalLM"]
     _cj["num_experts"] = a.num_experts
     _cj["num_experts_per_tok"] = a.top_k
+    _cj["_name_or_path"] = "Apeireth-Decis-2.6B-128K"
+    _cj["model_name"] = "Apeireth-Decis-2.6B-128K"
+    _cj["base_model"] = "Qwen/Qwen3-0.6B"
     with open(_p, "w") as _f:
         _json.dump(_cj, _f, indent=2)
     n_dense = sum(v.numel() for v in sd.values())
