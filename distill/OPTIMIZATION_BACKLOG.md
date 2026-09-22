@@ -87,3 +87,11 @@ Qwen3-0.6B-Base 的 28 层里 21 层换成 KDA 线性注意力（657.5M 参数�
   CONC=16 稳定 ~55/min，不限日配额。蒸馏器：distill/distill_knox.py。
   nm2b 25k 过夜烧制中。意图种子 4,900（clinc/BlendX）排队。gold 直通已支持
   （convert_nanojev.py gold-only rows + --objective gold）。
+
+## 重要性切分回退（2026-09-23）
+v4 用 importance 切分失败：expert 中间维度 384（3072/8）与 config moe_intermediate_size=3072 不匹配，
+参数缩水到 0.79x，alpha 退化到 8.0。已回退 copy_noise（v5，已验证 2446M/3.25x）。
+**重新启用 importance 切分的前置条件**（三项都要做）：
+1. config: moe_intermediate_size = inter // num_experts（或 top_shared 比例）
+2. 校准样本量 5→50+（5 条太短，激活分布退化导致 alpha 全层一致）
+3. parity check 门禁：切分后 MoE 输出与 dense 逐位对比（UPCYCLE.md 的硬性要求）
