@@ -59,6 +59,17 @@ SOURCES = [
     ("allenai/Mix-Context-Post-Training-128K", None, "train", "text", 0.02, "Mix-Context 128K packed (FineWeb-Edu+RedPajama, 64-200K)"),
     # -- general web for coverage --
     ("openwebtext", None, "train", "text", 0.04, "OpenWebText (general web, ~38GB)"),
+    # -- long-form books & fiction (natural long sequences) --
+    ("sedthh/gutenberg_multilang", None, "train", "text", 0.04, "gutenberg multilang books"),
+    ("wikimedia/wikipedia", "20231101.en", "train", "text", 0.06, "english wiki (long articles)"),
+    # -- reasoning traces (naturally long chains) --
+    ("open-thoughts/OpenThoughts2-1M", None, "train", "conversations", 0.03, "reasoning traces (long CoT)"),
+    ("teknium/OpenHermes-2.5", None, "train", "conversations", 0.03, "1M general (some long)"),
+    # -- code (long files = long sequences) --
+    ("codeparrot/codeparrot-clean", None, "train", "content", 0.08, "python code (long files)"),
+    # -- additional 128K sources (verified HF API) --
+    ("HuggingFaceFW/fineweb-2", "eng_Latn", "train", "text", 0.04, "FineWeb-2 English (massive web)"),
+    ("HuggingFaceFW/fineweb-2", "zho_Hans", "train", "text", 0.04, "FineWeb-2 Chinese (massive web)"),
 ]
 
 # opus_books yields dict translations, not a plain string field
