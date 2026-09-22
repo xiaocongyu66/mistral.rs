@@ -280,3 +280,17 @@ MNBVC 60TB、Qidian-Webnovel-Corpus（110 本+读者评论）、MultiGenre-Chine
 - 部署：不量化；APK 下载接口 → 本地加载（FP32 9.8G 或加载时转 BF16 4.9G）
 - HF 归属：congyu778/duan-nanojev（best.safetensors + config）
 - 血统：v9 管线（upcycle→热身→600 步决策微调，143k 题教师数据）
+
+## NanoJev README 情报（github.com/TianyuCodings/NanoJev，2026-09-22 全读）
+- **定位**：Jev 的 nano 复刻（0.6B 并行决策模型，zero output-token decoding）。
+- **成绩**：ViZDoom Basic 128/128（Jev 56/128，2.3x）；Maze 225 attempts（Jev 2,738）；
+  Predict Position 27/128；Snake 8/8。548 评估案例/模型。
+- **数据已接入**：unified/hard 五分区 18,760 题（10,898 训练）已合并进 unified 主线 ✓。
+- **未用增量**：896 专家 episodes（17,498 记录决策，512 给训练）——predict_position
+  软标签来源，下一轮蒸馏可出题。
+- **训练配方**：hard_lr1e5 臂（one-hot），混合权重 Maze 1/3 Snake 1/3 Basic 1/6
+  Predict 1/6；决策头 lr 1e-4、backbone lr 1e-5（与我们一致）。
+- **JevHarness（新项目）**：LLM 构建任务特定决策 harness + 奖励/轨迹精炼 +
+  Pokémon demo——设计参考。
+- **tokenizer 警告**：fix_mistral_regex flag 存在（comment 6 证实），但 Qwen3 预训练
+  分词行为未确认——决策：不加 flag，保持基座一致性（训练/推理闭环自洽）。
