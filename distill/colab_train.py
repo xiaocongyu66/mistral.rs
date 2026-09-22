@@ -66,6 +66,23 @@ def _load_balance(logits_list, coef):
     return coef * total / max(len(logits_list), 1)
 
 
+def fix_gate_orientation(model_dir):
+    """self-heal: older upcycle builds saved gate as [H,E]; HF wants [E,H]"""
+    from safetensors.torch import load_file as _lf, save_file as _sf
+    _p = os.path.join(model_dir, "model.safetensors")
+    if not os.path.exists(_p):
+        return
+    sd = _lf(_p)
+    g0 = sd.get("model.layers.0.mlp.gate.weight")
+    if g0 is None or g0.shape[0] <= g0.shape[1]:
+        return
+    for k in list(sd):
+        if k.endswith("mlp.gate.weight"):
+            sd[k] = sd[k].t().contiguous()
+    _sf(sd, _p)
+    print("gate orientation self-healed (transposed)", flush=True)
+
+
 def load_unified(path):
     """Tolerant reader: skip malformed lines instead of dying mid-training."""
     rows = []
@@ -135,6 +152,7 @@ def main():
         tokenizer.pad_token = tokenizer.eos_token
     param_dtype = {"fp16": torch.float16, "bf16": torch.bfloat16,
                    "fp32": torch.float32}[args.dtype]
+    fix_gate_orientation(args.model)
     _cfg = AutoConfig.from_pretrained(args.model)
     _mt = getattr(_cfg, "model_type", "")
     lm = None
