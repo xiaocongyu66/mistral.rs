@@ -120,8 +120,14 @@ def main():
         tokenizer.pad_token = tokenizer.eos_token
     param_dtype = {"fp16": torch.float16, "bf16": torch.bfloat16,
                    "fp32": torch.float32}[args.dtype]
-    lm = AutoModelForCausalLM.from_pretrained(
-        args.model, dtype=param_dtype, attn_implementation="sdpa").cuda()
+    if torch.cuda.device_count() > 1:
+        lm = AutoModelForCausalLM.from_pretrained(
+            args.model, dtype=param_dtype, attn_implementation="sdpa",
+            device_map="auto")
+        print(f"device_map=auto across {torch.cuda.device_count()} GPUs", flush=True)
+    else:
+        lm = AutoModelForCausalLM.from_pretrained(
+            args.model, dtype=param_dtype, attn_implementation="sdpa").cuda()
     lm.config.use_cache = False
     if not args.no_grad_checkpoint:
         lm.gradient_checkpointing_enable()
@@ -137,7 +143,9 @@ def main():
     if missing:
         raise ValueError(f"empty splits: {missing}")
 
-    model = DecisionModel(lm.model, args.set_head).cuda().to(param_dtype)
+    model = DecisionModel(lm.model, args.set_head).to(next(lm.parameters()).device).to(param_dtype)
+    if torch.cuda.device_count() > 1:
+        print(f"decision head on {next(model.parameters()).device}", flush=True)
     del lm
     router_buf = []
     def _router_hook(module, inputs, output):
