@@ -54,10 +54,6 @@ SOURCES = [
     ("hsilvosa/hsc-wuxia-200k", None, "train", None, 0.02, "wuxia 200k"),
     ("wdndev/webnovel-chinese", None, "train", None, 0.02, "chinese webnovels"),
     ("bh2821/LightNovel5000", None, "train", None, 0.02, "light novels"),
-    # -- mass-scale corpora (user batch 2026-09-22, streaming pretrain feed) --
-    # note: fineweb-2 zho_Hans / MNBVC news2016 configs don't exist;
-    # CCI4.0-M2 gated. CCI3-HQ verified open.
-    ("BAAI/CCI3-HQ", None, "train", "text", 0.05, "CCI3 HQ zh mass"),
 ]
 
 # opus_books yields dict translations, not a plain string field

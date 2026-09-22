@@ -15,6 +15,10 @@ from safetensors.torch import load_file, save_file
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
+def _round(x, n):
+    return round(x, n) if isinstance(x, (int, float)) else x
+
+
 def dump(path, obj):
     Path(path).write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n")
 
@@ -333,6 +337,16 @@ def main():
         scaler.update()
         for s in schedulers:
             s.step()
+        if (step + 1) % 50 == 0:
+            _e = batch[0]
+            _tp = _e.get("teacher_probs") or []
+            print(f"[sample] {_e.get('qid', '?')} "
+                  f"state={str(_e.get('state', _e.get('text', '')))[:80]!r} "
+                  f"teacher={[_round(x, 2) for x in _tp[:5]] if _tp else 'gold-only'}",
+                  flush=True)
+            for _gi in range(torch.cuda.device_count()):
+                print(f"[mem] GPU {_gi}: {torch.cuda.memory_allocated(_gi)/2**30:.2f}G",
+                      flush=True)
         item = {"step": step + 1, "phase": "head" if warm else "full",
                 "loss": round(step_loss, 4),
                 "elapsed_seconds": time.perf_counter() - start}
