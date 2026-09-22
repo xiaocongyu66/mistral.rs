@@ -49,11 +49,16 @@ SOURCES = [
     ("MBZUAI/Bactrian-X", "en", "train", "input", 0.02, "52-lang instructions"),
     ("tasksource/100k-choice-dilemmas", None, "train", None, 0.02, "choice dilemmas"),
     # -- decision-domain direct hits (registry batch) --
-        ("KRAFTON/Orak", None, "train", None, 0.02, "game decision corpus"),
+    ("KRAFTON/Orak", None, "train", None, 0.02, "game decision corpus"),
     # -- chinese long-form fiction (registry batch) --
     ("hsilvosa/hsc-wuxia-200k", None, "train", None, 0.02, "wuxia 200k"),
     ("wdndev/webnovel-chinese", None, "train", None, 0.02, "chinese webnovels"),
     ("bh2821/LightNovel5000", None, "train", None, 0.02, "light novels"),
+    # -- long-context 128K (YaRN RoPE scaling + continual pretrain) --
+    ("caskcsg/entropylong_128k", None, "train", "text", 0.03, "EntropyLong 128K (ICLR 2026, FineWeb-Edu+Cosmopedia, dep-verified)"),
+    ("allenai/Mix-Context-Post-Training-128K", None, "train", "text", 0.02, "Mix-Context 128K packed (FineWeb-Edu+RedPajama, 64-200K)"),
+    # -- general web for coverage --
+    ("openwebtext", None, "train", "text", 0.04, "OpenWebText (general web, ~38GB)"),
 ]
 
 # opus_books yields dict translations, not a plain string field
