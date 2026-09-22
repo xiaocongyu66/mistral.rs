@@ -85,7 +85,7 @@ def upcycle(src, out_dir, num_experts, top_k, noise, seed):
     torch.manual_seed(seed)
     cfg = AutoConfig.from_pretrained(src)
     tok = AutoTokenizer.from_pretrained(src)
-    model = AutoModelForCausalLM.from_pretrained(src, dtype=torch.float32)
+    model = AutoModelForCausalLM.from_pretrained(src, torch_dtype=torch.float32)
     sd = model.state_dict()
 
     hidden = cfg.hidden_size
@@ -148,7 +148,7 @@ def main():
     torch.manual_seed(a.seed)
     cfg = AutoConfig.from_pretrained(a.model)
     tok = AutoTokenizer.from_pretrained(a.model)
-    donor = AutoModelForCausalLM.from_pretrained(a.model, dtype=torch.float32)
+    donor = AutoModelForCausalLM.from_pretrained(a.model, torch_dtype=torch.float32)
     sd = donor.state_dict()
     new_sd = {}
     for name, tensor in sd.items():

@@ -122,12 +122,12 @@ def main():
                    "fp32": torch.float32}[args.dtype]
     if torch.cuda.device_count() > 1:
         lm = AutoModelForCausalLM.from_pretrained(
-            args.model, dtype=param_dtype, attn_implementation="sdpa",
+            args.model, torch_dtype=param_dtype, attn_implementation="sdpa",
             device_map="auto")
         print(f"device_map=auto across {torch.cuda.device_count()} GPUs", flush=True)
     else:
         lm = AutoModelForCausalLM.from_pretrained(
-            args.model, dtype=param_dtype, attn_implementation="sdpa").cuda()
+            args.model, torch_dtype=param_dtype, attn_implementation="sdpa").cuda()
     lm.config.use_cache = False
     if not args.no_grad_checkpoint:
         lm.gradient_checkpointing_enable()
