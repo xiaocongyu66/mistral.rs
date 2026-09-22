@@ -37,8 +37,13 @@ def convert(rows, id2tag, id2holdout):
     for sid in sorted(by_state):
         questions, gold, native = {}, {}, {}
         for qname, r in by_state[sid].items():
-            labels, scores = r["labels"], r["scores"]
+            labels, scores = r["labels"], r.get("scores")
             typ = TYPE_MAP[r["qtype"]]
+            if not scores:
+                # gold-only row (dataset-native label): one-hot target for
+                # --objective gold; teacher_entropy=0 keeps it out of
+                # teacher-eligible eval
+                scores = {lab: (1.0 if lab == r.get("answer") else 0.0) for lab in labels}
             if typ == "boolean":
                 probs = {BOOLEAN_KEY[k]: float(scores[k]) for k in labels if k in BOOLEAN_KEY}
                 if set(probs) != {"false", "true"}:

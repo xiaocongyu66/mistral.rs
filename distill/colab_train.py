@@ -23,8 +23,19 @@ def fit_temperature(model, calib_examples, pad_token, amp_dtype=None):
     against teacher soft targets. Grid over T in [0.5, 8]."""
     model.eval()
     use_amp = amp_dtype in (torch.float16, torch.bfloat16)
+    # batch to avoid a 20GB+ one-shot allocation on the calibration set
+    n_cand = max(len(ex["candidate_ids"]) for ex in calib_examples)
+    L = max(len(ex["candidate_ids"]) for ex in calib_examples)
+    max_len = max(max(len(ids) for ids in ex["candidate_ids"]) for ex in calib_examples)
+    bs = max(1, (8 * 1024 * 1024 * 1024) // (n_cand * max_len * 1024 * 4))
+    all_logits, order = [], []
     with torch.no_grad(), torch.autocast("cuda", dtype=amp_dtype or torch.float16, enabled=use_amp):
-        logits, _ = model(calib_examples, pad_token)
+        for s in range(0, len(calib_examples), bs):
+            chunk = calib_examples[s:s + bs]
+            lg, _ = model(chunk, pad_token)
+            all_logits.append(lg.float().cpu())
+            order.extend(range(s, s + len(chunk)))
+    logits = torch.cat(all_logits, 0)
     target = torch.zeros_like(logits)
     for i, ex in enumerate(calib_examples):
         target[i, :len(ex["candidate_ids"])] = torch.tensor(
