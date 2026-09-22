@@ -182,6 +182,11 @@ def main():
     cfg.norm_topk_prob = True
     cfg.output_router_logits = True
     cfg.architectures = ["Qwen3MoeForCausalLM"]
+    # NeMo qwen3_600m_sft_yarn_128k recipe: 40k native -> 131k extrapolation cap
+    cfg.rope_scaling = {"factor": 3.2, "original_max_position_embeddings": 40960,
+                        "beta_fast": 32.0, "beta_slow": 1.0,
+                        "type": "yarn", "rope_type": "yarn"}
+    cfg.max_position_embeddings = 131072
     cfg.save_pretrained(a.out)
     n_dense = sum(v.numel() for v in sd.values())
     n_moe = sum(v.numel() for v in new_sd.values())

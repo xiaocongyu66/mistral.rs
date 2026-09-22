@@ -84,7 +84,7 @@ def main():
                     help="gradient accumulation steps: micro_batch=batch/accum")
     ap.add_argument("--no-grad-checkpoint", action="store_true")
     ap.add_argument("--eval-every", type=int, default=50)
-    ap.add_argument("--max-length", type=int, default=768)
+    ap.add_argument("--max-length", type=int, default=2048)
     ap.add_argument("--backbone-lr", type=float, default=1e-5)
     ap.add_argument("--head-lr", type=float, default=1e-4)
     ap.add_argument("--seed", type=int, default=17)
@@ -202,6 +202,14 @@ def main():
         print(f"entropy weighting on: mean_w={wsum/len(sample_weights):.4f} "
               f"min={min(sample_weights):.3f} max={max(sample_weights):.3f}", flush=True)
 
+    warmup_iters = 30
+    def _lr_lambda(step):
+        if step < warmup_iters:
+            return (step + 1) / warmup_iters
+        return 1.0
+    schedulers = [torch.optim.lr_scheduler.LambdaLR(optimizer, _lr_lambda)]
+    print(f"lr warmup: {warmup_iters} iters linear 0->1", flush=True)
+
     total_steps = args.head_steps + args.steps
     logs, best, best_step = [], float("inf"), None
     start = time.perf_counter()
@@ -249,6 +257,8 @@ def main():
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         scaler.step(optimizer)
         scaler.update()
+        for s in schedulers:
+            s.step()
         item = {"step": step + 1, "phase": "head" if warm else "full",
                 "loss": round(step_loss, 4),
                 "elapsed_seconds": time.perf_counter() - start}
