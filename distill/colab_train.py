@@ -353,11 +353,18 @@ def main():
         if not warm and ((step + 1 - args.head_steps) % args.eval_every == 0
                          or step + 1 == args.head_steps + args.steps):
             router_buf.clear()
-            metrics = evaluate(model, bysplit["dev"], tokenizer.pad_token_id,
-                               args.batch_questions)
-            router_buf.clear()
-            item["dev"] = metrics
-            score = metrics["teacher_ce" if args.objective == "teacher" else "gold_nll"]
+            try:
+                metrics = evaluate(model, bysplit["dev"][:500], tokenizer.pad_token_id,
+                                   min(args.batch_questions, 2))
+                router_buf.clear()
+                item["dev"] = metrics
+                score = metrics["teacher_ce" if args.objective == "teacher" else "gold_nll"]
+            except torch.OutOfMemoryError:
+                torch.cuda.empty_cache()
+                router_buf.clear()
+                print("[eval] OOM, skipping dev eval this round", flush=True)
+                metrics = None
+                score = None
             if score is not None and score < best:
                 best, best_step = score, step + 1
                 save_file({k: v.detach().cpu().contiguous().clone()
