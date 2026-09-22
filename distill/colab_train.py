@@ -352,24 +352,42 @@ def main():
                 "elapsed_seconds": time.perf_counter() - start}
         if not warm and ((step + 1 - args.head_steps) % args.eval_every == 0
                          or step + 1 == args.head_steps + args.steps):
+            # cooldown before eval: release activation memory
+            torch.cuda.empty_cache()
+            time.sleep(5)
             router_buf.clear()
             try:
-                metrics = evaluate(model, bysplit["dev"][:500], tokenizer.pad_token_id,
-                                   min(args.batch_questions, 2))
+                metrics = evaluate(model, bysplit["dev"], tokenizer.pad_token_id,
+                                   args.batch_questions)
                 router_buf.clear()
                 item["dev"] = metrics
                 score = metrics["teacher_ce" if args.objective == "teacher" else "gold_nll"]
             except torch.OutOfMemoryError:
                 torch.cuda.empty_cache()
+                time.sleep(10)
                 router_buf.clear()
-                print("[eval] OOM, skipping dev eval this round", flush=True)
-                metrics = None
-                score = None
+                print("[eval] OOM, retrying with halved batch", flush=True)
+                try:
+                    metrics = evaluate(model, bysplit["dev"], tokenizer.pad_token_id,
+                                       max(1, args.batch_questions // 2))
+                    router_buf.clear()
+                    item["dev"] = metrics
+                    score = metrics["teacher_ce" if args.objective == "teacher" else "gold_nll"]
+                except torch.OutOfMemoryError:
+                    torch.cuda.empty_cache()
+                    time.sleep(15)
+                    router_buf.clear()
+                    print("[eval] OOM again, skipping this round", flush=True)
+                    metrics = None
+                    score = None
             if score is not None and score < best:
                 best, best_step = score, step + 1
                 save_file({k: v.detach().cpu().contiguous().clone()
                            for k, v in model.state_dict().items()},
                           out / "best.safetensors")
+            # cooldown after eval before training resumes
+            torch.cuda.empty_cache()
+            time.sleep(5)
         logs.append(item)
         if step % 12 == 0 or "dev" in item:
             print(json.dumps(item), flush=True)
