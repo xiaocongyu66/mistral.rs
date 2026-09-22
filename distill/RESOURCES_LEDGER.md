@@ -305,3 +305,35 @@ MNBVC 60TB、Qidian-Webnovel-Corpus（110 本+读者评论）、MultiGenre-Chine
 - **意义**：predict_position 11,173 题中 6,788 训练题的专家级监督链路完整
   （专家 logits→四动作分布→replay 验证），episodes 可直接复用出软标签。
 - **fix_mistral_regex**：flag 存在（已证实），决策不加——保持 Qwen3 基座分词一致性。
+
+## 反幻觉/反谄媚方案（2026-09-22 用户资料，登记待启用）
+- **TruthRL 三元奖励（正确/幻觉/弃权）**——与 decide 层的 Seal [REJ] 弃答机制
+  直接对应：让"我不知道"成为可奖励选项。优先级 P1（stage 2 损失改造）。
+- **RLCR 校准奖励**：输出置信度与真实正确率匹配——我们的 teacher_confidence
+  已是现成校准目标。
+- **Confessions 自白机制**：主答案后附自白，仅按诚实度奖励。
+- 评估：HaluEval（3 万）、C-FAITH（中文细粒度 6 万）、TruthfulQA。
+- **反谄媚**：对比偏好对（坚持事实 vs 迎合用户）。
+- 采纳判定：我们的模型是单次前向分类决策（非生成），幻觉形态=错选项而非编造。
+  最直接的干预：TruthRL 三元（弃答可奖励）+ RLCR（置信度校准），二者都
+  落在现有 loss 结构内，改造成本低。
+
+## Light-MER 框架解剖（2026-09-22，多模态线启动，任务 #16）
+- **仓库**：research/light-mer（20MB，含 SWD-H + M-GRPO 双阶段）
+- **SWD-H 核心**：
+  - my_affectgpt/models/ot_loss.py:141 SWDProjector（教师正交冻结投影→学生维度）
+  - ot_loss.py:163 sliced_wasserstein_loss（100 随机 1D 投影→排序→W-p 距离，
+    answer_mask 隔离有效位）
+  - affectgpt.py:930 接线：ot_hidden_loss = sliced_wasserstein_loss(...)
+- **架构配对**：教师 Qwen3-8B + CLIP-ViT-L-14 + HuBERT-L（9B/20GB）
+  → 学生 Qwen3-0.6B + CLIP-ViT-B-16 + HuBERT-B（855M/**2.54GB**/**11x FLOPs 优势**）
+- **开源 checkpoint**：kevin233333/Light-MER stage1-swdh-qwen3-0.6b（可直接 warm start）
+- **数据**：MER-Caption+（MER2025）；迁移时换我们的多模态决策任务数据
+- **适配 Apeireth-Decis 的方案**：
+  1. 学生 backbone = Apeireth-Decis-2.6B（替 Qwen3-0.6B，决策头保留）
+  2. 加视觉输入：CLIP-ViT-B-16 → 投影层 → backbone 维度
+  3. SWD-H：Light-MER stage1 教师隐藏态 ↔ Apeireth 隐藏态 Wasserstein 对齐
+  4. 数据：图像 state（截图/照片）+ 文字问题 + 选项 = 多模态决策题
+  5. **蒸馏信号仍从 jev**：图像→文字化描述→jev 标软标签（两阶段桥接）
+  6. 峰值 2.54GB——**单 T4 可跑**，Kaggle 免费额度内完成
+- 磁盘约束：checkpoint 不落本地，Kaggle 运行时拉 kevin233333/Light-MER
