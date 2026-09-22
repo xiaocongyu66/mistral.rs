@@ -98,10 +98,10 @@ def build_stream(tokenizer, seed=17, max_sources=None):
             cfg = fx.get("cfg", cfg)
             split = fx.get("split", split)
         try:
-            kw = {}
-            if repo in TRUST_REMOTE_CODE:
-                kw["trust_remote_code"] = True
-            ds = load_dataset(repo, cfg, split=split, streaming=True, **kw)
+            # trust all hub sources: streaming iter() lazily executes
+            # loader code long after load_dataset returns
+            ds = load_dataset(repo, cfg, split=split, streaming=True,
+                              trust_remote_code=True)
             streams.append({"it": iter(ds), "field": field, "w": w, "note": note, "repo": repo})
             print(f"[stream] {repo}/{cfg} w={w} ({note})", flush=True)
         except Exception as e:
