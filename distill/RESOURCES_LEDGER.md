@@ -337,3 +337,35 @@ MNBVC 60TB、Qidian-Webnovel-Corpus（110 本+读者评论）、MultiGenre-Chine
   5. **蒸馏信号仍从 jev**：图像→文字化描述→jev 标软标签（两阶段桥接）
   6. 峰值 2.54GB——**单 T4 可跑**，Kaggle 免费额度内完成
 - 磁盘约束：checkpoint 不落本地，Kaggle 运行时拉 kevin233333/Light-MER
+
+## 数据大爆发（2026-09-22 晚，nm2b+竞品蒸馏数据全部入库）
+
+### 统计（单域内分工）
+- nm2b：18,600/25,000（剩余等 24h 后刷新）
+- csrc 代码审查：15,000/17,700（csrc3 剩余待补）
+- nm3 残余：待分配
+
+### 底座答复（用户问"模型做什么的"）
+- **主干**：Qwen3-0.6B（decipher 后 27 层），attention+FFN+embedding 完整
+- **MoE 专家**：8 个全 FFN 专家（router=token-level softmax，top-2），每个独立参数
+  （非共享 backbone）→ 27 层*8 独立 FFN
+- **预测**：Fast token 无需解码，logits 一次前向直接读 → T4 10ms 级延迟
+- **路由**：token-level（每 token 独立选 2 个专家）——非 sequence-level
+- **30K/128K/128K 的回答**：正式版规格 32K 上下文起步 → 蒸馏到 128K（Qwen3 4B 2.5T
+  训练先例）→ 256K 需额外工程（对比 jukof jof3 32K→128K 版本）
+
+## 本轮会话完整进展（2026-09-22 晚）
+1. **蒸馏数据**：nm2b 24,981 + intents 4,899（knox teacher），合计 29,880 行
+   cd-nm2b 用 knox 替代 classifier.dev（402 walled），进行中 3,445/25,000 @ 169/min
+2. **长上下文语料**：EntropyLong 128K + Mix-Context 128K + OpenWebText 已注册到 stream_sources.py
+3. **NanoJev 数据**：unified/hard（18,760）+ soft（2,421）已合并进 unified 主线
+4. **Jev-bench 数据**：Praveenrajus/jev-bench 22 任务 133,953 行已合并，5% held-out
+5. **统一训练集规模**：281,055 states / 298,365 questions
+6. **模型命名**：Apeireth-Decis-2.6B-128K（Qwen3-0.6B → 8-expert MoE, YaRN 128K）
+7. **Light-MER 框架**：SWD-H 核心（ot_loss.py SWDProjector + sliced_wasserstein_loss）
+   已解剖，适配方案（Apeireth backbone + CLIP-ViT-B + jev 教师软标签）已登记
+8. **反幻觉方案**：TruthRL 三元 + RLCR 校准 - 登记待 stage 2 实施
+9. **kernel v9**：push 后 RUNNING，但 API status 被拒（可能私有/kernel 结束），
+   最后已知状态：流式源 42 个成功、MACHIAVELLI ready、device_map=auto 13GiB/GPU
+10. **磁盘约束**：HPLT 3.0 / MNBVC 60TB / Institutional Books 等大型语料暂用流式加载
+    （不落本地），等 quota 重置后启用
