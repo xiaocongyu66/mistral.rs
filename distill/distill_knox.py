@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 KEY = os.environ["KNOX_KEY"]  # required; never commit keys
 URL = "https://api.knox.chat/v1/systemone"
-CONC = int(os.environ.get("CONC", "48"))
+CONC = int(os.environ.get("CONC", "128"))  # v5e-8 can handle more
 
 
 def probe(state, question, labels, max_len=4000):
