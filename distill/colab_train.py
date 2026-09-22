@@ -137,7 +137,7 @@ def main():
     if missing:
         raise ValueError(f"empty splits: {missing}")
 
-    model = DecisionModel(lm.model, args.set_head).cuda()
+    model = DecisionModel(lm.model, args.set_head).cuda().to(param_dtype)
     del lm
     router_buf = []
     def _router_hook(module, inputs, output):
