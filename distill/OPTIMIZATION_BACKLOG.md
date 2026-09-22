@@ -62,3 +62,28 @@ Qwen3-0.6B-Base 的 28 层里 21 层换成 KDA 线性注意力（657.5M 参数�
 与 LiteCoT 的「10 万短推理 > 80 万长推理」同向，支持我们「质量优先」的路线。
 
 **结论**：资源清单要按「我们的瓶颈是否被它解决」筛选，不按「它是否优秀」筛选。
+
+## 2026-09-22 用户资料批（三批，全部已核验存在性）
+
+### P1：stage 2 数据源（下一轮直接接）
+- **Data Turnstile**：API 规范→函数调用数据生成框架；1000+ API、10 万+多轮交互。
+  Qwen3-0.6B 微调后 BFCL 75.9%、tau2-bench pass^1 3.5%->24.6%（7x）。
+  用途：函数调用=decide 层引擎（任务 #14）的调用层原语数据。
+- **OmniThought-0528 + EasyDistill**：36.5 万变长思维链（DeepSeek-R1-0528 蒸馏），
+  HF/ModelScope 开源。用途：变长 CoT 与我们的温度退火互补，推理增强源。
+- **混合数据配方警告（Opus-3000x 教训）**：纯推理 SFT 使 ARC-Challenge -24.31%
+  +模式崩溃。Unsloth 配方（unsloth/OpenMathReasoning-mini + mlabonne/FineTome-100k
+  混合）是下一轮 stage 2 数据配比的参考线。我们 stage 1 的 38 源热身正是防这个。
+
+### P2：多模态启动时用（任务 #16）
+- **Light-MER**（GAIR-Lab）：隐藏态 Wasserstein 蒸馏，Qwen3-8B 教师->0.6B 学生，
+  峰值显存 2.54GB。蒸馏 pipeline 可迁移到我们的多模态任务。
+- **Reyes-0.6B**（yujunhuics/Reyes）：SigLIP2-Base + 2 层 MLP + Qwen3-0.6B，
+  MMMU 38.7，ModelScope 权重。若做多模态：直接领域 LoRA，不从零训。
+
+### 新教师通道：knox.chat（2026-09-22 实测）
+- POST /v1/systemone，state+questions{criteria} 格式，返回 answers.q.probabilities
+  软分布；jev-1.13.0 正版在位。实测 128 并发 335/min（429 上限），
+  CONC=16 稳定 ~55/min，不限日配额。蒸馏器：distill/distill_knox.py。
+  nm2b 25k 过夜烧制中。意图种子 4,900（clinc/BlendX）排队。gold 直通已支持
+  （convert_nanojev.py gold-only rows + --objective gold）。

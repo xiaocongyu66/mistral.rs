@@ -70,7 +70,7 @@ def gen_from_coco(count, out_path, img_dir):
     os.makedirs(img_dir, exist_ok=True)
 
     # pull COCO train split
-    lp = hf_hub_download("HuggingFaceM4/COCO", "data/train-00000-of-00011.parquet",
+    lp = hf_hub_download("jxie/coco_captions", "data/train-00000-of-00182-5c0b9bd6a017ebf2.parquet",
                           repo_type="dataset", local_dir="mm_raw")
     import pyarrow.parquet as pq
     t = pq.read_table(lp)
