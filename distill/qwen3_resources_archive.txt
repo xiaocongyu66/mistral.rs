@@ -1,0 +1,2741 @@
+以下是关于 MoE Upcycling 风险与 Qwen3-0.6B 工程陷阱的直接链接整理：
+
+📄 学术论文
+
+Drop-Upcycling（arXiv:2502.19261）
+
+· arXiv 摘要页：https://arxiv.org/abs/2502.19261 
+· Hugging Face 论文页：https://huggingface.co/papers/2502.19261
+· Semantic Scholar：https://www.semanticscholar.org/paper/Drop-Upcycling%3A-Training-Sparse-Mixture-of-Experts-Nakamura-Akiba/ 
+
+Dense2MoE（arXiv:2605.26496）
+
+· arXiv PDF：https://arxiv.org/pdf/2605.26496 
+· Semantic Scholar：https://www.semanticscholar.org/paper/Dense2MoE%3A-Pushing-the-Pareto-Frontier-of-On-Device-Li-Ji/67688c1bfff164baac5283c5c34b67bda705189c 
+
+Dirichlet-Prior Shaping
+
+· ICML 2026 海报页：https://icml.cc/virtual/2026/poster/65632 
+· ar5iv 全文：https://ar5iv.labs.arxiv.org/html/2510.01185 
+
+MoE 综述（arXiv:2407.06204）
+
+· Hugging Face 论文页：https://huggingface.co/papers/2407.06204
+· GitHub 资源仓库：https://github.com/withinmiaov/A-Survey-on-Mixture-of-Experts
+
+⚠️ Qwen3-0.6B 工程陷阱（社区记录）
+
+AlexWortega 的 UPCYCLE.md（记录了 RoPE half-split 陷阱、logits 压缩等静默失效点）：
+https://huggingface.co/AlexWortega/moe-600m-qwen3-upcycle/blob/main/UPCYCLE.md
+
+💻 开源项目与代码
+
+AlexWortega/moe-600m-qwen3-upcycle
+
+· 模型仓库：https://huggingface.co/AlexWortega/moe-600m-qwen3-upcycle 
+· model.py：https://huggingface.co/AlexWortega/moe-600m-qwen3-upcycle/blob/main/model.py
+
+Marco-MoE（阿里国际，Qwen3-0.6B Upcycling 工业级实践）
+https://github.com/ATH-MaaS/Marco-LLM/blob/main/Marco-MoE/README.md
+
+kleon1024/agi-playground（Qwen3 upcycle 脚本）
+https://github.com/kleon1024/agi-playground/blob/main/01-language-model/pretrain/upcycling/prod/upcycle_hf.py
+
+建议优先阅读 AlexWortega 的 UPCYCLE.md（工程陷阱最详实）和 Drop-Upcycling 论文（路由坍塌的理论根源），这两份材料基本覆盖了你之前担心的所有核心风险。针对《我的世界》（Minecraft）的训练资料，我为你整理了以下可以直接使用的资源，涵盖决策智能体、多模态学习、代码生成和强化学习等多个维度。
+
+🤖 智能体与决策训练
+
+MGOA 数据集 (Optimus-2)
+CVPR 2025 工作，包含 8个原子任务的 25,000个视频，提供了约 3000万 个“目标-观察-动作”三元组，专门用于训练多模态 Minecraft 智能体的决策能力。
+
+OmniJARVIS (NeurIPS 2024)
+提出了统一的视觉-语言-动作（VLA）分词方法，将长期交互中的指令、记忆、观察和行为轨迹打包成统一 token 序列。数据集、模型和代码将在 craftjarvis.org/OmniJARVIS/ 发布。
+
+Agent Society 蒸馏数据集
+包含 1,355 条 SFT 样本，专门蒸馏了 Claude Sonnet 在 Minecraft 生存/社交沙盒中的逐 tick 决策，可直接用于微调小型本地模型。
+
+MineRL-v0 / BEDD
+MineRL-v0 包含人类演示数据。BEDD 在此基础上扩展，包含 2600万 图像-动作对（来自近 14,000 个视频），以及超过 3,000 组带自然语言解释的人类偏好评估，非常适合训练和评估处理“模糊任务”的智能体。
+
+🧠 推理与指令微调
+
+MineMA 指令数据集
+包含 390,317 条指令条目，专为 Minecraft 问答任务设计，已用于微调 MineMA 系列模型（基于 LLaMA-3-8B/70B）。
+
+Odyssey 技能数据集
+在 Minecraft Wiki 基础上构建了超过 39万条指令条目的问答数据集，用于训练具备开放世界技能的智能体，所有数据、模型权重和代码均已公开。
+
+CraftAssist 语义解析数据集
+包含 7,000 条人类话语及其对应的语义解析，用于训练智能体理解指令驱动的通信。
+
+🎬 多模态与行为克隆
+
+PLAICraft (10,000+ 小时)
+大规模、时间对齐的多模态数据集，同步记录了视频、游戏音频、麦克风输入、鼠标和键盘动作五种模态，精度达毫秒级。包含超过 10,000 小时的多人游戏数据，目前已公开 200 小时子集。
+
+VPT (Video PreTraining) 数据集
+来自 OpenAI 的大规模数据集，包含 7,854 个 episode（3894万帧）的承包商数据和 2,267 个 episode（1496万帧）的 VPT 智能体生成数据，适合训练行为克隆和世界模型。
+
+MineDojo 互联网知识库
+一个庞大的开放知识库，包含 73万+ YouTube 视频（带时间对齐文本）、6,000+ Wiki 页面和 34万+ Reddit 帖子，为智能体提供互联网规模的常识知识。
+
+💻 代码与模组开发
+
+Forge Coder v1.21.11
+基于 deepseek-coder-6.7b-instruct 微调的 Minecraft Forge 模组开发专用模型。训练数据来自 27个热门模组仓库，包含 22,916 个 Java 文件和 13,936 条训练样本，在 H100 上训练了约 9 小时。
+
+MinecraftModSources 数据集
+包含 2,000 个不同插件和 50万+ 源文件，专用于训练 Minecraft 模组代码补全模型。
+
+🛠️ 强化学习环境
+
+CraftGround
+一个基于 Minecraft 的高性能强化学习基准环境，专门针对分层技能学习、长期规划和复杂决策任务进行了优化，解决了原有环境在性能上的瓶颈。
+
+这些资源中，如果你想优先训练决策能力，可以从 MGOA 和 Agent Society 蒸馏数据入手；如果需要多模态基础，PLAICraft 的规模和质量最突出；而 Forge Coder 则直接提供了模组开发这一垂直领域的代码生成模型。按规模从大到小，你对话中提到的较大数据集（百万级样本 / 万亿级 token / 数十 TB 以上）汇总如下：
+
+📚 超大规模预训练语料
+
+· HPLT 3.0：30 万亿 tokens，近 200 种语言
+· Common Corpus：1.99 万亿 tokens，多语言公共领域
+· FineTranslations：万亿级 token，500+ 语言平行文本
+· MNBVC：60 TB，中文语料（小说是重要组成）
+· CCI 4.0：35 TB，中文互联网语料
+· Institutional Books 1.0：98.3 万本书，2420 亿 tokens，250+ 语言
+· Cosmopedia：3000 万样本，250 亿 tokens，合成教科书
+· FLAN Collection：300 GB，指令微调
+· Open Artificial Knowledge：5 亿 tokens
+
+🌍 多语言
+
+· Aya Dataset：204K 实例，65 种语言（人工标注）
+· MaLA：2500+ 语言对
+· taggedPBC：1940+ 语言 POS 标注
+· FineWiki：325+ 语言 Wikipedia
+
+📐 数学与推理
+
+· OpenMathInstruct-2：1400 万问题-解答对
+· Nemotron-Math：750 万解题轨迹
+· mCoT-MATH：630 万条，11 种语言
+· Reasoning Corpus：500 万条推理链
+· OmniThought：200 万条 CoT
+· MathReasoning：313 万条
+· MMathCoT-1M：100 万条多模态数学 CoT
+· NuminaMath：86 万+
+· OmniThought-0528：36.5 万条
+· LiteCoT：10 万条
+· TART：344,294 条
+· OpenThoughts-114k：11.4 万条
+· TraceMind：260 万条代码执行推理
+· SynLogic：合成逻辑推理
+· RL-for-reasoning：9.2 万条
+
+💻 代码
+
+· CLI-1M：975,933 条 NL→Shell 配对
+· OpenCodeReasoning：736,712 条 Python 样本
+· SWE-ZERO：30 万条无执行轨迹
+· OPEN-SWE-TRACES：207,489 条，9 种语言
+· CodeEvo-100K：10 万条指令-代码对
+· SWE-HERO：1.3 万条执行精炼轨迹
+· TraceEval：10,583 个程序
+· SWE-QA：9,072 道多跳理解题
+· ShellOps：1,624 个 CLI 任务
+· ShIOEnv：210 万条输入-输出对
+
+🖼️ 多模态
+
+· M²C-INSTRUCT：1300 万+ 多语言多模态指令
+· PokeAgent Challenge：2000 万+ 对战轨迹
+· AV-Skills / AV-Think：286 万条对话
+· InterSyn：180 万样本
+· PRISM：11.3 万 + 126 万条
+· CXR-MAX：170,982 条推理轨迹
+· BMMR：10 万大学水平问题
+· CMM-Math：28,000+ 中文多模态数学
+· LENS：6 万+ 问题
+
+🎮 决策与游戏
+
+· DfE-DB：380 万条决策记录
+· ITC Database：117 万条跨期选择
+· MACHIAVELLI：50 万场景
+· 100K Choice Dilemmas：10 万+ 文本困境
+· MindGames：29,571 场博弈
+· Rushes：44,226 个决策事件
+· Good Thinking Corpus：27,252 条
+· Game Reasoning CoT：551 条
+
+🔍 搜索与工具调用
+
+· UltraData-SFT-Agent-2609：48.4 万条执行轨迹
+· ASearcher-train-data：35k 子集
+· SearchVL-SFT-36k / RL-8k
+· PaperSearchQA：1600 万篇摘要 + 6 万 QA
+· Terminal Command Execution SFT：安全终端命令
+
+🧪 蒸馏数据集
+
+· EasyDistill 配套：100 万通用 + 200 万思维链
+· Claude-Distills：140,504 条
+· DeepSeek-R1 蒸馏系列：6 个模型（1.5B–70B）
+· 中文 DeepSeek-R1 蒸馏：11 万条
+· Qwen3.5 蒸馏：7,500 条
+· Kimi-2.5 长推理：250 条
+· GLM-5.2 General Distill
+· Superior-Reasoning-SFT
+· Matrix2-Pretrain-25k：25,367 条
+
+按单一数据集规模排序，最大的几个是：
+
+1. HPLT 3.0 — 30 万亿 tokens
+2. Common Corpus — 1.99 万亿 tokens
+3. FineTranslations — 万亿级 token
+4. MNBVC — 60 TB
+5. CCI 4.0 — 35 TB
+6. Cosmopedia — 250 亿 tokens
+7. OpenMathInstruct-2 — 1400 万
+8. M²C-INSTRUCT — 1300 万+
+9. PokeAgent — 2000 万+ 轨迹
+10. CLI-1M — 975,933 条
+
+需要我进一步按领域或训练阶段（预训练/SFT/RL）帮你筛选出最优先使用的几个吗？思维链（CoT）相关的训练资源很丰富，按数据集、代码库和论文综述分类整理如下。
+
+📊 思维链数据集
+
+claude-opus-4.6-4.7-reasoning-8.7k
+包含 8,706 条多领域英文样本，由 Claude Opus 4.6（53.7%）与 4.7（46.3%）生成。每条附带 150–500 词的长片段推理过程，覆盖代码、数学、科学、金融、法律等 28 个细分类别。采用 <think> 格式，Apache-2.0 许可。
+
+OmniThought
+ACL 2026 工作，200 万条 CoT 过程，由多个强力 LRM 生成并验证。每条标注了 Reasoning Verbosity (RV) 和 Cognitive Difficulty (CD) 两个新颖指标，用于刻画 CoT 的适当详细程度和认知难度。基于 Qwen2.5/3 验证了 RV 和 CD 评分对训练效果的正向影响。
+
+CoT-Trace-Inverted-28K
+28,391 条 CoT 推理样本，通过多源蒸馏和 Trace Inversion（轨迹反转） 构建。核心思路是从压缩的模型输出中重建完整的结构化推理链，让学生模型学习严谨的逐步推理而非模仿捷径结论。覆盖数学、科学、代码、逻辑等，统一 <think> 格式，按推理链长度全局排序，适合课程学习（短→长 CoT 渐进）。
+
+Open-CoT-Reasoning-Mini
+10,200 条蒸馏 CoT 推理样本，覆盖数学、医学、艺术、社科、计算机、逻辑谜题等领域。专为 10B 以下参数模型设计，每条包含 input（附带 “Let's think step by step:” 提示）和 output（含 <think> 和 <answer> 双标签）。Apache-2.0 许可。
+
+TART (Textual Answers & Reasoning Traces)
+约 344,294 条指令微调记录，由 9 个高保真数据集合成，融合了 Claude Opus 4.6、DeepSeek-V4、GPT-OSS 等前沿模型的推理轨迹。严格四列 Schema：question、reasoning（CoT 轨迹）、answer、source，兼容 Unsloth、HF TRL、Axolotl 等训练框架。Apache-2.0 / MIT 许可。
+
+Dolci-Think-SFT-32B-Multilingual
+大规模多语言长 CoT 推理语料，覆盖英、法、德、西、中、斯瓦希里六种语言。每种语言约 50 万条样本，序列长度可达 32,768 tokens。以数学（37.93%）和代码（34.80%）为主。ODC-BY 许可。
+
+mCoT-MATH
+大规模多语言数学 CoT 推理数据集，包含约 630 万条样本，覆盖 11 种语言。
+
+💻 思维链蒸馏代码库
+
+CODI（EMNLP 2025）
+将思维链压缩到连续空间的自蒸馏方法。提供 CODI-gpt2 和 CODI-llama3.2-1b-Instruct 预训练权重，支持 GSM8K、SVAMP、GSM-Hard、Multi-Arith 等数学基准的评估。关键参数包括 num_latent（潜在思维数量）、distill_loss_type（l1/l2/smoothl1）等。
+
+Reasoning-Skill (TRS)（ACL 2026 Oral）
+“Thinking with Reasoning Skills”框架，将 CoT 轨迹蒸馏为可复用的技能卡片。四步流程：生成源 CoT 轨迹 → 蒸馏为技能卡片 → 检索相关技能 → 注入提示并运行 TRS 推理。提供完整可运行脚本（含 mock 模式，可离线运行）。
+
+📄 综述与资源索引
+
+A Survey on Large Reasoning Models with Self-Play Deep Reinforcement Learning and Chain-of-Thought（ACM, 2026.01）
+系统综述自博弈深度强化学习驱动的 CoT 推理，涵盖树搜索规划、过程监督与奖励建模、自博弈与自我改进机制等关键技术。
+
+Awesome Long-Chain-of-Thought Reasoning with Tools
+长 CoT 推理与工具使用的研究资源和论文精选列表，包含 START（自学习推理器 + 工具集成）、Hint-RFT 等方法的论文和代码链接，有中英文版本。
+
+CoT Distillation Collection (HuggingFace)
+SLoonker 维护的 CoT 蒸馏数据集集合，收录了 GLM-5.1-Reasoning-1M、DeepSeek-V4-Distill-Combined-14000x、Kimi-K2.5-Reasoning-1M、GLM-5.2 系列（金融/科学/对话/逻辑谜题）等多个蒸馏数据集。
+
+你目前是想优先用这些资源来扩充通用推理数据，还是针对某个特定语言或领域（如中文、数学、代码）进行专项强化？告诉我方向，我帮你进一步筛选。这里整理了一批可以直接下载使用的蒸馏模型成果，按类别列出。
+
+🚀 前沿大模型蒸馏成果
+
+DeepSeek-R1 蒸馏系列
+这是目前最主流、生态最完整的蒸馏成果之一，基于 80万条 R1 生成样本对多个开源模型进行 SFT 微调。包含 Qwen-1.5B/7B/14B/32B 和 Llama-8B/70B 共 6 个规格，权重在 HuggingFace 和 GitHub 开源，采用 MIT 许可。
+
+Claude / GPT / Gemini 蒸馏模型
+社区有项目将 Claude、GPT、Gemini 等前沿闭源模型的推理能力蒸馏到开源架构中。例如 Qwen3.5-9B-Claude-4.7 提供了 GGUF 量化版本，在消费级硬件上即可运行。另有 Nemotron-3-Super-120B 从 Claude-4.6 Opus 蒸馏而来，BF16 精度，总大小约 241 GB。
+
+Progressive Distillation 项目
+包含从 Qwen 0.5B 和 Gemma-3-270M 蒸馏的多个学生检查点，涵盖不同学习率和随机种子组合，适合对比蒸馏策略的效果。
+
+DistillDetect
+提供从 Llama-3.3-70B-Instruct 蒸馏到 Qwen2.5-3B 的复现成果，以及从 o1 蒸馏到 Gemma-3-4B 的版本，附带完整的模型权重和评估结果。
+
+🧩 经典小模型蒸馏成果
+
+DistilBERT
+HuggingFace 上有完整的 DistilBERT 组织，包含从原始 BERT 检查点通过师生学习蒸馏得到的模型，参数比 BERT-base 减少约 40%，推理速度提升约 60%。
+
+TinyBERT
+华为诺亚方舟的经典工作，提供 4层-312维 和 6层-768维 两个规格，涵盖所有 GLUE 任务的蒸馏版本，权重已上传至 HuggingFace。
+
+MiniLLM
+微软的 LLM 蒸馏方法，提供从 OPT-13B 蒸馏到 1.3B、从 GPT2-xlarge (1.5B) 蒸馏到 120M/760M 的多个学生模型，使用反向 KL 散度进行蒸馏。
+
+DistilGPT
+基于 GPT-2 的蒸馏模型，提供 GGUF 量化格式，最小版本约 163M 参数，可在本地轻量运行。
+
+🖼️ 多模态与专用蒸馏成果
+
+Byrne-VLM-131M
+一个仅 131M 参数的视觉语言模型，从更大的 VLM 蒸馏而来，权重文件仅 571 MB，包含完整的推理代码。
+
+FlashWAM-RoboTwin
+面向具身 AI 的蒸馏世界动作模型，将推理压缩到每个模态 单步，实现最高 23倍加速，完整模型（蒸馏 transformer + 编码器）已在 HuggingFace 发布。
+
+NanoVDR-D
+从 8B 视觉语言教师蒸馏出的 457M 编码器，将文档页面图像压缩为单个 4096维向量，权重以 float32 格式发布。
+
+efficientSAM3
+从 SAM3 蒸馏的轻量级分割模型系列，最小版本（EV-M）仅 89.2M 参数，比原版小 90%，提供 HuggingFace 权重下载。
+
+这些成果都可以直接从 HuggingFace 或 GitHub 拉取，部分还附带了推理代码和量化版本。你目前是想找某个特定教师模型（如 DeepSeek、Claude）的蒸馏成果，还是更关注某个参数规模（如 1B 以下、3B 左右）的学生模型？为 OpenJev 这类决策模型扩展数据来源，电子书确实是很好的思路。它们能提供结构化的知识体系，比零散的网络文本更适合用来生成高质量的合成训练数据。以下按不同方向为你整理了一些可获取的电子书资源。
+
+📚 决策理论与算法（核心方向）
+
+这部分与 Jev 的“决策”本质最直接相关，能为模型提供决策框架和算法基础。
+
+· 《Foundations of Computational Decision Analysis》：开放获取电子书，涵盖计算决策分析基础、多准则决策方法（如 SMART、AHP）及概率多准则决策，为构建决策模型提供理论基石。
+· 《Algorithms for Decision Making》：MIT Press 出版，PDF 在 CC-BY-NC-ND 许可下共享。系统讲解不确定性下的决策算法，面向高年级本科生和研究生，实操性强。
+· 《Markov Decision Processes and Reinforcement Learning》：Puterman 和 Chan 合著，前五章预印本可免费下载。深入讲解 MDP 的数学和算法基础，是理解序列决策的经典之作。
+· 《Decision Modeling》：583 页免费 PDF，涵盖线性优化、敏感性分析等决策建模内容，适合工程和管理决策场景。
+
+🧠 知识蒸馏与模型压缩（蒸馏技术参考）
+
+这部分直接服务于你的蒸馏任务，提供方法论的直接参考。
+
+· 《Advancements in Knowledge Distillation: Towards New Horizons of Intelligent Systems》：系统覆盖知识蒸馏范式，包括各种训练方案、师生架构和蒸馏算法，是蒸馏技术的综合性参考书。
+· 《Efficient Deep Learning》：免费电子书，部分章节已开放。内容涵盖压缩、数据增强、蒸馏、AutoML、剪枝等，从工程角度讲解如何用更少资源实现更好质量。
+· 《White-Box Knowledge Distillation》：提供免费在线书摘和完整章节 PDF 下载，专注于白盒蒸馏方法。
+
+🤖 多模态与大规模语言模型（能力扩展）
+
+既然你在考虑多模态能力，以下资源能帮你理解多模态模型的架构和训练。
+
+· 《大规模语言模型：从理论到实践（第2版）》：复旦 533 页教材，第 7 章专门讲解多模态大语言模型，中文资源，适合系统学习。
+· 《Large Vision-Language Models: Pre-training, Prompting, and Applications》：2025 年出版，涵盖视觉语言模型的预训练、提示工程和应用，包括视频理解的多模态 LLM。
+· 《多模态大模型：技术原理和实战》：深度解析大语言模型与多模态模型的原理和实战，有免费 PDF 电子版可获取。
+
+🎯 强化学习与认知科学（决策理论基础）
+
+这些领域能为 Jev 的“校准概率”和“决策建模”提供更深层的理论支撑。
+
+· 强化学习教材：MIT 的 《Reinforcement Learning and Optimal Control》（2024 年第二版，约 480 页）可免费下载，强调动态规划框架下的直观推理。经典教材 《Reinforcement Learning: An Introduction》（Sutton & Barto）第二版也有免费 PDF。
+· 《An Introduction to Cognitive Economics: The Science of Mistakes》：开放获取，探讨认知过程如何影响经济决策，包括人类决策偏差和 AI 协作，与 Jev 的“校准决策”思路有相通之处。
+· 认知科学开放教材：如 《Mind, Body, World: Foundations of Cognitive Science》，可作为理解决策认知基础的补充。
+
+💡 使用建议
+
+将这些电子书作为高质量合成数据的种子语料会非常有效。例如，你可以从中提取决策场景、方法论描述和推理过程，然后用更强的模型（如 Qwen 系列或 Claude）将其改写成 state + options + decision 的训练格式。电子书的结构化程度高，生成的数据在逻辑一致性上通常会优于从零散网页抓取的内容。
+
+你目前是想优先用这些电子书来扩充训练数据的多样性，还是想从中提取特定的决策推理模式来强化模型某一方面的能力？告诉我你的侧重点，我可以帮你进一步筛选最匹配的书籍。当然，这里还有一些新的资源，可以作为OpenJev训练数据的补充。
+
+📚 决策理论与认知科学
+
+· 《Theories of Rational Decisions》 (Kevin Zollman)：卡内基梅隆大学教材，数学细节适中，适合构建决策推理的基础逻辑。
+· 哈佛决策科学教科书资源包： curated的入门教科书合集，涵盖决策分析、概率/Bayes等，附可下载的PDF章节信息。
+· 《An Introduction to Cognitive Economics》：开放获取，探讨认知过程如何影响经济决策，涉及人类决策偏差，与Jev的校准决策思路相通。
+
+🧠 知识蒸馏与模型压缩
+
+· 《Beyond Answers: Transferring Reasoning Capabilities to Smaller LLMs Using Multi-Teacher Knowledge Distillation》：2025年开放获取专著，专注多教师知识蒸馏，与你正在进行的蒸馏工作直接相关。
+· Awesome Knowledge Distillation：GitHub上的论文合集，系统收录了从经典到前沿的蒸馏论文（含arXiv PDF链接），是查找具体技术方案的实用索引。
+· 《White-Box Knowledge Distillation》：提供免费在线书摘和完整章节PDF，专注白盒蒸馏方法，适合深入理解蒸馏内部机制。
+
+🤖 多模态与强化学习
+
+· 《Large Vision-Language Models: Pre-training, Prompting, and Applications》 (Springer, 2026)：系统讲解视觉语言模型的预训练、提示工程和应用，覆盖视频理解等多模态LLM。
+· 《Mastering Reinforcement Learning》：昆士兰大学开放教材，从基础概念到最新技术，融合理论、实践和代码，适合强化学习入门到进阶。
+· 《Mathematical Foundations of Reinforcement Learning》 (赵世钰)：2025年出版，配套在线开放课程，数学基础扎实，适合深入理解RL的数学原理。
+
+💻 数据集与语料库
+
+· Good Thinking Corpus v1.0：Zenodo上的语料库，包含 27,252 条训练记录，覆盖逻辑、决策理论、博弈论等 182 个分类码，可直接用于训练。
+· MAD (Multilingual Argumentative Deliberation) Corpus：多语言（英/德/波/意）论证审议语料库，包含人工标注的审议对话，可提供丰富的决策对话素材。
+· Decision Making Content 1 & 2 (HuggingFace)：为RAG应用自动生成的决策相关语料，分别包含 736 和 98 个条目，可作为补充数据。
+
+🛠️ 其他综合资源
+
+· 《Introduction to Generative AI》 (2nd Ed)：涵盖大语言模型和多模态LLM训练，有免费PDF可供下载。
+· 《Decision-Making Models: A Perspective of Fuzzy Logic and Machine Learning》 (2024)：开放获取书籍，从模糊逻辑和机器学习视角探讨决策模型。
+· Decision Intelligence (Wiley, 2024)：关于AI驱动的决策转型，可从组织层面理解决策智能的应用。
+
+如果你对某类资源（比如特定蒸馏方法的代码实现，或者某个语料库的具体字段结构）想了解更多，可以告诉我，我帮你进一步查看。这里还有一些新的资源，可以继续为你的 OpenJev 训练补充“弹药”。
+
+📚 模型压缩与蒸馏电子书/教程
+
+· 《Beyond Answers》：2025年开放获取专著，专注多教师知识蒸馏，与你蒸馏工作的技术路线直接相关。
+· Awesome Compression：Datawhale开源的中文教程，用通俗语言介绍剪枝、量化、知识蒸馏等，提供PDF下载。
+· 《Python实现知识蒸馏》：工程导向文档，覆盖软标签蒸馏、注意力蒸馏、中间层特征蒸馏及边缘端部署，含完整代码框架。
+
+🧠 决策理论专项数据集
+
+· Good Thinking Corpus v1.0：27,252条训练记录，覆盖逻辑、决策理论、博弈论等 182个分类码，QC严格。
+· Risky Choices：源于经典的 choices13k 数据集，包含 13,006个风险选择问题，重构为自然语言格式，适合决策推理训练。
+· Newcomb-like Questions：针对纽科姆类决策问题的自然语言问答数据集，可用于评估和训练模型在复杂决策场景下的推理能力。
+· VNOVA决策助手数据集：包含 100个完全合成的决策场景，覆盖职业、教育、财务等类别，专为训练决策支持模型设计。
+
+🎥 多模态推理数据集
+
+· DriveLMM-o1：面向自动驾驶的逐步推理数据集，含超过 18k训练VQA样本，强调感知-预测-规划的推理链。
+· UrbanVideo-Bench：清华大学等发布，含 1.5k段第一人称航拍视频和 5.2k道多选题，评测Video-LLM的空间认知与决策能力。
+· V-REX：包含 700+样本、2,500+问题，覆盖图表、时间估算、GUI解读等真实场景，强调多步探索式视觉推理。
+· Zebra-CoT：182,384个样本的大规模数据集，包含文本-图像交错的推理轨迹，覆盖科学、2D/3D视觉推理、视觉逻辑及策略游戏（如国际象棋）。
+· MIRAGE：基于 35,000+ 真实用户-专家交互构建，专注于农业领域的多模态专家级推理与决策。
+
+你目前是想优先用这些资源来扩充训练数据的多样性，还是想从中提取特定的决策推理模式来强化模型某一方面的能力？告诉我你的侧重点，我可以帮你进一步筛选最匹配的资源。针对你训练OpenJev和蒸馏模型的需求，我整理了一些GitHub上专门收集相关书籍和资料的仓库，按方向分类供你参考。
+
+📚 模型压缩与蒸馏专项
+
+· Rearchitecting-LLMs：Manning出版社《Rearchitecting LLMs》官方代码库，涵盖深度/宽度剪枝、知识蒸馏、注意力优化，附带可在Colab上运行的代码。
+· datawhalechina/awesome-compression：中文模型压缩入门教程，通俗讲解剪枝、量化、知识蒸馏、低秩分解等方法，PDF可下载。
+· HuangOwen/Awesome-LLM-Compression：系统收录LLM压缩研究论文和工具，包括知识蒸馏相关的综述和最新工作。
+· chenbong/awesome-compression-papers：模型压缩与加速的论文合集，覆盖剪枝、量化、知识蒸馏、低秩分解等方向。
+
+🎯 决策理论与算法
+
+· Algorithms for Decision Making：MIT Press教材《Algorithms for Decision Making》配套资源库，包含完整排版代码和案例。
+· Situational-Awareness-and-Decision-Making：情境意识与决策的理论、应用和案例研究文档合集。
+· on-conflict-and-consensus：关于共识决策的手册，含LaTeX源码和编译PDF。
+
+🤖 免费AI/ML书籍合集
+
+· MarcosSete/awesome-free-ai-books：精选免费、合法的AI/ML书籍列表，按概率/贝叶斯、经典ML、ML数学、ML系统等分类。
+· yuanxiaosc/Machine_Learning_bookshelf：机器学习与深度学习相关书籍、课件、代码仓库。
+· zabiullah/pdf-books-collection：HuggingFace数据集，含1043本PDF教材（13.56 GB），覆盖AI、ML、深度学习、LLM等方向。
+
+🗂️ 综合性书籍收集
+
+· EbookFoundation/free-programming-books：GitHub上最知名的免费编程书籍索引，283k Stars，按语言和主题分类。
+· justjavac/free-programming-books-zh_CN：中文版免费编程书籍索引，涵盖操作系统、AI、分布式系统、编译原理等。
+· TIM168/technical_books：收集全网热门技术书籍，涵盖AI、大数据、机器学习、算法、Python等，持续更新。
+· wx-chevalier/Awesome-Books-Notes：含书籍摘要和PDF仓库，覆盖编程语言、软件工程、Web、AI、基础设施等。
+· hahaha8899/freebooks：免费编程电子书资源，高清PDF，涵盖C/C++、Java、Python、AI、数据库等。
+
+💡 使用建议
+
+这些仓库本身是书籍资源的索引或托管库，你可以从中筛选与决策理论、知识蒸馏、模型压缩直接相关的书目，提取内容作为高质量合成数据的种子语料。
+
+你目前更想优先从哪个方向筛选书籍——是蒸馏技术的方法论，还是决策推理的场景素材？告诉我，我可以帮你进一步聚焦。针对优化模型多语言能力的需求，我为你整理了一些GitHub上相关的书籍仓库和资源，按类别整理如下：
+
+📚 多语言翻译书籍资源
+
+这类资源直接提供了多种语言版本的NLP/LLM教材，是理解多语言模型基础的绝佳起点。
+
+· NiuTrans/NLPBookTranslations：这是一个非常有价值的仓库，它利用LaTeXTrans工具将《Foundations of Large Language Models》和更全面的《NLPBook》自动翻译成了中文、日语、德语、法语、意大利语、葡萄牙语等多种语言。你可以直接获取这些翻译后的PDF，非常适合用来对比学习不同语言下NLP概念的表述。
+· NiuTrans/MTBook：这是东北大学自然语言处理实验室编写的《机器翻译：基础与模型》的官方仓库。本书系统介绍了机器翻译的基础知识和建模方法，并讨论了前沿技术，所有源代码均已开放。
+
+🗂️ 综合性NLP资源列表
+
+这些“Awesome”列表是查找多语言NLP资源的绝佳索引。
+
+· keon/awesome-nlp：一个经典的NLP资源汇总仓库，专门设有 “Multilingual NLP Frameworks” 和 “Multilingual and Cross-Lingual Models” 等板块。它还按语言（如阿拉伯语、中文、韩语、印地语等）分类整理了NLP资源，非常全面。
+· sappy-book/awesome-nlp：另一个优秀的NLP资源列表，同样包含专门的多语言板块，覆盖了韩语、阿拉伯语、中文、德语、西班牙语、印地语等多种语言。
+
+📖 多语言模型与预训练资源
+
+这些仓库专注于多语言模型的构建、预训练和数据集。
+
+· JHU-CLSP/mmBERT：一个大规模多语言现代编码器语言模型项目。其训练数据集覆盖了60种语言的2.0T tokens以及110种语言的600B tokens，是了解多语言预训练实践的宝贵资源。
+· lecs-lab/polygloss：一个大规模多语言语料库和预训练模型，专注于逐词 gloss 文本（Interlinear Glossed Text），对于研究低资源语言和多语言语言学特征非常有帮助。
+· sedthh/gutenberg_multilang：这是一个多语言电子书集合，包含约7907本非英语书籍（主要为西班牙语、德语、法语、荷兰语、意大利语、葡萄牙语、匈牙利语），可作为多语言预训练的语料来源。
+
+🛠️ 多语言数据集与工具
+
+· weizihua/Awesome-LLMs-Datasets：这个仓库总结了现有的代表性LLM文本数据集，其中包含多语言（Multi, 59种语言） 的新闻语料（News-crawl 2019-1）等，是寻找多语言训练数据的实用索引。
+· GitHub topics: cross-lingual：这个GitHub话题页面汇集了与跨语言相关的各种项目，包括多语言语音理解模型（如SenseVoice）、句子嵌入模型等，是发现具体工具和模型的快速入口。
+
+💡 使用建议
+
+这些仓库大多以“Awesome list”或特定书籍/项目的仓库形式存在，可以作为你筛选和获取多语言资源的索引。你可以根据具体需求，进一步深入查看其中某个仓库的详细内容，例如获取特定语言的预训练模型、语料或代码实现。
+
+你目前主要想优化模型对哪些特定语言的支持，或者是在多语言微调、跨语言迁移哪个具体环节遇到了瓶颈？告诉我，我可以帮你进一步缩小资源的筛选范围。针对你优化多语言能力的需求，我整理了GitHub上相关的代码库和工具，按功能分类供你参考。
+
+🚀 多语言优化与微调
+
+· Bactrian-X (mbzuai-nlp/bactrian-x)：包含52种语言、340万条指令-响应对的多语言平行数据集及低秩适配（LoRA）微调代码。
+· CCL-XCoT (Social-AI-Studio/CCL-XCoT)：基于课程对比学习与跨语言思维链的两阶段微调框架，代码包含完整的预训练和SFT流程。
+· PROM (thnkinbtfly/PROM)：提出Pivoted and Regulated Optimization方法，在MGSM、XQuAD等9种语言的基准上验证了有效性。
+· Smoothie-Qwen (dnotitia/smoothie-qwen)：轻量级调整工具，通过平滑Qwen等模型的token概率来增强多语言生成能力，适合快速集成。
+· Language-Imbalance-Driven-Rewarding (ZNLP/Language-Imbalance-Driven-Rewarding)：ICLR 2025工作，利用语言不平衡作为奖励信号进行迭代DPO训练，代码已开源。
+· CRPO (dltmddbs100/CRPO)：EMNLP 2026工作，通过跨语言排名偏好优化，让模型同时学习回答质量和目标语言遵循，代码包含训练脚本。
+· MAPO (NJUNLP/MAPO)：将多语言对齐视为偏好优化问题，以提升多语言推理能力，项目代码已公开。
+· Implicit Cross-Lingual Rewarding (ZNLP/Implicit-Cross-Lingual-Rewarding)：通过隐式奖励从对齐良好的英语模型迁移偏好，实现高效的多语言偏好对齐。
+· LLaMA-Factory (hiyouga/LLaMA-Factory)：统一高效的微调框架，支持100+语言模型的微调，可作为你多语言微调的基础设施。
+
+🧠 跨语言迁移学习
+
+· TransMI (cisnlp/TransMI)：提出Transliterate-Merge-Initialize框架，通过统一文字系统来提升跨语言迁移效果。
+· BridgeX-ICL (xuyuemei/BridgeX-ICL)：通过分析语言神经元重叠模式，改进低资源语言的零样本跨语言上下文学习。
+· SALT (luka-group/SALT)：通过自增强方法改进零样本跨语言迁移，代码已开源。
+· FLARE (pnborchert/FLARE)：参数高效的跨语言迁移方法，支持gemma2-9b、llama3.1-8b等骨干模型。
+· CSICL (haneul-yoo/csicl)：提出渐进式代码切换作为推理时的跨语言表示对齐方法，在10种语言上验证了有效性。
+
+📚 多语言知识蒸馏
+
+· OpusDistillery (Helsinki-NLP/OpusDistillery)：可配置的端到端流水线，用于多语言NMT模型的系统化知识蒸馏，采用宽松开源许可证。
+· RP-OPSD (NJUNLP/RP-OPSD)：提出推理枢纽引导的在线策略自蒸馏，用于多语言推理能力迁移。
+· COPSD (cisnlp/COPSD)：跨语言在线策略自蒸馏，将模型自身的高资源推理行为迁移到低资源语言，代码和数据均已开源。
+
+🎯 OpenJev 与决策模型实现
+
+· Zefan-Cai/Open-Jev：提供Qwen3.5-2B/9B/27B的完整实现，包含LoRA适配器、训练好的决策头和校准温度，以及HuggingFace数据集和检查点。
+· intikhab49/open-jev-typed-decision-engine：150M参数的编码器，可在Colab T4上30分钟训练完成，性能0.697 vs Jev的0.727，校准度提升2.5倍，速度提升4倍。
+· scienthoon/luce：提供校准决策模型的完整配方（init → synth → train → eval → serve），使用Qwen3-4B-Base + LoRA，在RTX 4070 SUPER上训练，准确率91.1%，ECE 0.022。
+· bespokelabsai/nimble：本地类型化决策、对比数据整理和模型评估，使用Qwen3.5-9B作为基础模型，分享了训练配方。
+· zhihz/openjev：本地双语（英语/中文） 概率决策模型，支持跨语言工作流，可在Apple M3 16GB上本地运行。
+
+📊 多语言评估与数据增强
+
+· language-culture (Lossfunk/language-culture)：评估LLM处理多语言查询及其与特定文化背景对齐能力的代码和数据。
+· MultiPL-E (nuprl/MultiPL-E)：将HumanEval和MBPP基准翻译到18种编程语言的多语言代码生成基准。
+· TopXGen (ArmelRandy/topxgen)：EMNLP 2025 Findings，通过主题多样化为低资源机器翻译生成平行数据。
+· nlpaug (makcedward/nlpaug)：支持多语言文本输入的NLP数据增强库，可用于扩充训练数据。
+· SilkRoad-VL (yumoya/SilkRoad-VL)：可复现的流水线，通过多模型翻译竞赛和分数过滤构建高质量多语言多模态数据集。
+
+你目前优化多语言能力是更侧重于微调对齐，还是跨语言迁移？告诉我你的具体瓶颈，我可以帮你进一步筛选最匹配的代码库。为你整理了客服、电商决策和网站运营方向的代码仓库与配套书籍资源，这些内容可以直接作为 OpenJev 训练数据的场景来源。
+
+🛎️ 客服对话与智能体
+
+· jkmaina/customer_support：配套《The Complete LangGraph Blueprint》第19章的客服AI Agent完整代码，演示了基于LangGraph和TDD构建对话状态管理、意图分类和实体提取的模块化Agent。
+· wjl8636/AI-Customer-Service-Assistant：《AI Agent 智能客服实战》配套源码，是一个从零落地的电商客服Agent，覆盖订单物流查询、FAQ、退款子流程和知识库挖掘，包含从ch01到ch10的完整演进代码。
+· shaxiu/XianyuAutoAgent：闲鱼平台的智能客服机器人系统，已获1K+ Stars，支持智能议价和上下文感知对话。
+· Intervo/Intervo：开源AI语音平台完整源码，可自托管定制，支持构建24/7客服热线或智能网站助手。
+· GregReynaldi/AI-Customer-Support-Assistant：基于FastAPI的客服助手，集成语音识别、RAG上下文感知响应和智能查询分类，使用ChromaDB和Hugging Face模型。
+
+🛒 电商决策与运营
+
+· super-ZXQ/ai-commerce-intelligence-platform：基于102,287条公开电商订单样本的智能决策平台，包含BI看板、Text-to-SQL、RAG业务知识检索和RFM用户画像，采用LangGraph + FastAPI + Streamlit架构。
+· rusmadrigal/agentic-ai：LLM驱动的电商定价决策引擎，将产品和竞品输入转化为可执行的定价策略，支持LLM推理和确定性规则两种模式。
+· aparaajita19/Multi-Agent-BDS：4-Agent流水线（分析→决策→财务→洞察），由Grok LLM驱动，扩展A/B测试至Amazon、Meesho、Flipkart、Myntra等多平台比价。
+· moondream69/Multi-Agent-E-commerce-System：多Agent协作的跨境电商运营台，Manager规划切片，选品/订单/客服Agent执行，高危动作经审批护栏落地。
+· Doha8705/sales_forecasting：配套学术论文的销售预测代码，使用Linear Regression、XGBoost和Random Forest预测电商平台销量，数据集和源码持续更新。
+
+📈 网站运营与数据分析
+
+· Wren-Ling/eo_monitor：基于腾讯云EdgeOne API的实时站点流量监控大屏，展示总请求数、流量、带宽及国家/地区、状态码等多维度分析。
+· SBOsoft/SBOanalytics：网站日志分析与操作系统指标监控工具，包含日志查看器和性能指标追踪。
+· TryGhost/TrafficAnalytics：Ghost平台的流量分析工具，TypeScript编写，MIT许可。
+· rohan-g24/ecom-performance：电商转化率优化项目，使用SQL、MySQL、Power BI分析影响网站性能的关键因素。
+
+📚 配套书籍与数据集
+
+书籍资源：
+
+· 《The Complete LangGraph Blueprint》 (James Karanja Maina)：指导创建50+个AI Agent，覆盖客服、医疗、金融等场景，配套代码见上述 jkmaina/customer_support。
+· 《ChatGPT and E-commerce》：探讨ChatGPT在电商中的应用，包括个性化推荐、对话式客服和预测分析。
+· 《电商大数据――用数据驱动电商和商业案例解析》 (李必文)：覆盖广告投放、设计优化、客服管理、供应链优化等数据驱动的电商实操场景。
+· 《数智电商AI+RPA实战教程》：涵盖店铺运营、数据运营、客服、物流、财务等电商场景的AI+RPA机器人开发。
+
+数据集资源：
+
+· CSConv：1,855个真实客户-代理对话，经LLM重写以反映策略使用并标注，代码在 aliyun/qwen-dianjin。
+· CCSE-CS：76,847轮中文客服对话，覆盖电商、银行、电信、医疗4个领域，含文化感知共情策略标注（EMNLP 2026）。
+· Olist E-commerce Dataset：10万+订单的巴西电商数据集，包含客户、产品、支付、订单趋势等信息。
+· Online Shoppers Purchasing Intention：UCI数据集，12,330条会话级记录，含浏览行为、时间属性和购买完成标记。
+
+你目前是打算优先用哪个方向的代码库来生成训练数据——是客服对话场景，还是电商定价/运营决策场景？告诉我你的侧重点，我可以帮你进一步分析这些仓库中哪些模块最适合提取为 OpenJev 的决策样本。针对购买裙子、日用品、电子产品这类日常购物决策场景，我为你整理了相关的代码仓库、数据集和书籍资源，这些可以直接作为 OpenJev 训练数据的场景来源。
+
+👗 服装/时尚类购买决策
+
+· HarshUmpoxy/SmartShopRecommender：平台同时集成了时尚、电子产品和书籍的推荐系统。时尚部分采用协同过滤和基于内容的过滤技术，根据用户交互和产品属性进行推荐，非常适合提取服装购买决策的对话样本。
+· enjae/skinsforskin：专注于服装领域的推荐系统项目，可作为服装类决策场景的代码参考。
+
+🛒 日用品/杂货类购买决策
+
+· Instacart Market Basket Analysis Dataset：包含20多万用户的300多万份杂货订单样本，记录订单随时间的变化关系，可用于训练模型预测用户下一次订购的产品，是日用品购买决策的优质数据源。
+· The Complete Journey (Dunnhumby)：包含2500个家庭、为期两年的杂货购买交易数据，附带人口统计信息（年龄、收入、家庭构成等），适合分析日用品购买决策的影响因素。
+
+💻 电子产品类购买决策
+
+· Arif-miad/E-commerce-Product-Dataset：包含8000条电商产品数据的合成数据集，产品类别覆盖 “Electronics”、“Clothing”、“Furniture” 等，可直接用于训练电子产品购买决策模型。
+· Odette (bharathraahul/Affliate-agent)：自主个人购物助手，通过对话发现用户意图。系统会静默地将请求分类为垂直领域（gifts, tech, home, general），并为电子产品等生成购买链接，完整展示了从模糊需求到具体产品推荐的决策链路。
+
+🛍️ 综合购物决策与对话
+
+· ShopSimulator：大规模中文购物环境，专为评估和训练 LLM 购物 Agent 设计。任务会给出用户需求（商品类别、预算、品牌、规格等），考察指令理解、工具调用、约束满足和终止决策能力。项目支持监督微调（SFT）和强化学习（RL）训练，直接对应你的 OpenJev 训练需求。
+· ShoppingComp：评估 LLM 购物 Agent 的基准数据集，包含145个任务/语言（英/中），分为Ground-Truth任务（97个） 和安全关键任务（48个）。每个任务包含用户购物请求、场景列表和专家标注的参考产品列表及理由，是构建决策训练样本的优质素材。
+· JDDC 2.1：从京东采集的大规模多模态多轮对话数据集，包含约24.6万对话会话、300万条话语、50.7万张图片，以及产品知识库和图片类别标注。覆盖查询重写、回复生成、话语解析和摘要四个任务。
+· CRA-Bench：包含用户长期偏好的购物兴趣数据集，涵盖 “Electronics”、“Health_and_Household”、“Home_and_Kitchen”、“Clothing_Shoes_and_Jewelry” 等类别，并标注了价格敏感度，适合训练个性化的购买决策模型。
+
+📊 中文电商用户行为数据集
+
+· 阿里云天池电商用户行为数据集：模拟的中文电商用户行为数据集，包含1000条交易记录，涵盖电子产品、服装、家居等7大类商品，用户分布于全国12个主要城市。
+· 天猫用户复购预测数据集：包含匿名用户在“双十一”前6个月及当天的购物记录，标注是否为重复购买者，适合训练用户复购决策模型。
+· 京东杯2019用户购买预测数据集：包含用户行为、商品评论、商品信息、店铺信息、用户信息5个数据表，用于预测用户未来7天内对目标品类下店铺的购买意向。
+
+📚 配套书籍
+
+· 《大模型推荐系统：算法原理、代码实战与案例分析》：以电商场景为例，讲解大模型在电商中的7种应用，包括生成用户兴趣画像、个性化商品描述、猜你喜欢推荐、关联推荐、冷启动、推荐解释和对话式推荐，每种场景都有完整代码实现。GitHub 可下载全书代码。
+· 《顾客为什么购买》 (帕科·昂德希尔)：消费行为学著作，深入分析各种消费场景下的购买决策心理，为构建购物决策模型提供人类行为视角的理论基础。
+· 《屏幕上的聪明决策》 (什洛莫·贝纳茨)：揭示影响用户在屏幕上做出决策的因素，探讨如何设计引导客户做出决策，与电商场景下的用户行为建模高度相关。
+
+你目前是想优先用这些资源来扩充服装/日用品类的决策数据，还是想构建一个覆盖多品类的综合购物决策模型？告诉我你的侧重点，我可以帮你进一步分析哪些数据集或代码库最适合你的训练目标。这里还有一些新的决策相关资源，覆盖了通用决策理论、多轮对话、工具调用以及金融、医疗等垂直领域，可以继续为 OpenJev 扩充训练场景。
+
+📚 决策理论书籍与代码
+
+· 《Algorithms for Decision Making》 (MIT Press)：配套仓库包含完整的排版代码和案例，是理解决策算法基础的经典教材。
+· 《决策算法》中文版：斯坦福新书694页PDF免费下载，适合中文读者系统学习。
+· 《软件开发中的决策：权衡与取舍》：Manning出版社书籍，示例代码在 tomekl007/manning_software_mistakes_and_tradeoffs。
+· Quantitative-decision-making-methods (lieson-bit)：学习定量决策方法（含博弈论）的代码合集。
+
+💬 多轮对话与智能体决策
+
+· LMRL-Gym (abdulhaim/LMRL-Gym)：多轮强化学习基准，包含3个交互式对话任务和5个RL能力测试，涵盖开放式对话和文本游戏。
+· End-to-End Negotiator (facebookresearch/end-to-end-negotiator)：包含5808段人类谈判对话，用于学习谈判决策。
+· Tau2-Bench：多轮客服对话数据集，覆盖航空、电信、零售领域，基于有状态后端和书面Agent策略。
+· STT-Arena (Miaow-Lab/STT-Arena)：工具使用基准，包含227个高质量交互任务，覆盖9种时空冲突类型和4种可解性级别。
+· Nemotron-Agentic (NVIDIA)：包含335,122条带工具调用的多轮对话，JSONL格式。
+· AgentTrove：大规模AI智能体轨迹数据集，整合219类数据源的交互轨迹，面向代码、终端操作、数学等场景。
+· HALT Benchmark：包含1,248个实例，覆盖4种决策机制、3个难度级别和5个工作流家族。
+
+🛒 购物与推荐决策
+
+· ShoppingReasoningBench (Amazon)：由零售领域专家撰写的525个购物任务（232个单轮、293个多轮），覆盖5个产品家族。
+· SIMMC 2.0：包含11K任务导向的用户-助手对话（117K条话语），场景基于沉浸式购物环境。
+· E-ConvRec：中文对话数据集，包含25K+对话和770K条话语，含用户画像和产品知识库。
+· JDDC Corpus：京东大规模多轮中文电商客服对话数据集。
+· IntTravel (DreamX-Rec/IntTravel)：大规模旅游推荐数据集，包含41亿次交互，覆盖1.63亿用户和730万POI。
+· TTDP-HS (ZYY-Wang/TTDP-HS)：包含成都POI、酒店和游客基本信息的多日旅游推荐数据集。
+
+🏥 医疗决策
+
+· llm-alignable-dm (ITM-Kitware)：医疗分诊决策数据集，包含62个场景，标注了决策者属性（DMA）。
+· MIMIC-SR-ICD11 (woqingdoua/MIMIC-SR-ICD11)：基于叙事文本的ICD-11诊断决策数据集。
+· Clinical-Tool-Learning (ncbi-nlp)：包含RiskCalcs集合和RiskQA数据集，用于临床工具学习与风险预测。
+
+💰 金融决策
+
+· SME Credit Risk Assessment：包含1,200份中小企业贷款申请，含结构化特征和文本特征（业务描述、贷款叙述）。
+· BD-SME-Credit-Risk (shoumyac)：新兴市场中小企业信用风险预测数据集及建模代码。
+· DI2XAI：智能投资仪表盘，包含Python源码和MySQL代码，可基于雅虎财经历史数据运行模拟。
+
+🎮 游戏与博弈决策
+
+· Orak (KRAFTON)：视频游戏LLM Agent基准，提供DeepSeek蒸馏的专家轨迹（合成专家演示）。
+· GameVerse-1K (NVIDIA/斯坦福)：包含1000+款商业与开源游戏的完整交互轨迹和4万小时人类与AI游戏录制。
+· MindGames：包含29,571场多智能体博弈（94,132条玩家轨迹，243M数据）。
+· VGC-Bench (cameronangliss/VGC-Bench)：宝可梦竞技团队策略基准，提供人类对战数据集和多种基线模型。
+· ChessGPT：桥接策略学习与语言建模，整合国际象棋游戏与语言数据。
+
+🗂️ 综合资源列表
+
+· Awesome-Decision-Science (nenyol)：持续更新的决策科学资源列表，涵盖视频、教程、书籍、论文、数据集和开源库。
+· DfE-DB：包含380万条人类决策数据的系统性数据库，覆盖多种基于经验的任务。
+· DecisionQE：包含70个决策相关多项选择题的英文数据集，覆盖6个实践领域。
+· LISTEN Benchmark (AdamJovine/LISTEN)：评估LLM从大量候选集中引出用户偏好并选择最佳选项的能力。
+· Mastermind (opendilab/Mastermind)：通过算法数据合成赋能LLM决策游戏，包含斗地主和围棋的专家数据集。
+
+你目前是想优先用这些资源来扩充多轮对话决策数据，还是构建垂直领域的专业决策模型（如医疗、金融）？告诉我你的侧重点，我可以帮你进一步分析哪些数据集或代码库最适合你的训练目标。不限类型的话，这里整理了一批覆盖面更广的决策数据集和代码仓库，从通用决策框架到各个垂直领域，都可以作为 OpenJev 的训练场景来源。
+
+📚 通用决策框架与综合索引
+
+· Awesome-Decision-Science：持续更新的决策科学资源列表，涵盖视频、教程、书籍、论文、数据集和开源库，是寻找跨领域决策资源的起点。
+· choices13k：包含 13,006 个风险选择问题的人类决策数据集，适合训练模型在不确定性下的决策能力。
+· DecisionQE：包含 70 个决策相关多项选择题，覆盖商业、沟通、说服等六个实践领域。
+· Good Thinking Corpus v1.0：包含 27,252 条训练记录，覆盖逻辑、决策理论、博弈论等 182 个分类码。
+· AH170-Framework：双语（马来语+英语）推理与治理数据集，基于真实商业、金融场景构建，包含止损规则和风险权衡。
+· llm-alignable-dm：医疗分诊决策数据集，包含 62 个场景，标注了决策者属性（DMA），涉及公平、道德等伦理原则。
+
+🤖 智能体决策基准
+
+· HALT Benchmark：包含 1,248 个实例，评估智能体在部分可观测、工具受限下的决策，包括“何时停止、调查、升级或拒绝”。
+· UAVBench：包含 50,000 个已验证的无人机飞行场景，生成多项选择题，覆盖多智能体协调和混合推理。
+· AgentDrive：包含 300,000 个LLM 生成的驾驶场景，用于训练和微调自动驾驶决策模型。
+· HiL-Bench：评估智能体寻求帮助的判断力，包含 300 个任务，分为两个领域，其中 100 个为私有保留任务。
+
+🎓 教育决策
+
+· NCES Education Longitudinal Study of 2002：包含高中后入学决策的数据，可作为教育路径选择的数据源。
+· ColombiaTuitionSET：包含 3,361 名学生的匿名记录，涉及社会经济地位、专业选择和学费之间的决策关系。
+
+⚖️ 法律决策
+
+· LFPBench：法律事实预测的基准数据集，用于评估法律判决预测任务。
+· IMLJP：中文刑事法律数据集，专注于判决预测、可解释法律 AI 和多被告推理，代码在 SHerZH/IMLJP。
+· MultiJustice (MPMCP)：多被告多指控预测数据集，用于法律判决预测。
+· Arabic-Legal-Judgment-Prediction：从沙特商事法院判决中收集的阿拉伯语法律判决预测数据集。
+
+🎖️ 军事决策
+
+· tactical-military-reasoning：包含 150 个丰富的战术军事场景，附带 LLM 生成的攻防双方战略推理。
+· 兵棋推演态势认知数据集：公开包含 26 万个样本的数据集，用于兵棋推演中的态势认知。
+· WOPR：用于研究组织如何做出高风险决策的社会模拟环境，基于确定性、可回放的规则引擎，代码在 eilab-gt/wopr。
+
+🌍 环境决策
+
+· Robust Conservation Planning：包含 R 代码和示例数据，支持在气候变化不确定性下的稳健决策（RDM）。
+· PLANET4B Dataset：用于生物多样性决策评估的跨学科诊断框架数据集，包含 11 个案例研究对话。
+· SCAPE database：包含 305 个公共环境治理案例的编码数据，覆盖北美、欧洲和澳大拉西亚。
+
+🤝 社会困境与博弈决策
+
+· 100K Choice Dilemmas：包含超过 10 万条真实生活选择困境的文本描述，来自社交媒体帖子和大规模调查数据。
+· QualGames：包含行为博弈论任务数据库，涵盖社会价值取向、信任、互惠以及社会困境和协调博弈。
+· GameTheory-Bench：首个专为 RLVR 设计的博弈论训练数据集，包含 2,146 个已验证问题，覆盖 5 个类别。
+· CaSiNo：包含超过 一千个英文谈判对话的语料库，用于自动谈判系统。
+· NegotiationToM：用于压力测试机器心智理论在谈判情境中的基准数据集。
+
+🚗 交通决策
+
+· MultiModX：多式联运战略和预战术评估器数据样本，代码开源在 UoW-ATM/MultiModX。
+· edge-ga-urban-routing：包含从巴勒斯坦伯利恒市收集的真实交通数据集、SUMO 仿真场景和 NSGA-II 优化源码。
+· Highway Routing Data：包含 2019 年 Kincade 火灾疏散期间的高速公路车辆路径数据集，代码在 EvacuationBehavior/Highway-Routing-Data-Processing。
+
+🌾 农业决策
+
+· AgriField-Manipur：模拟的田间农业数据集，支持数据稀缺地区的农业决策支持研究。
+· CY-Bench：全面的基准数据集，用于国家以下级别的作物产量预测，覆盖全球主要玉米和小麦种植国。
+· MahaOnion-MultiMarket Dataset：多模态农业市场数据集，用于洋葱价格概率预测和农产品市场决策支持系统。
+
+⚽ 体育决策
+
+· SportD：包含 1,415 个足球比赛决策场景，VLM 观察决策前的几秒钟并选择下一步行动。
+· NFL 4th Down Decision Dataset：包含 1999-2025 赛季 NFL 的第四档进攻逐场数据，专注于高风险决策。
+· Premier League Decision-Space Collapse：测试系统能否将球员崩溃转化为团队级风险，并提出换人计划和时机窗口。
+
+👥 社会决策与人机交互
+
+· Human-LLM Social Risk Decision Analysis：包含两项研究的数据、分析脚本和可视化文件，使用亚洲疾病问题的改编版本。
+· Dictator Game Benchmark：包含来自 12 个国家人类参与者的 106 条独裁者博弈实验文本指令，评估 LLM 预测人类如何平衡自利与他人利益的能力。
+· WereBench：包含 100+ 小时视频、3240 万话语 token 和 15 种规则变体的狼人杀多模态数据集。
+· HCCD-DS v2：透明的合成基准数据集，模拟 AI 推荐器与具有连续专业知识水平的模拟用户之间的决策时交互，覆盖医疗、网络安全等领域。
+· FiFAR：金融欺诈警报审查数据集，包含 50 名欺诈分析师对 3 万个实例的预测，用于人机决策中的“学习延迟”研究。
+
+⚡ 能源决策
+
+· UPGRADE-E：包含 9,919 份来自美国居民的调查回复，研究影响住宅能源效率决策的模式。
+· SHEERM：可持续家庭能源与环境资源管理数据集，包含 13 个真实家庭场景、近三年的电力负荷和能源成本数据。
+
+🏙️ 城市规划决策
+
+· DECIDE DSS：用于演示的数据库样本，支持基于通用设计和结果驱动决策支持策略的原型 Web 应用。
+· Hierarchical Hub Location Datasets：基于地理空间信息构建的大规模基准数据集，用于印度人口稠密城市的城市规划和枢纽选址。
+· HUDI：健康城市设计指数数据集，包含城市指标、环境指标和健康相关变量，覆盖选定的欧洲城市。
+
+🏥 临床决策支持
+
+· MIMIC-SR-ICD11：基于叙事文本的 ICD-11 诊断决策数据集，代码在 woqingdoua/MIMIC-SR-ICD11。
+· MDS-ED：多模态急诊临床决策支持基准，包含 1,428 个患者出院诊断，收集了入院后 90 分钟内的生理波形等数据。
+· RISED Synthetic Clinical Cohort：包含 10,000 名患者的合成临床队列数据集，用于临床决策支持评估。
+
+📈 营销决策
+
+· Superstore Marketing Analysis：包含加载和准备后的数据集、RFM 洞察计算 notebook 和渠道组合可视化，用于营销活动分析。
+· Marketing Hypothesis Prioritization：包含假设列表数据集，涵盖假设描述、覆盖范围、影响和信心评分，用于 A/B 测试优先级决策。
+
+🚚 供应链决策
+
+· SAPiBench：面向 S/4HANA 的合成基准和仿真框架，用于库存预测、政策分析和经济价值评估。
+· Supplier Disruption Prediction：包含 10 个供应商在 60 天模拟时间范围内的动态供应商中断风险评分和多源指标。
+· Supply Chain Network Design：包含用于研究设施中断下两级供应链网络设计的计算实例。
+
+🧑‍💼 人力资源决策
+
+· IBM HR Analytics：包含 1,470 名员工、35 个特征的数据集，涵盖人口统计、工作角色、薪酬、绩效和满意度指标，用于劳动力分析和流失预测。
+· Human Resource Analytics：来自 GitHub 的 HR 分析数据集，用于人力资源推荐模型优化。
+
+🔒 网络安全决策
+
+· WitFoo Precinct6 Cybersecurity Dataset：包含 207 万条经过清理的安全事件和 10,442 个事件图谱，来自生产 SOC 运营。
+· Microsoft SOC Dataset：网络安全事件分类数据集，包含 410 万条证据级记录和 45 个特征。
+· NSG Dataset：包含 500 条模拟的网络安全感组（NSG）日志记录，用于分析安全威胁和构建 AI 驱动的威胁预测模型。
+
+🎯 推荐系统决策
+
+· Open Bandit Dataset：来自 ZOZOTOWN 的 A/B 测试，包含 2600 万行数据，用于 bandit 算法和离线策略评估研究。
+· MovieLens Beliefs Dataset：为在线推荐系统收集的预选择数据，可在此数据集上研究用户决策过程。
+· SM-RS：将情境印象与自我报告偏好相关联的数据集，支持个性化、多目标推荐决策。
+
+💡 使用建议
+
+这些资源覆盖了从理论框架、智能体基准到各个垂直领域的决策场景。建议根据 OpenJev 当前最需要提升的决策能力方向，优先选择 2-3 个领域的数据集进行整合，避免一次性引入过多异质数据导致训练信号分散。这次覆盖了更多领域和类型。以下按领域整理，包含数据集、代码库和配套资源，你可以从中筛选适合 OpenJev 训练场景的部分。
+
+📚 通用决策框架与资源索引
+
+· Awesome-Decision-Science：持续更新的决策科学资源列表，涵盖书籍、论文、数据集和开源库，是跨领域检索的起点。
+· 决策引擎仿真测试数据集：包含决策字段、规则、决策树和仿真测试数据，体量约 1MB。
+· VNOVA AI 决策制定助手数据集：包含 100 个完全合成的决策场景，覆盖职业、教育、财务等类别。
+· Global Behavioral Economics Experiments Dataset：汇编 1990-2025 年间行为经济学与神经经济学实验的核心范式结果。
+· Newcomb-like Questions Dataset：针对纽科姆类决策问题的自然语言问答数据集，附带代码和数据。
+· LLM Decision Reasons：包含行为选择数据、自由文本口头报告、LLM 输出和分析代码。
+
+🏥 医疗决策
+
+· Adaptive Clinical Decision Dataset：结构化临床场景数据集，每条包含症状输入、可能诊断、建议行动、紧急程度和推理过程。
+· Clinical-Trial Decision Benchmark：包含 1,000 项临床试验、702 种条件，决策标签包括 advance、stop、verify 或 abstain。
+· DiagTrace：双语（法/英）诊断推理数据集，包含 180 个临床案例，跨多个医学专科。
+· ClinConsensus：临床共识基准数据集，配套 Qwen3-8B judge 权重。
+· MIMIC-SR-ICD11：基于叙事文本的 ICD-11 诊断决策数据集。
+· llm-alignable-dm：医疗分诊决策数据集，包含 62 个场景，标注了决策者属性（DMA）。
+
+💰 金融决策
+
+· FinWise / Finance & Decision-Making Conversations：多轮金融决策对话数据集，覆盖投资策略、风险评估、成本效益分析、财报分析、公司法律框架、ESG 投资等。
+· Conv-FinRe：面向股票推荐的对话式纵向基准，评估 LLM 在行为匹配之外的效用 grounded 能力，代码在 GitHub。
+· FinMultiTime：112GB 多模态金融数据，包含时间序列、新闻、财报等多源信息。
+· Investment Multitask Training Data：包含 842,558 个样本，涵盖利率、国债收益率、联邦基金利率等多维特征。
+· Predibench Model Investment Decisions：模型投资决策数据集。
+
+⚖️ 法律决策
+
+· Realistic_LJP Datasets：包含多个子数据集（Facts、CaseSummarizer、SummaRuNNer 等），总计 33.3k 样本。
+· Arabic-LJP：阿拉伯语法律判决预测数据集，从沙特商事法院判决中收集，包含 3,752 训练样本和 538 测试样本。
+· Ukrainian Court Decisions：乌克兰法院判决预测数据集，包含 120,000 条记录，标签为 judgment-prediction。
+· IndianBailJudgments-1200：包含 1,200 份印度法院保释裁决，标注了保释结果和 IPC 条款。
+· NyayaAnumana / INLegalLlama：印度法律判决预测数据集及专用语言模型。
+
+🚗 自动驾驶决策
+
+· AutoDriDM：面向视觉语言模型的自动驾驶决策基准，包含 6,650 个 QA 项，基于 1,295 张前视图像，采用 Object → Scene → Decision 三级渐进协议，每项包含 5 级风险标签。
+· AutonomousDriveDecisions：自动驾驶关键决策场景数据集，示例包括“繁忙城市十字路口有行人”和“车辆变道”等场景，标注决策为 Proceed 或 Emergency Brake。
+· Drive-P2D：包含 6 个 JSON 文件，覆盖目标识别、场景理解和决策选择任务。
+
+🎮 游戏与策略决策
+
+· Game Reasoning CoT：551 条记录，覆盖国际象棋、德州扑克、21点、轮盘、Uno、西洋双陆棋、围棋等，每条包含详细思维链推理和最终最优决策。
+· Klondike Solitaire LLM Decisions：克朗代克纸牌中 LLM 作为顾问的逐决策轨迹，包含 28,904 条记录，用于蒸馏研究。
+· MasterMind：从斗地主和围棋中合成的专家数据集，用于 LLM 决策游戏训练。
+· MindGames：包含 29,571 场多智能体博弈、94,132 条玩家轨迹和 243M 数据。
+· GameTheory-Bench：首个专为 RLVR 设计的博弈论训练数据集，包含 2,146 个已验证问题。
+
+🛒 推荐与电商决策
+
+· T-ECD：大规模电商跨域推荐数据集，基于 4,400 万用户的匿名行为，Apache 2.0 许可，允许商业使用。
+· RecSys-Resources：推荐系统数据集汇总，包含 Amazon Review、Yelp、Douban、PixelRec、KuaiSAR、Tenrec 等，其中 Tenrec 包含约 500 万用户和 1.4 亿交互。
+· ViEcomRec：越南电商推荐数据集，代码在 GitHub。
+· OTTO RecSys Dataset：真实电商会话推荐数据集，304 stars。
+
+🏭 供应链决策
+
+· SupplyGraph：供应链规划基准数据集，包含时间数据作为节点特征，支持销售预测、生产规划和工厂问题识别。
+· RetailOpt-190：零售优化数据集，代码在 GitHub。
+· Supply Chain Optimization：聚焦制造流程的供应链效率文档集合。
+· Supply Chain Predictions：供应链中断预测评估数据集，已开源。
+
+🔒 网络安全决策
+
+· AI Agent Security Policy Decisions：2,400 条合成记录，将 AI Agent 工具操作分类为 allow、deny、require_human_approval 或 allow_with_restrictions。
+· Cybersecurity SOC Fine-Tuning Dataset：17.5k 条真实 CVE（2018-2026）及 SOC 知识，采用 HuggingFace chat 格式，可直接用于 TRL SFTTrainer、Axolotl、Unsloth、LLaMA-Factory。
+· Kimi Cyber Reasoning：997 条样本，由 Kimi K3 作为教师模型生成，面向网络安全推理的监督微调。
+
+👥 人力资源决策
+
+· BrainHR+：包含 15 对完全标注的（简历，职位）配对，展示决策路径和证据映射。
+· FairJob：面向在线系统公平性的职位推荐数据集。
+· Hiring Analyses Zero-Shot CoT：招聘分析数据集，用于研究 LLM 招聘决策中的偏见。
+
+🌍 环境与可持续决策
+
+· Environmental Claims：包含 2,647 条真实环境声明，主要来自上市公司金融领域。
+· ESG Prediction Datasets：为 ESG 领域分析构建的预训练数据集和预测任务数据集。
+· Climate Waste Management Africa：非洲气候废物管理合成数据集。
+
+🤝 谈判与多智能体决策
+
+· Negotiation Campaigns：10K-100K 条记录，涉及多智能体、理性智能体、博弈论和 LLM 评估。
+· c2c-ai-vs-ai：AI 对 AI 的战略谈判博弈数据集，2.59GB，包含多智能体谈判、博弈论、欺骗和协调。
+· Deal or No Deal Dialog：大规模人-人谈判数据集，多议题讨价还价任务，智能体无法观察对方奖励函数，必须通过自然语言对话达成协议。
+
+🌐 多语言与跨文化决策
+
+· UniMoral：多语言道德推理数据集，覆盖阿拉伯语、中文、英语、印地语、俄语、西班牙语六种语言。
+· Community Alignment Dataset：最大规模的多语言多轮偏好数据集，包含 233 种语言配置。
+· Multilingual-Thinking：思维链从英语翻译为西班牙语、法语、意大利语、德语四种语言。
+· Swiss Leading Decision Summarization：多语言（德/法/意）决策摘要数据集。
+
+🔧 工具使用与智能体决策
+
+· Model-Adaptive Tool Necessity：研究 LLM 工具使用中的“知行差距”，代码在 GitHub。
+· Tool-Use Adaptation Difficulty：工具使用适应难度数据集。
+· Multiturn Agentic Tool Use Reasoning：多轮智能体工具使用推理数据集。
+· TARA (Tool-Augmented Reward Dataset)：通过多智能体交互构建的工具增强数据集，包含多个领域的工具调用。
+
+🇨🇳 中文决策资源
+
+· MPCCD-MLF：医疗、法律、金融领域多轮专业咨询对话数据集，强调专家决策形成过程的可解释推理表达。
+· 北大中国调查数据资料库（CSDA）：包含中国上市公司企业家精神数据库、中国企业创新创业调查等。
+· CnOpenData：覆盖经济、金融、会计、法律、地理、新闻、医疗、体育等多学科，拥有 380+ 个专题数据库。
+· OpenJev-Vision：中文视觉概率研究项目，包含公开数据、训练权重和可复现基线。
+
+💻 GitHub 决策代码库
+
+· llm-decision-reasons：LLM 识别决策原因的行为选择数据和代码。
+· newcomblike_questions_dataset：纽科姆类决策理论问题的代码和数据。
+· strategic-decisions-auto：战略行为下决策的代码和数据，NeurIPS 2020 & Management Science 2024。
+· governance-benchmark-dataset：包含 8 个精选决策场景，每个都带有完整的决策事件模式记录。
+· erfanloghmani/Datasets-for-Recommender-Systems：推荐系统主题导向的高质量公共数据源仓库。
+· Open Investment Datasets：Sovai 开源投资数据集，包含机构交易等数据。
+
+💡 使用建议
+
+建议根据 OpenJev 当前最薄弱的决策环节，从上述领域中优先选择 2-3 个方向的数据集进行整合。如果侧重通用决策能力，可从 Awesome-Decision-Science 和 VNOVA 决策助手数据集入手；如果侧重垂直领域专业化，医疗的 Adaptive Clinical Decision Dataset 和金融的 FinWise 是格式最接近决策训练的资源；如果需要中文场景，MPCCD-MLF 和 CnOpenData 覆盖了医疗、法律、金融三个专业领域。
+
+你目前更想优先从哪个方向筛选——是垂直领域的专业决策，还是多轮对话场景，或者是中文决策数据？告诉我，我可以帮你进一步聚焦。针对代码决策、推理训练以及电子书资源，我为你整理了以下GitHub仓库、数据集和免费书籍。
+
+💻 代码与推理决策数据集
+
+· CodeI/O (hkust-nlp/CodeIO)：ICML 2025 Oral 工作，通过代码输入-输出预测来浓缩推理模式，包含 CodeI/O-PythonEdu-Reasoning 等数据集，适合训练模型的代码推理能力。
+· OpenCodeReasoning (NVIDIA)：目前最大的基于推理的代码合成数据集，包含 736,712 个Python样本，覆盖 28,904 个独特的竞赛编程问题，代码和SFT流程已开源。
+· CoGEX (nweir127/CoGEX)：提出代码生成与模拟执行（Code Generation and Emulated EXecution）方法，通过程序生成、模拟和搜索来学习推理，数据集、微调模型和代码均已发布。
+· Logic-Distillation (Anfeather/Logic-Distillation)：IJCAI 2025 论文代码，提出逐函数从代码中学习的方法，用于决策任务的逻辑蒸馏，包含完整代码和数据。
+· Decision_CaT (Aphelios-Tang/Decision_CaT)：将推理过程代码化（Code-as-Thought） 的决策数据集，配套论文和GitHub仓库已发布。
+· Awesome-Code-LLM (codefuse-ai/Awesome-Code-LLM)：TMLR 收录的代码语言模型研究合集，整理了 Think-and-Execute、CoRE、MuMath-Code 等相关论文和数据集，是代码推理领域的资源索引。
+
+📚 决策推理相关电子书
+
+· 《决策算法》 (Algorithms for Decision Making)：斯坦福大学教材，系统介绍不确定性下的决策算法，涵盖单点决策、序列决策、模型与状态不确定性等，全文PDF可免费下载。
+· 《Theories of Rational Decisions》 (Kevin Zollman)：卡内基梅隆大学教材，面向高年级本科生和研究生，系统讲解决策理论/理性选择理论，PDF可免费下载，源文件在GitHub。
+· 《Real-Life Decision-Making》：开放获取书籍，从决策历史和分析出发，介绍结构化决策信息和分析方法，采用 CC BY-NC-ND 4.0 许可，可在 Taylor & Francis 免费获取。
+· 《Graded Logic》 (Jozo Dujmović)：2025年新书，探讨用分级命题逻辑建模人类常识推理在决策和AI中的应用，包含用分级逻辑模型解决决策问题的实例。
+· 《Foundations of Computational Decision Analysis》：开放获取电子书（第二版，2025年6月），采用 CC BY-NC-ND 4.0 许可，涵盖计算决策分析基础。
+· 《Elementary Decision Theory》 (Herman Chernoff)：经典教材，涵盖概率与随机变量、效用与描述统计、贝叶斯策略、假设检验等内容，可在 Internet Archive 免费借阅。
+· 《Rational Decision Making》 (Eisenführ et al.)：基于理论基础的理性决策书籍，展示简单理性行为要求如何导出最优决策备选方案的一般演算，PDF可免费下载。
+· 《推理与决策：由心理实验的逻辑思维训练》 (张留华)：逻辑学与心理学的交叉研究，探究人类理性的限度以及逻辑思维训练的关节点，PDF可获取。
+· 《生活不是掷骰子：理性决策的贝叶斯思维》：中文电子书，聚焦贝叶斯思维在理性决策中的应用，可免费阅读。
+
+🛠️ 决策代码库与综合资源
+
+· griffinbholt/decisionmaking-code-py：MIT出版社《Algorithms for Decision Making》教材的完整Python代码实现，包含书中所有排版代码块。
+· jiachenli94/Awesome-Decision-Making-Reinforcement-Learning：242 Stars 的精选列表，收录决策与运动规划领域的最新研究材料。
+· xyshao23/Awesome-Generative-Models-for-Decision-Making-Taxonomy：生成模型用于决策的论文分类与资源汇总，是相关综述的补充材料。
+· nenyol/Awesome-Decision-Science：持续更新的决策科学资源列表，涵盖视频、教程、书籍、论文、数据集和开源库。
+· danielrosehill/AI-Decision-Eval-Projects：精选AI决策评估项目列表，包括 pyDecision（70+ MCDA方法库）、Simulatrex（LLM驱动决策模拟引擎）等。
+· CleanDiffuserTeam/CleanDiffuser：NeurIPS 2024 工作，首个专为决策算法设计的扩散模型库，模块化设计，代码和文档已开源。针对前端设计、后端设计和模型训练设计这三个方向，我整理了相关的GitHub代码仓库、电子书和数据集资源。
+
+🎨 前端设计
+
+代码与资源仓库：
+
+· chrichuang218/awesome-ui-design：精心策划的UI设计资源指南，包含灵感网站、工具、组件和AI技能。
+· modulardata/design-resources-for-developers：为开发者整理的设计资源清单，涵盖库存照片、网页模板、CSS框架、UI库和工具。
+· micahgodbolt/front-end-architecture：O'Reilly《前端架构设计》一书的配套代码仓库，可下载书中示例。
+· wx-chevalier/Web-Notes：现代Web开发笔记，涵盖前端工程化、应用架构、性能优化、React/Vue实践等。
+
+数据集：
+
+· WebCode2M：包含256万个实例的真实网页设计数据集，每个实例包含设计图像、对应的网页代码和布局细节，适合训练设计到代码的模型。
+· AesCode-358K：包含5个类别的网页设计（通用网站、数据可视化、3D设计、游戏开发、UI组件），带有代理奖励反馈。
+· FLUID (Figma Layout User Interface Dataset)：Figma布局用户界面数据集，处理后包含44,048个产品页面，分为训练、验证和测试集。
+
+⚙️ 后端设计
+
+代码仓库与书籍：
+
+· LeechanX/backend_architecture：配套《亿级流量系统架构设计与实战》，内容涵盖基础架构设计（多机房搭建、高并发处理）、通用组件设计（唯一ID生成器、消息推送）和常见服务设计（内容发布、计数、排行榜等）。
+· chau-nm/book-collections：书籍集合，包含架构（architect）、设计模式（design-pattern）、微服务（microservice）、系统（system）、Go、Linux等目录下的电子书。
+· tuqihui/JavaBooks：Java程序员必读书单，包含超过1000本PDF，涵盖设计模式、计算机网络、操作系统、数据库、数据结构与算法、架构等。
+· xingshaocheng/architect-awesome：后端架构师技术图谱，汇总了互联网公司技术架构（微信/淘宝/微博/腾讯/阿里/美团等）和系统设计资源。
+
+系统设计通用资源：
+
+· donnemartin/system-design-primer：学习如何设计大规模系统的经典项目，包含Anki闪卡，是系统设计面试的首选资源。
+· ByteByteGoHq/system-design-101：用可视化图表和简单术语解释复杂系统，帮助准备系统设计面试。
+
+🧠 模型训练设计
+
+核心开源书籍与代码：
+
+· bojieli/ai-infra-book：《深入理解AI Infra：量化分析与系统设计》开源书稿，从硬件约束和模型架构出发，量化推导LLM推理与训练系统设计，含全书PDF、计算工具与实验，GitHub上获45k+ Star。
+· Mu-L/openmlsys-zh：《Machine Learning Systems: Design and Implementation》中文版，讲解现代机器学习系统的设计原理，涵盖编程接口、计算图、编译器到分布式训练的完整技术栈。
+· chiphuyen/machine-learning-systems-design：机器学习系统设计 booklet，包含练习，是ML系统设计的入门经典。
+· rasbt/LLMs-from-scratch：Sebastian Raschka的《Build a Large Language Model (From Scratch)》配套代码，从零开始构建LLM，涵盖设计、创建、预训练到微调的全过程。
+· Mathematics-Yang/deep-learning-from-Scratch：经典“鱼书”《深度学习入门：基于Python的理论与实践》的配套学习资源，包含中文版Jupyter Notebook笔记，覆盖从感知机到CNN的核心代码与理论。
+· jingyaogong/minimind：从零实现的小型语言模型项目，约64M参数，覆盖Pretrain、SFT、LoRA、DPO等完整流程，适合学习LLM从数据到推理的全过程。
+
+训练框架与工具：
+
+· EvolvingLMMs-Lab/lmms-engine：Any to Any模态模型训练框架，适合研究和快速实验。
+· Deci-AI/super-gradients：开源训练库，可轻松训练或微调SOTA计算机视觉模型。
+· PanJinquan/Pytorch-Base-Trainer：PyTorch分布式训练框架。
+
+📚 电子书资源汇总
+
+· MichealWayne/books：技术学习资源索引，涵盖前端开发（HTML/CSS/JS/TS/Rust/Node/框架）、计算机与软件工程（算法/网络/架构）、人工智能（机器学习/LLM与AI工程）以及UI/UX设计等方向。
+· luzhangtong/-books：专注于前端/设计相关的书籍，包含HTML5、CSS3、JavaScript、UI/UE等经典书籍的免费电子版。
+· godbasin/front-end-book：《前端的进击》电子书开源，第二部分深入介绍前端项目管理、架构设计、常见解决方案和设计原理。
+· krasimir/react-in-patterns：免费开源书籍，介绍React开发的设计模式和技术，有中文版。
+
+这些资源涵盖了从代码实践到理论设计的多个层面，你可以根据OpenJev的训练目标，从中筛选适合的场景来构建决策样本。这里整理了当前主要大模型厂商的代表性论文与技术报告，按厂商分类，方便你按需查阅。
+
+🏢 国际厂商
+
+OpenAI
+
+· GPT-4 Technical Report (arXiv:2303.08774): 介绍GPT-4的多模态能力与架构。
+· GPT-4o System Card (arXiv:2410.21276): GPT-4o的系统卡片，披露安全评估与局限性。
+· GPT-5 System Card (arXiv:2601.03267): GPT-5的系统卡片，强调更低幻觉率与工作流集成。
+
+Google DeepMind
+
+· Gemini: A Family of Highly Capable Multimodal Models (arXiv:2312.11805): Gemini系列的首篇技术报告。
+· Gemini 2.5: Pushing the Frontier... (arXiv:2507.06261): 聚焦高级推理、多模态与长上下文。
+
+Meta
+
+· LLaMA: Open and Efficient Foundation Language Models (arXiv:2302.13971): LLaMA 1的技术报告。
+· The Llama 4 Herd: Architecture, Training, Evaluation... (arXiv:2601.11659): Llama 4系列的技术报告，涵盖Scout与Maverick模型。
+
+Anthropic
+
+· Verbalizable Representations Form a Global Workspace in Language Models: 研究Claude内部“全局工作空间”的论文。
+
+Mistral AI
+
+· Pixtral 12B (arXiv:2410.07073): 首款多模态模型技术报告。
+· Magistral: 首个推理模型的技术报告，含可扩展RL流水线。
+· Ministral 3 (arXiv:2601.08584): 通过级联蒸馏构建的小模型系列。
+
+Cohere
+
+· Command A: An Enterprise-Ready Large Language Model (arXiv:2504.00698): 面向企业场景的模型技术报告。
+
+AI21 Labs
+
+· Jamba: A Hybrid Transformer-Mamba Language Model (arXiv:2403.19887): 混合Transformer-Mamba架构。
+
+Stability AI
+
+· Stable Video Diffusion: 高分辨率视频生成模型论文。
+· Stable Audio Open: 文本到音频模型的研究论文。
+
+🇨🇳 国内厂商
+
+DeepSeek
+
+· DeepSeek-R1: Incentivizing Reasoning Capability... (2025-01-20): 通过RL提升推理能力。
+· DeepSeek-V3 Technical Report (2025-03-25): 超大规模MoE架构主模型。
+· Engram (Conditional Memory via Scalable Lookup): 与北大合作，提出新记忆模块。
+
+阿里巴巴 (Qwen)
+
+· Qwen3 Technical Report (arXiv:2505.09388): 混合推理模型，支持119种语言。
+· Qwen3.5-Omni Technical Report (arXiv:2604.15804): 全模态模型技术报告。
+
+月之暗面 (Kimi)
+
+· Kimi K2: Open Agentic Intelligence (arXiv:2507.20534): 面向智能体的模型。
+· Kimi K3 Technical Report: 2.8万亿参数MoE模型，支持100万token上下文。
+
+智谱AI (GLM)
+
+· GLM-4.5: Agentic, Reasoning, and Coding... (arXiv:2508.06471): 智能体、推理与编码基础模型。
+· GLM-5: from Vibe Coding to Agentic Engineering (arXiv:2602.15763): 下一代基础模型技术报告。
+
+百度 (ERNIE)
+
+· ERNIE 4.5 Technical Report (arXiv:2507.07145): 多模态异构MoE预训练。
+· ERNIE 5.0 Technical Report (arXiv:2602.04705): 原生全模态统一建模。
+
+字节跳动 (豆包/Seed)
+
+· Seed-Thinking-v1.5: Advancing Superb Reasoning Models with RL (arXiv:2504.13914): 200B MoE思考模型。
+· Doubao Text-to-Image Technical Report: Seedream 2.0文生图模型技术细节。
+
+腾讯 (混元)
+
+· Hunyuan-Large: An Open-Source MoE Model... (arXiv:2411.02265): 389B MoE开源模型。
+· Hunyuan-TurboS: Mamba-Transformer Synergy... (arXiv:2505.15431): Mamba-Transformer混合架构。
+
+💻 其他重要厂商
+
+NVIDIA
+
+· Nemotron 3 Super: Open, Efficient Mixture-of-Experts... : 120B激活12B的混合Mamba-Transformer模型。
+· Scalable Training of MoE Models with Megatron Core: MoE可扩展训练技术报告。
+
+IBM
+
+· Granite Vision: A Lightweight, Open-Source Multimodal Model...: 面向企业智能的轻量级多模态模型。
+
+Databricks
+
+· RLVR: Training a Leading SQL Reasoning Model (arXiv:2505.20315): 通过RLVR训练SQL推理模型的技术报告。
+
+MosaicML
+
+· MosaicBERT: A Bidirectional Encoder Optimized for Fast Pretraining: 为快速预训练优化的BERT架构。
+
+如果需要某个厂商或具体模型的更多细节，可以告诉我，我帮你进一步查找。以下按类别整理了模型蒸馏的开源仓库，每个都包含现成的代码框架或已发布的预训练权重，可以直接跑通或微调。
+
+🧰 通用蒸馏工具包
+
+EasyDistill（阿里云，EMNLP 2025 Demo）
+覆盖黑盒/白盒蒸馏的完整工具包，支持数据合成、SFT、排序优化、RL全流程，适配 System 1（快速直觉）和 System 2（慢速分析）两类模型。提供 DistilQwen 系列蒸馏模型和开源数据集，已集成到阿里云 PAI 平台。GitHub: modelscope/easydistill
+
+DSKD（EMNLP 2024，交叉Tokenizer白盒蒸馏）
+通用白盒蒸馏框架，同时支持同Tokenizer和跨Tokenizer的LLM蒸馏，已支持从72B模型蒸馏到1.5B模型（DeepSpeed ZeRO-3）。后续发布了DSKDv2，引入更好的投影器初始化和on-policy蒸馏。GitHub: songmzhang/DSKD
+
+DistillFlow（多策略蒸馏 + 动态资源分配）
+支持 logits、注意力、中间层三种蒸馏策略，具备多GPU动态资源分配能力，兼容 HuggingFace Transformers、PyTorch 和 DeepSpeed。配置示例中直接展示了 Qwen2-1.5B（学生）从 Qwen2-7B（教师）蒸馏的完整配置。GitHub: horus-ai-labs/DistillFlow
+
+DistillKitPlus（离线蒸馏 + PEFT 友好）
+专注于低资源场景的蒸馏工具包，支持预计算logits实现内存高效训练，集成LoRA微调和4-bit量化。支持KL散度、通用Logit蒸馏（ULD）和多级最优传输（Multi-OT）三种损失函数，覆盖同/跨Tokenizer场景。GitHub: agokrani/distillKitPlus
+
+transformers_distillation / HF Distiller（HuggingFace 生态原生）
+封装HuggingFace Trainer 的蒸馏库，可从Hub加载任意教师模型，从零创建自定义学生模型，支持自定义层数、注意力头数和嵌入维度。Quick Start中展示了从BERT-base蒸馏出4层小模型的完整代码。GitHub: Dhiraj309/transformers_distillation
+
+🤖 具体模型蒸馏成果（含预训练权重）
+
+DeepSeek-R1 蒸馏系列（6个规格，MIT 许可）
+包含从DeepSeek-R1蒸馏的6个小模型：Qwen-1.5B/7B/14B/32B 和 Llama-8B/70B，基于80万条R1生成样本进行SFT微调。所有模型权重已在HuggingFace和GitHub开源。GitHub: deepseek-ai/DeepSeek-R1
+
+PolyDistill / TinySage 系列（多教师黑盒蒸馏，0.6B-8B）
+统一调度 GPT-4o、Claude、Gemini 作为教师模型，通过投票/加权/去噪策略融合多教师回答，蒸馏出TinySage系列（0.6B/1.7B/4B/8B）。支持logits蒸馏、特征层蒸馏、指令蒸馏、On-/Off-policy流程和LoRA/SFT微调，权重在ModelScope发布。GitHub: chensongpoixs/PolyDistill
+
+Mimi-0.6B（消费级显卡全参数蒸馏，中文）
+由Qwen3-4B在单张RTX 5090上全参数蒸馏得到的0.6B中文模型。训练脚本、数据集（alpaca_gpt4_zh）和教师模型配置全部开源，包含完整的踩坑记录。GitHub: aifeifei798/mimi_0.6b
+
+Hybrid Policy Distillation (HPD)（ICML 2026，推理模型蒸馏）
+面向推理模型的蒸馏框架，提供Qwen2.5-1.5B从Qwen2.5-7B-Thinking蒸馏的学生模型。在AIME24/25、AMC、MATH、OlympiadMath、GPQA等推理基准上提供了详细的师生对比数据，集成 LlamaFactory 和 verl 两种训练实现。GitHub: zwhong714/Hybrid-Policy-Distillation
+
+Jasper & Stella 系列（嵌入模型蒸馏）
+从SOTA嵌入模型蒸馏的轻量级双语（英/中）模型，Jasper-Token-Compression-600M在2025年11月发布，采用token压缩蒸馏方法。模型权重和数据在HuggingFace Hub发布。GitHub 项目：infgrad/jasper_en_vision_language_vl
+
+🖼️ 多模态蒸馏成果
+
+LLaVA-KD（多模态大模型蒸馏框架）
+提出 Multimodal Distillation（MDist） 和 Relation Distillation（RDist） 两种策略，配合三阶段训练（蒸馏预训练→SFT→蒸馏微调），在不改变模型架构的前提下显著提升小规模MLLM性能。GitHub: Fantasyele/LLaVA-KD
+
+Align-TI（ICML 2026，Token交互蒸馏）
+通过动态token交互而非静态next-token对齐来蒸馏多模态大模型，蒸馏出的 Align-TI-1B 基于LlamaQwen2构建，在HuggingFace发布权重。GitHub: lchen1019/Align-TI
+
+DHO（视觉语言模型半监督蒸馏，含预训练检查点）
+从CLIP等VLM蒸馏到小模型，在仅1%和10%标注数据下达到SOTA。提供4个预训练检查点（ViT-B/16 和 ViT-L/14，1%和10%标注），Top-1准确率最高85.9%，参数量86M-304M。HuggingFace: erjui/dho
+
+SigLino（CVPR 2026，视觉基础模型蒸馏）
+从 DINOv3 和 SigLIP2 蒸馏的视觉编码器集合，支持多分辨率理解。提供5个预训练检查点（30M/70M/0.6B密集版，以及MoE版本），全部可直接下载。GitHub: tiiuae/siglino
+
+Multi-Level-OT（AAAI 2025 Oral，跨Tokenizer蒸馏）
+使用多级最优传输实现跨Tokenizer的通用知识蒸馏，支持Llama2-7B、Llama-3-8B、Mistral-7B、Qwen-7B等教师模型蒸馏到Pythia-160M、OPT-350M等小模型，提供所有学生模型的检查点下载。GitHub: 2018cx/Multi-Level-OT
+
+🌍 垂直领域蒸馏
+
+OpusDistillery（多语言NMT蒸馏，Helsinki-NLP）
+面向多语言神经机器翻译的端到端蒸馏流水线，集成OPUS-MT和HuggingFace开放教师模型，支持多语言场景和GPU利用率追踪。GitHub: Helsinki-NLP/OpusDistillery
+
+deepseek-r1-distilled-c（轻量级R1蒸馏实现）
+包含6个从DeepSeek-R1蒸馏的小模型的最小实现，代码简洁（仅SFT），适合快速理解和复现R1蒸馏流程。GitHub: Rmcrow/deepseek-r1-distilled-c
+
+这些仓库中，EasyDistill、DSKD、DistillFlow、DistillKitPlus 是通用框架，适合你根据自己的教师/学生模型组合来使用；DeepSeek-R1蒸馏系列、PolyDistill/TinySage、Mimi-0.6B、HPD 提供了已训练好的权重，可以直接下载使用或在此基础上继续微调；LLaVA-KD、Align-TI、DHO、SigLino 则聚焦多模态场景。你目前更想直接用现成的蒸馏权重，还是基于某个框架来训练自己的学生模型？为你整理了一批可以直接阅读的资料，涵盖系统教程、实战博客、综述论文和书籍，方便你随时翻阅。
+
+📚 系统教程与电子书（适合系统学习）
+
+· 《Happy-LLM》中文开源教程：Datawhale 出品，从 NLP 基础、Transformer 架构讲起，手把手带你实现一个完整的 LLaMA2 模型，覆盖预训练到微调全流程，有在线阅读版本和 PDF 可免费下载。
+· The Smol Training Playbook：HuggingFace 发布的实战指南，几万字，配有决策流程图，帮你判断何时需要从头训练，并分享 SFT、DPO、GRPO 等后训练技术的踩坑经验。有网页和 PDF 版本。
+· 《大模型轻量化：模型压缩与训练加速》：清华大学出版社 2025 年出版，系统讲解量化、蒸馏、剪枝等技术，并通过实际案例验证效果。
+· 《Advancements in Knowledge Distillation》：系统覆盖知识蒸馏的各种训练方案、师生架构和蒸馏算法，是蒸馏技术的综合性参考书。
+
+✍️ 实战博客与教程（适合快速上手）
+
+· PyTorch 官方知识蒸馏教程：从零开始，教你如何修改模型类来提取隐藏表示，并在标准训练循环中引入额外的蒸馏损失，附带完整代码。
+· 《Distilling Llama3.1 8B into 1B in torchtune》：PyTorch 官方博客的实战案例，详细演示如何用 torchtune 的蒸馏配方，将 Llama 3.1 8B 蒸馏到 1B，并对比了蒸馏与 SFT 的效果。
+· 《知识蒸馏技术：温度参数与损失函数设计》：深入探讨温度参数和损失函数设计的文章，从理论到 PyTorch 实现，帮你理解蒸馏的核心超参数。
+· 《大模型蒸馏”解密：从技术原理到落地实践》：从技术本质、应用场景、实现方法三个维度拆解，结合代码示例与行业案例，适合快速了解蒸馏的落地逻辑。
+
+📄 综述论文（适合把握全局）
+
+· 《A Comprehensive Survey on Knowledge Distillation》：一篇全面的知识蒸馏综述（arXiv:2503.12067），涵盖 logits、特征、相似度等蒸馏类别，并专门讨论了黑盒蒸馏的挑战。
+· 《Survey on Knowledge Distillation for Large Language Models》：ACM 期刊综述，从方法、评估、应用三个方面展开，将方法分为白盒和黑盒蒸馏，适合了解 LLM 蒸馏的全貌。
+
+📖 专题阅读与 OpenJev 相关资料
+
+· OpenJev 项目解读：今日头条上的中文文章，拆解了 OpenJev “零样本分类器”的原理和训练方法，并提供了详细的部署文档。
+· OpenJev 浏览器实验：explainx.ai 上的博客，介绍 OpenJev 如何在浏览器中对比“直接读取 logits”和“生成概率”两种决策方式。
+
+这些资料大多可以直接在网上阅读。你是想先系统学习蒸馏的理论基础，还是直接看实战案例来跑通流程？告诉我你的偏好，我帮你进一步筛选。为你整理了果蝇研究相关的数据集与论文资源，按类别归纳如下：
+
+🖼️ 图像与视觉数据集
+
+· 发育阶段图像数据集：包含约300张/类的平衡数据集，用于分类果蝇的8个发育阶段（卵、1-3龄幼虫、白/棕/眼/黑蛹），配套代码和预训练权重已开源。
+· Tephritid26：包含38,081张图像、1,473个标本，覆盖26种检疫性实蝇，来自7个属，是最大的多角度实蝇图像数据集。
+· 果蝇翅膀图像数据库：按性别、基因型和重复成像系统组织，用于表型组学和生物识别分析。
+· SpaceAnimal Dataset：全球首个面向中国空间站的多动物姿态估计与跟踪数据集，包含果蝇在复杂空间实验场景下的高质量图像及专家标注。
+
+🎬 行为数据集
+
+· 大规模行为轨迹数据集：包含超过30,000只果蝇、105个遗传品系的行为电影和轨迹数据，发布于Scientific Data。
+· 果蝇交配行为数据集：包含9.9 GB的交配行为视频录像，用于YOLO光遗传学操作研究。
+· 嗅觉学习与记忆数据集：用于评估果蝇认知特征的遗传基础，数据来自DSPR RILs品系。
+· 温度趋向行为数据集：果蝇热趋向行为的补充数据。
+
+🧠 连接组与神经数据集
+
+· FlyWire全脑连接组：首个完整的成年雌性果蝇全脑连接组，包含约14万个神经元和超过5000万个突触，配套8,000+细胞类型注释。
+· FAFB连接组：Full Adult Fly Brain电子显微镜数据集，提供突触连接矩阵（.mat和.npy格式）。
+· 雄性CNS连接组：首个完整的雄性果蝇中枢神经系统连接组，覆盖脑和腹神经索，识别了262个性别特异性细胞类型。
+· Hemibrain数据集：果蝇中央脑的密集重建，包含19,384个神经元骨架。
+· 视觉系统连接组数据：包含处理后的生物和随机连接组图、神经元注释及模型预测数据。
+
+🧬 基因表达与转录组数据集
+
+· FlyAtlas 2：果蝇表达图谱新版本，包含RNA-Seq、miRNA-Seq和性别特异性数据，覆盖25种组织（17种成虫+8种幼虫）。
+· 单细胞转录组数据集：果蝇幼虫中肠肠上皮细胞特异性HHEX敲低的数据集；以及比较三个物种（D. melanogaster, D. simulans, D. sechellia）中央脑的单细胞转录组图谱。
+· 衰老果蝇细胞图谱：来自Aging Fly Cell Atlas网站的单细胞RNA测序数据。
+· 基因组数据集：Drosophila Genome Nexus提供全球范围的果蝇全基因组测序数据，例如包含380个非洲D. melanogaster样本。
+
+📄 核心论文与关联出版物
+
+· 《Multifaceted and extensive behavioral trajectories of genomically diverse Drosophila lines》：发表于Scientific Data（2025），描述30,000+果蝇的行为轨迹数据集，DOI: 10.1038/s41597-025-04724-3。
+· 《Automated Eight-Stage Classification of Drosophila melanogaster Using Transfer-Learning CNNs》：预印本（2025），介绍8阶段发育分类器，ResNet-50达85%准确率，DOI: 10.1101/2025.09.19.677285。
+· 《Tephritid26: A standardized, multi-angle image dataset...》：发表于Scientific Data（2026），介绍实蝇多角度图像数据集。
+· 《Neuronal wiring diagram of an adult brain》：发表于Nature（2024），FlyWire全脑连接组的正式论文。
+· 《A connectome and analysis of the adult Drosophila central brain》：发表于eLife（2020），Hemibrain连接组论文。
+· 《Event-triggered feedback system using YOLO for optogenetic manipulation of neural activity》：发表于IEEE PerCom Workshops（2023），果蝇交配行为数据集的关联出版物。
+
+🛠️ 代码与工具仓库
+
+· Drosophila_stages_models（GitHub）：8阶段分类模型代码、训练脚本和Streamlit应用，模型权重已发布在HuggingFace。
+· Drosophila_niche_dataset（GitHub）：论文《Ovipositor morphology and mechanosensory divergence...》的原始数据集。
+· Hybrid Neural Networks...（GitHub）：整合hemibrain和FAFB连接组数据、DoOR数据库功能数据的代码。
+· FlyWire Codex：连接组浏览器，支持交互式浏览FlyWire FAFB等数据集。
+
+💡 补充资源
+
+· DoOR数据库：果蝇嗅觉反应综合映射数据库，提供功能数据。
+· FlyBase：果蝇遗传和分子生物学核心数据库，提供大量参考报告和数据集链接。
+
+你目前是想用这些数据来训练视觉分类模型，还是做连接组分析或行为建模？告诉我你的具体方向，我可以帮你进一步筛选最匹配的数据集和论文。为你整理了人类大脑决策相关的论文与数据集资源，按数据类型分类如下：
+
+🧠 大规模行为决策数据集
+
+· DfE-DB（Decision-from-Experience Database）：包含380万条决策记录，来自11,921名参与者的168项研究，覆盖13种实验范式，是目前规模最大的基于经验的决策数据库。
+· Intertemporal Choice (ITC) Database：来自100项研究的1,172,644条选择与反应时数据，涉及11,852名被试，适合研究延迟折扣等跨期决策。
+· 100K Choice Dilemmas：包含超过10万条真实生活选择困境的文本描述，来自社交媒体帖子和大规模调查数据，适合训练文本决策模型。
+· Human Choice Prediction (Kaggle)：87,204条决策记录，来自245名人类玩家与6个专家机器人的对战数据。
+· Anonymized Urn-Based Experimental Dataset：4,486条决策记录，来自246名被试的Ellsberg urn任务，研究风险与模糊条件下的决策。
+
+🧬 神经影像数据集（fMRI/MEG/IEEG）
+
+· 社会奖赏处理与决策fMRI数据集：50名参与者（年轻组26人，老年组24人），包含社会奖赏与非社会奖赏决策任务的fMRI数据，以及T1/T2结构像和B0场图。
+· 混合赌博fMRI数据集：来自OpenNeuro的ds004860，包含多轮混合赌博任务的fMRI和T1加权结构像，遵循BIDS标准。
+· MEG风险决策启发式数据集：21名被试的MEG数据，研究风险决策中的启发式策略与信息偏好表征。
+· IEEG视觉决策数据集：23名癫痫患者的颅内EEG（IEEG）数据，用于研究视觉决策的神经机制。
+· 猕猴价值决策单神经元数据集：猕猴皮层和皮层下单神经元活动数据，来自价值决策任务，可用于跨物种决策机制比较。
+
+👁️ 眼动追踪数据集
+
+· 利己 vs 亲社会决策眼动数据集：14名被试的4,180条视觉行为指标和3,744条决策相关区域的眼动记录，数据在Harvard Dataverse。
+· 语义与偏好选择HD-EEG + 鼠标追踪数据集：128通道高密度EEG与鼠标追踪同步采集，31名被试完成食物偏好选择和语义判断任务。
+
+📈 EEG决策数据集
+
+· 爱荷华赌博任务（IGT）EEG数据集：59名被试的行为与EEG同步数据，21电极10-20系统，配套预处理代码在GitHub。
+· 模糊决策多模态MRI+EEG-TMS数据集：包含MRI和EEG-TMS两个实验 session，研究顶叶皮层抑制对模糊条件下决策的影响，数据在OpenNeuro ds004917。
+· 时间压力决策EEG数据集：决策中施加时间压力与无时间压力的EEG原始数据，在Harvard Dataverse。
+· 囚徒困境EEG数据集：11个三人组（33名被试）的EEG数据，BIDS格式，来自OpenNeuro ds007822。
+
+🎯 计算建模与机器学习数据集
+
+· 战略决策机器学习数据集：超过90,000条人类决策记录，跨越2,400多个程序生成的博弈，用于训练深度神经网络预测人类战略选择。
+· 图像可计算的速度化决策模型数据集：用于复现"An image-computable model of speeded decision-making"的全部结果，代码在GitHub。
+· AI缩小行动选择对序贯决策的影响数据集：包含人类被试数据和AI辅助决策的实验数据，代码和数据在GitHub。
+· 石头剪刀布竞争决策神经解码数据集：62名被试（31对）的64通道EEG数据，研究竞争性决策的神经解码，OpenNeuro ds006761。
+
+📄 代表性论文
+
+· PNAS 2025：Computational analysis of 100 K choice dilemmas，对10万条文本选择困境进行属性分析和模型预测。
+· PNAS 2024：Beta and theta oscillations track effort and previous reward in the human basal ganglia and prefrontal cortex during decision making，研究基底节和前额叶在决策中的振荡活动，数据在OSF，代码在GitHub。
+· PNAS 2024：The consequences of AI training on human decision-making，研究AI训练对人类决策的影响，数据在OSF b7w5c。
+· Nature Scientific Data 2024：An fMRI Dataset on Social Reward Processing and Decision Making in Younger and Older Adults，介绍社会奖赏决策fMRI数据集。
+· eLife 2024：Direct observation of the neural computations underlying a single decision，单决策神经计算的数据，代码在GitHub。
+· Zenodo 2025：The geometry of the neural state space of decisions，决策神经状态空间的几何结构，代码在GitHub。
+
+🗂️ 代码与工具仓库
+
+· Good Thinking Corpus v1.0：27,252条训练记录，覆盖182个分类码，涵盖逻辑、决策理论、博弈论等6个方向，Zenodo可下载。
+· LLM Decision Reasons：行为选择数据、自由文本口头报告和LLM输出，用于研究LLM识别决策原因的能力，Zenodo可获取。
+· PRJ_OFC_squeeze：基底节/前额叶决策振荡研究的代码仓库，GitHub。
+· IGT_EEG_dataset_processing_and_validation：爱荷华赌博任务EEG数据的预处理和验证代码，GitHub。
+· NeuralGeometry：决策神经状态空间几何分析的代码，GitHub。
+· LIP_single_trial_decision_variable：单决策神经计算的数据与代码，GitHub。
+
+💡 补充资源
+
+· Confidence Database：大规模置信度数据库，与ITC Database类似，是研究决策信心的补充资源。
+· DfE-DB预印本：在bioRxiv和preprints.epiforecasts.io可获取，详细描述数据库构建方法。
+
+这些资源覆盖了从行为数据、神经影像、眼动追踪到计算建模的完整决策研究链条。如果你需要某个特定范式（如风险决策、社会决策、跨期选择）的更深层资源，可以告诉我。你想要的“直接的文本”蒸馏成果，通常指的是教师模型生成的文本数据集，里面是现成的指令-响应对或推理链，可以直接拿来训练学生模型。
+
+📝 可直接使用的蒸馏文本数据集
+
+GLM-5.2 通用蒸馏数据集
+由智谱 GLM-5.2 作为教师模型生成，包含 4,982 对指令-响应数据。每条数据是标准的 messages 格式，可以直接用于 SFT。种子提示词来自 Dolly-15k，经过去重和长度过滤，覆盖通用指令跟随场景。
+
+Qwen3.5 蒸馏数据集
+由 Qwen3.5-9B-Instruct 教师生成，约 7,500 条混合领域样本（数学 70%、通用指令 20%、代码 10%）。特点是带有 <think> 推理链，并且编程了“思考模式”激活比例——数学强制思考，通用和代码则一半思考一半直接回答，用来教会学生模型“何时该深入推理”。
+
+中文 DeepSeek-R1 蒸馏数据集（110K）
+这是一个全中文的 R1 蒸馏数据集，总计 11 万条。内容分布为：数学 36,568 条、考试 2,432 条、STEM 12,648 条、通用场景 58,352 条（包含弱智吧、逻辑推理、小红书、知乎等）。数据生成严格按照 R1 官方细节：temperature=0.6，数学题加“一步步推理并把答案放入 \boxed{}”的提示词，并经过 Math-Verify 二次校验。提供了直接 SFT 使用的版本，思考和答案已整合到 output 字段。
+
+Kimi-2.5 长推理蒸馏数据集（250x）
+由 Kimi-2.5-Thinking 教师生成，250 条长推理样本，平均每条约 4,457 tokens。每条包含：复杂问题、详细的结构化推理轨迹（含假设、中间结论、逻辑推演）和最终答案。覆盖计算机科学、历史、医学、哲学、战略分析等 32 个推理领域，专门用于训练 0.6B–14B 小模型的长链推理能力。
+
+EasyDistill 配套数据集
+阿里 EasyDistill 工具包在发布的同时，开源了配套的蒸馏数据集。论文明确说明“all model checkpoints and datasets”均已发布，GitHub 地址为 modelscope/easydistill。你可以直接从该仓库获取他们用于蒸馏 Qwen 系列模型时使用的文本数据。
+
+📦 这些数据集的共同特点
+
+它们都是纯文本的 JSON 或 JSONL 格式，每行一条，包含 prompt/instruction 和 response/output 字段，部分还带有 <think> 推理链。可以直接 load_dataset 加载，或下载 JSON 文件后自行解析，然后送入 SFT 训练框架。为你整理了一批新的、可直接用于蒸馏训练的文本数据集，按领域分类如下：
+
+🧠 通用推理与思维链
+
+· TART (Textual Answers & Reasoning Traces)：约 344,294 条记录，包含 question、reasoning（思维链）和 answer 字段。数据融合了 Claude Opus 4.6、DeepSeek-V4 等前沿模型蒸馏的推理轨迹，专为 SFT 和 CoT 蒸馏设计。
+· Reasoning Corpus：由 SupraLabs 发布，总规模约 500 万条样本，单条序列控制在 5,000 token 以内。数据源自 60 余个公开仓库，整合了 DeepSeek-v4、Qwen3 等模型的思维链数据。
+· CoT-Trace-Inverted-28K：28,391 条 CoT 推理样本，通过多源蒸馏和“轨迹反转”技术构建，包含数学、科学、编码等领域，统一采用 <think> 格式。
+· Kimi-2.5 High Reasoning 250x：由 Kimi-2.5-Thinking 教师模型生成，250 条长推理样本，平均每条约 4,457 tokens，覆盖 32 个推理领域。
+
+🛒 通用指令遵循
+
+· EasyDistill 开源数据集：阿里云 PAI 框架配套，包含 100 万条通用指令遵循数据和 200 万条思维链推理数据，可直接用于蒸馏。
+· ZombieLLM — Dolly15k Distilled：~13,444 条，由 GPT-OSS-20B 蒸馏 Dolly-15k 生成，为简洁的最终答案（无推理链），适合训练直接回答能力。
+· GLM-5.2 General Distill：由 GLM-5.2 教师模型生成的指令-响应对，专为从小型本地学生模型蒸馏而设计。
+
+📐 数学与代码
+
+· OpenMathInstruct-1：包含 180 万问题-解决方案对的高质量数学指令微调数据集，采用商业友好的许可协议。
+· OpenCodeReasoning (NVIDIA)：目前最大的基于推理的代码合成数据集，包含 736,712 个 Python 样本，覆盖 28,904 个 竞赛编程问题。
+· Qwen3-Coder-480B-Distill-Mini：由 Qwen3-Coder-480B 蒸馏，从 rStar-Coder 提取 10,000 个代码问题，清洗后保留 9,543 个样本。
+
+🇨🇳 中文资源
+
+· “十万个为什么”中文百科问答：包含 general、preference、reasoning 三个子集，指令量 120 万+，适用于 SFT、DPO 和 R1 类推理蒸馏。
+· Chinese-Instruct：大规模中文指令微调数据集，包含 dpsk-r1-distil（中文 R1 蒸馏）、chinese-reasoning-distil（中文推理蒸馏）等多个配置。
+· Chinese-DeepSeek-R1-Distill-data-110k：包含约 11 万中文对话样本，由满血版 DeepSeek-R1 蒸馏，涵盖数学和大量通用类型数据。
+
+🌍 多语言与垂直领域
+
+· Crucible：混合了推理和创意写作的提示数据集，总计 37,xxx 条，覆盖英语（27,883）、德语、法语、日语、意大利语、中文等语言。
+· Medical Psychology Dataset：约 296,500 条示例，260M tokens，通过先进蒸馏技术生成，包含结构化临床和心理推理轨迹。
+· Medical-R1-Distill-Data：由 DeepSeek-R1 蒸馏的医学 SFT 数据集，基于 HuatuoGPT-o1 的医学可验证问题构建。
+· DISC-Law-SFT：大规模中文法律 SFT 数据集，提供 Pair-QA 和 Triplet-QA 等多种格式，采用 Apache-2.0 许可。
+
+📖 资源目录与索引
+
+· open-distillation-datasets：一个面向 LLM 蒸馏、SFT 与合成数据研究的公开数据目录，系统记录了教师模型、数据规模、许可证和使用风险，是持续发现新数据集的绝佳入口。
+· Max's Awesome Datasets：由 Mxode 维护的数据集集合，包含 Chinese-Instruct、Meow-Reasoning-100K、Chinese-Reasoning-Distil-Data 等多个可直接使用的数据集。
+
+这些数据集大多采用 JSONL 或 Parquet 格式，包含 prompt/instruction 和 response/output 字段，部分带有 <think> 推理链，可直接加载后用于 SFT 训练。你是打算优先用它们来补充通用推理能力，还是针对某个特定领域（如数学、医疗、中文）进行专项强化？这里为你整理了一批新的多语言训练资料，覆盖从预训练语料到指令微调的多个层面：
+
+📚 大规模多语言预训练语料
+
+FineWiki：Hugging Face FineData 团队发布的高质量 Wikipedia 文本数据集，覆盖 325 种以上语言，定位为对传统维基百科语料的更新、清洗和更优抽取版本，适合预训练和多语言建模。
+
+HPLT 3.0：提供近 200 种语言的开放高质量文本数据集，总量达 30 万亿 tokens，是目前规模最大的公开多语言资源之一。
+
+MultiSynt/MT：万亿级 token 的多平行预训练数据，由 36 种语言翻译对齐而成，CC BY 4.0 许可。
+
+🎯 多语言指令微调数据集
+
+Aya Dataset：目前最大的人工标注多语言指令微调数据集，包含超过 204K 实例，覆盖 65 种语言。
+
+UPDESH：950 万条合成指令遵循数据，覆盖 13 种印度语言及英语，专注于印度文化背景的 grounded 指令数据。
+
+multilingual LIMA：将 LIMA 指令微调数据集从英语翻译扩展到 10 种类型学多样的语言，使用 Gemini 2.0 Flash 翻译生成。
+
+SynthDolly-BenignMLSFT：覆盖 9 种语言（中文、丹麦语、英语、希腊语、印地语、爱尔兰语、葡萄牙语、西班牙语、他加禄语）的指令-响应对，侧重安全微调。
+
+🧠 多语言推理数据集
+
+MT-Reasoning (MultiSynt)：将 Glaive AI 推理数据集自动翻译为多语言版本，包含 2200 万+ 通用推理问题、推理链和响应。
+
+Dolci-Think-SFT-32B-Multilingual：大规模多语言长链思维推理语料，覆盖 6 种语言，序列长度可达 32,768 tokens。
+
+Macaron：11,862 个人工编写的多语言多文化推理实例，覆盖 20 个国家/文化背景和 10 种文字系统。
+
+Multilingual Reasoning Gym：程序化生成 14 种语言的可验证推理问题，适合作为推理训练环境。
+
+🔬 多语言知识蒸馏数据集
+
+bge-multilingual-distillation-dataset：138 万+ 样本的多语言蒸馏数据集，文件大小约 28.8 GB，专为嵌入模型蒸馏设计。
+
+OPEN-SWE-TRACES (NVIDIA)：207,489 条智能体轨迹，覆盖 9 种编程语言（Python、Go、TS、JS、Rust、Java、PHP、C、C++），用于多语言软件工程 Agent 的双模式蒸馏。微调后在 SWE-bench Multilingual 上达到 57.1% 的解决率。
+
+Gaperon Distill：为 mmBERT 构建的多语言质量蒸馏训练数据，Parquet 格式。
+
+Multi-Teacher Distillation Dataset：57,937 条轨迹，融合了三个前沿模型（Qwen3.8-Max、GLM-5.2、Kimi-K3）在数学、多语言和创意对话领域的蒸馏数据。
+
+🌐 多语言平行语料库
+
+FineTranslations (Hugging Face)：万亿级 token 的多语言平行文本数据集，覆盖英语和其他 500 多种语言，通过 Gemma3 27B 翻译生成。
+
+MaLA：包含 2,500+ 语言对的双语翻译语料，用于 500+ 语言的持续预训练。
+
+taggedPBC：包含 1,940 种以上语言的 POS 标注平行文本，覆盖 155 个语系和 78 个孤立语。
+
+esCorpiusDialog：大规模多语言对话数据集，包含 3020 万西班牙语对话、11.6 万巴斯克语、9.2 万加泰罗尼亚语和 6.3 万加利西亚语对话。
+
+💻 多语言代码与结构化推理
+
+HumanEvalPlus_multilingual：HumanEval+ 的多语言版本，覆盖 6 种语言（英语、法语、德语、西班牙语、中文、斯瓦希里语）。
+
+M²C-INSTRUCT：1300 万+ 样本的多语言多模态指令微调数据集，覆盖 50+ 编程语言，专为视觉理解和图表解读的代码生成设计。
+
+xSTREET：首个多语言结构化推理数据集，覆盖 6 种语言和 4 种任务，共 5,500 条条目。
+
+📖 多语言电子书资源
+
+Project Gutenberg (LAION)：提供 8 种以上语言的免费电子书，可通过 HuggingFace 数据集批量下载。
+
+opus_books：版权免费的双语对齐书籍集合，来自 Farkas Translations，支持多语言对齐，适合平行语料构建。
+
+这些资源从预训练到蒸馏、从文本到代码都有覆盖。你目前是想优先扩充某个特定语种的训练数据，还是需要跨语言的推理蒸馏资源？告诉我具体方向，我可以帮你进一步筛选。结合你正在训练 OpenJev 以及扩展多语言能力的方向，以下多模态训练资源覆盖了图像-文本交织、音频-视觉、视频推理、多语言多模态以及多模态蒸馏等维度，均可直接加载使用。
+
+🖼️ 图像-文本交织与生成
+
+InterSyn (ICLR 2026)
+180 万多模态样本，覆盖 3,500 个主题层级，采用 SEIR 迭代精炼进行自动质量控制。专门针对统一多模态模型的交互式图像-文本生成能力训练，实验显示 2.5万–5万样本即可带来显著提升，扩展至 10万/20万收益进一步增长。
+
+AR-Omni-Instruct-v0.1
+面向 any-to-any 统一多模态模型的指令微调数据集，modalities 标注为 audio + image + text，已 tokenized，语言为英语。
+
+Pico-Banana-400K
+约 40 万条基于指令的图像编辑样本，覆盖 35 种编辑类型，支持单轮 SFT、偏好学习和多轮编辑研究。
+
+🎬 音频-视觉与视频推理
+
+AV-Skills / AV-Think (NVIDIA)
+总计 286 万条对话行。其中 AV-Skills 包含 283.9 万条captioning 和 QA 对话，AV-Think 包含 2.36 万条时序接地的音频-视觉思维链推理样本（TAVIT），平均推理链长度 635.7 词，支持最长 15 分钟视频的联合理解。
+
+MCIF (ICLR 2026)
+10 小时科学演讲视频，覆盖 英语/德语/意大利语/中文四种语言，提供 text/speech/video 三种模态输入，包含识别、翻译、问答、摘要等指令任务，长短输入格式兼具。
+
+MAIA
+多模态视频推理评估数据集，12 个推理类别专门评估 VLM 在视频上的推理能力，数据在 GitHub 公开。
+
+🧠 多模态推理与学科能力
+
+LENS (ICLR 2026)
+3,400 张当代图像（53% 发布于 2025 年 1 月之后）和 6 万+人工编写问题，覆盖 8 项任务、12 个日常场景，形成感知 → 理解 → 推理三级递进结构。每张图像配备所有任务的丰富标注，支持同图不变 prompt 的多层级评估。
+
+BMMR (NeurIPS 2025)
+10 万大学水平问题，源自 300 个 UNESCO 学科，中英双语，每题配备高质量推理路径。分为 BMMR-Eval（2万） 和 BMMR-Train（8万），微调 BMMR-Train 可显著缩小开源与闭源模型的差距。
+
+CMM-Math (ACM MM 2025)
+28,000+ 中文多模态数学样本，覆盖小学至高中 12 个年级，题型包括选择、填空、解析，支持多图像输入，提供 benchmark 和训练两部分，已在 GitHub 和 HuggingFace 发布。
+
+🎤 语音指令微调
+
+TASTE-IF-SFT-48K
+48,000 条英语语音指令遵循 SFT 数据，每条包含合成语音音频（用户指令 + 助手回复），可直接用于语音进/语音出模型的 SFT。提供 default（含 HF Audio 结构，可在浏览器播放）和 training（TASTE SFT 加载器所需格式）两种配置。
+
+iwslt2026-if-augmented
+125 MB 音频数据，任务涵盖语音指令微调、语音识别、语音翻译和问答，Parquet 格式。
+
+AnyAudio-Judge
+7,920 条双语基准样本，覆盖 语音、声音、音乐、混合四类音频域，附带 105K 条带有显式 CoT 理由的训练语料，用于训练专用评估器。
+
+🧪 多模态蒸馏专用数据
+
+PRISM / gemini_distill
+约 11.3 万条 Gemini-3-Flash 多模态推理演示，包含密集视觉 grounding 和逐步推理；另有 gemini_public_mmr1 约 126 万条公开演示，用作广覆盖 SFT 混合。
+
+ZwZ-RL-VQA (R2I Distillation)
+约 74,000 条样本，通过 Region-to-Image Distillation 流程生成，专门用于提升多模态大模型的细粒度感知能力。
+
+CXR-MAX (MIMIC-CXR)
+170,982 条蒸馏推理轨迹，来自多个公开 MLLM 在 MIMIC-CXR 上的输出，用于多教师对齐蒸馏，代码和数据公开。
+
+🌊 垂直领域多模态
+
+OceanInstruction
+6.59 GB，覆盖海洋科学与声纳多模态指令微调，中英双语，Image-Text-to-Text 格式，MIT 许可。
+
+rail_uav_inspection_image_dataset
+轨道交通无人机巡检图像数据集，配套目标检测框和指代定位指令样本，图像-指令-应答构成完整的多模态训练三元组，JSONL 格式。
+
+💡 使用建议
+
+如果优先扩展通用多模态理解，InterSyn（图像-文本交织生成）和 LENS（多层级推理评估）是规模和质量最均衡的选择。如果侧重多语言多模态，MCIF 直接覆盖中/英/德/意四种语言和三种模态输入。如果目标是蒸馏多模态能力，PRISM 的 Gemini 蒸馏数据（11.3万条带视觉 grounding 的推理轨迹）和 CXR-MAX 的多教师蒸馏轨迹最具直接参考价值。语音方向可优先考虑 TASTE-IF-SFT-48K，格式已经为语音 SFT 做好适配。推理相关的训练资源很丰富，按类别整理如下：
+
+📊 推理数据集（直接可用）
+
+通用推理与思维链
+
+· claude-opus-4.6-4.7-reasoning-8.7k：8,706条英文样本，由Claude Opus 4.6/4.7生成，每条附带150–500词的深度推理过程，覆盖代码、数学、科学、金融、法律等28个类别。
+· Reasoning Corpus 5M：约500万条推理链，整合了DeepSeek-v4、Qwen3、Gemma4等模型的思维链数据，单条序列控制在5,000 token以内。
+· OpenThoughts：ICLR 2026工作，OpenThoughts2-1M数据集训练的OpenThinker2-32B是首个在AIME和LiveCodeBench上匹配DeepSeek-R1-Distill-32B的公开推理模型，数据集和模型在openthoughts.ai开源。
+
+推理蒸馏专用
+
+· CoT-Trace-Inverted-28K：28,391条思维链样本，通过多源蒸馏和"轨迹反转"构建，统一采用<think>...</think>格式，兼容Qwen3、DeepSeek-R1等思考模式模型，按推理链长度全局排序适合课程学习。
+· OmniThought-0528：阿里PAI团队发布，365,000条思维链数据，基于DeepSeek-R1-0528蒸馏，标注了"推理冗余度"和"认知难度"两个指标，配套EasyDistill框架开源。
+· Opus 4.7 Reasoning CoT：2,405条高难度推理提示，由Claude Opus 4.7生成，覆盖数学、科学和形式学科。
+
+💻 推理蒸馏代码库
+
+· R-Chain（modelscope/r-chain）：轻量级推理模型蒸馏工具包，系统复现DeepSeek-R1的蒸馏流程，包含数学蒸馏数据集MathR和MathR-32B-Distill。
+· DeepSeek-Distillation（hwei-hw/DeepSeek-Distillation）：收集基于DeepSeek-R1的公开蒸馏数据集。
+· EasyDistill（modelscope/easydistill）：阿里云PAI框架，支持变长思维链蒸馏，包含DistillQwen-ThoughtY系列模型的完整蒸馏配方。
+
+🌍 多语言推理数据集
+
+· PISA推理数据集：2,150道推理题目，来自PISA测试，覆盖43种语言，包含官方人工翻译和匹配的机器翻译版本。
+· Macaron：11,862个实例，覆盖20个国家/文化背景、10种文字系统、20种语言（包括阿姆哈拉语、约鲁巴语、祖鲁语等低资源语言），采用模板优先方法控制推理类型和文化维度。
+· Multilingual-Thinking：思维链从英语翻译为西班牙语、法语、意大利语、德语四种语言。
+· MultiSynt/MT-Reasoning：Glaive AI推理数据集的多语言翻译版本，包含2200万+通用推理问题、推理链和响应。
+· GeoFact-X：地理感知多语言推理基准，覆盖英语、印地语、日语、斯瓦希里语、泰语五种语言。
+
+📚 综述与资源索引
+
+· From System 1 to System 2: A Survey of Reasoning LLMs（IEEE TPAMI 2026）：系统综述推理LLM的构建方法、模型演进和核心推理技术，附实时更新的GitHub仓库跟踪最新进展。
+· Awesome-LLM-Reasoning-Data（北大/清华）：后训练推理数据的精选图谱，涵盖数据集、验证器和训练配方。
+· Awesome-LLM-Reasoning（atfortes）：从思维链提示到OpenAI o1和DeepSeek-R1的推理资源大全，包含论文、数据集、代码和基准。
+· Awesome-LLM-reasoning-papers（IngredientPreppers）：LLM/MLLM推理的论文阅读列表，包含GSM8K、MATH、SVAMP、AQUA-RAT等经典数据集索引。
+
+📖 实践教程
+
+· Build a Reasoning Model (From Scratch)：2026年出版的实践指南，从预训练LLM出发，逐步讲解推理时扩展、自精炼和强化学习训练推理模型。
+· 从零实现推理模型教程（70asunflower）：GitHub上的中文教程，用PyTorch从Qwen3基座出发，逐步实现推理时扩展、RL训练和知识蒸馏三大路线。针对数学能力的训练资料，我按数据集、代码库和中文/多模态资源分类整理如下：
+
+📊 数学推理数据集（直接可用）
+
+大规模通用数据集
+
+· Nemotron-Math：包含 750万 条解题轨迹，覆盖高、中、低三种推理模式，整合了 8.5万 道AoPS竞赛题和 26.2万 道StackExchange数学题。在Qwen3-8B和Qwen3-30B上验证，配合Python工具调用可达 100% maj@16 准确率。
+· MathReasoning：约 313万 条数学与逻辑推理数据，覆盖从基础算术到高等数学，采用Apache-2.0许可。
+· OmniThought-0528：36.5万 条推理链，由DeepSeek-R1和QwQ-32B生成，覆盖数学、代码、科学，每条标注了推理冗余度（RV） 和认知难度（CD） 两个指标。
+· OpenMathInstruct-2：1400万 问题-解答对（约 60万 个独特问题），是目前最大的开源数学推理数据集之一。
+· NuminaMath-CoT：86万+ 数学竞赛问题-解答对，解答均采用思维链模板。
+
+思维链与蒸馏专用
+
+· LiteCoT：10万 条简短清晰的推理样本，通过难度感知蒸馏（DAD） 生成，训练效率极高——用10万LiteCoT训练的效果优于80万长CoT。
+· rasbt/math_distill：由DeepSeek-R1对MATH-500和完整MATH数据集生成的蒸馏数据，包含 message_thinking 和 message_content 字段。
+· Agent-Distilled Math Reasoning (TIR+CoT)：1.16万 条工具集成推理轨迹，每条包含TIR轨迹和对应的CoT轨迹，来自NuminaMATH、MATH、DeepScaleR等来源。
+· MMathCoT-1M：100万 条多模态数学CoT训练数据，通过CoT蒸馏、重写和风格统一构建，训练出的URSA-8B在多个基准上达到SOTA。
+
+💻 数学蒸馏代码库
+
+· R-Chain（modelscope/r-chain）：轻量级推理蒸馏工具包，系统复现DeepSeek-R1蒸馏流程，包含MathR和MathR-32B-Distill数据集。
+· LoRID（IJCAI 2025）：通过多LoRA交互进行数学推理蒸馏，包含LoRIA-GSM8K和LoRID-MATH数据集。
+· ReasonLite-0.6B（AMD）：6亿参数的超轻量数学推理模型，完全开源模型权重、数据集和代码，采用课程蒸馏方法。
+· Distilling-CoT-Reasoning（ACL 2025 Findings）：研究CoT推理蒸馏关键因素的官方实现，涵盖SVAMP、GSM8K、AQuA-RAT等数据集。
+· DRP（Distilled Reasoning Pruning）：通过数学技能感知的步骤分解进行蒸馏，在GSM8K上将token使用量从917降至328，同时准确率从91.7%提升至94.1%。
+
+🇨🇳 中文数学推理资源
+
+· Chinese-Data-Distill-From-R1：11万 条中文蒸馏数据，其中数学 36,568 条、考试 2,432 条、STEM 12,648 条。按照R1官方细节生成（temperature=0.6，数学题加“一步步推理”提示词），经Math-Verify二次校验，提供直接SFT版本。
+· Chinese Reasoning Dataset v1：10,140 条中文数学与逻辑推理数据，包含代数4,340条、几何2,000条、物理1,500条等，答案经数学验证100%正确，非LLM生成，无幻觉问题。
+· CARP（NeurIPS）：4,886 条中文计算密集型代数问题，带有中间步骤的形式化标注。
+· tw-math-reasoning-2k：从MATH英文题库精选2,000 题，转为繁体中文版本，含逻辑步骤与答案。
+· CCI（中文互联网语料库）：当前开源规模最大的420B Tokens思维链推理数据集，覆盖数学、代码、论文等领域。
+
+🖼️ 多模态数学资源
+
+· CMM-Math：28,000+ 中文多模态数学样本，覆盖小学至高中12个年级，支持多图像输入，包含benchmark和训练两部分。
+· MATH-V (Math-Vision)：3,040 个高质量数学问题，源自真实数学竞赛，涵盖16个数学学科，按5个难度等级分类。
+· GeoThought：几何推理语料，包含6,243 条样本的Geo-Thought-6K和10,834 条样本的增强版。
+
+💡 使用建议
+
+如果优先快速跑通蒸馏流程，建议从 R-Chain 或 rasbt/math_distill 入手，数据格式规范、规模适中。如果目标是中文数学能力，Chinese-Data-Distill-From-R1（11万条）和 Chinese Reasoning Dataset v1（1万条，非LLM生成）质量最可靠。如果需要极轻量级学生模型，ReasonLite-0.6B 提供了完整的课程蒸馏配方和权重。如果追求数据规模，OpenMathInstruct-2（1400万）和 NuminaMath（86万）是最大的开源选择。
+
+你目前是想优先用中文数学数据还是英文竞赛级数据来训练？告诉我方向，我帮你进一步筛选。针对训练大模型的“世界观认知能力”，我为你梳理了世界上最主要的几类书籍数据集。这些资源覆盖了从百万级藏书到特定语料库的不同规模，可以作为构建模型世界知识的基础。
+
+📚 大规模公共领域书籍数据集
+
+这是构建世界观认知最核心的资源，通常包含数百万本涵盖历史、文学、科学、哲学等领域的书籍，能提供极其广泛和深入的知识。
+
+· Institutional Books 1.0：目前最值得关注的资源之一。由哈佛大学图书馆开源，包含约 98.3万本公共领域图书，覆盖超过 250种语言，总计约 2420亿个Token。内容主要出版于19至20世纪，为模型提供了大规模、高质量、多语言的历史文本语料。
+· Common Corpus：一个庞大的多语言公共领域语料库，包含200万至300万本书籍和报纸，规模巨大，适合需要海量数据的预训练任务。
+· Project Gutenberg：最经典的免费电子书库，包含超过 7万本文学著作，涵盖小说、散文、诗歌、历史、科学等。衍生数据集（如PG-19）常被用于长文本训练。
+· Books3：包含约 19.7万本全长书籍，混合了受版权保护和公共领域的作品，在多个大型语言模型的训练中被广泛使用。
+
+📖 学术与专题书籍语料库
+
+除了通用书籍，针对性的学术或专题语料能帮助模型在特定领域建立更精准的认知。
+
+· Academic Textbook Corpora：一个包含 3.9万本教科书、覆盖 5000多个学科和 15种语言的语料库，专为多语言知识建模设计。
+· Children's Book Test (CBT)：基于Project Gutenberg的一百多本儿童读物构建，适合训练基础的语言理解和常识推理。
+
+🌐 多语言与特定领域数据集
+
+为了构建更全面的世界观，多语言和文化视角的数据同样重要。
+
+· OWL (World Literature)：包含 20本书籍在 10种语言中的 3.15万个对齐摘录，适合研究跨语言知识回忆。
+· EvolvingWorld：从 57本书籍中构建，包含 13.8万个监督训练样本，专门用于训练智能体理解复杂文学世界中的规则和状态更新。
+
+💡 使用建议
+
+· 数据配比：根据实践经验，严肃书籍、教材等高质量数据在训练中通常需要进行3-5倍的过采样，以更有效地构建模型的“智商”和推理能力。
+· 关注版权：使用Books3等混合版权作品的数据集时需注意合规风险。优先选择Institutional Books 1.0、Project Gutenberg等公共领域资源更为稳妥。
+
+你目前是打算用这些书籍数据来扩充通用世界知识，还是想针对某个特定领域（比如法律、科学史）进行专项强化？告诉我你的侧重点，我可以帮你进一步筛选最匹配的语料。针对训练大模型的“世界观认知能力”，我为你整理了一批优秀的开源项目，它们从模拟环境、知识构建、模型训练到评估基准，提供了完整的工具链。
+
+🌍 世界模型与仿真框架
+
+这类项目旨在让模型通过模拟环境来学习和理解世界动态。
+
+· EvolvingWorld：一个开放模式框架，用于模拟交互式文学世界。它通过让角色扮演智能体与世界模型协同进化，训练智能体理解复杂世界中的规则和状态更新。项目基于57本书构建了138,596个监督训练样本。
+· RLVR-World：一个统一框架，利用带有可验证奖励的强化学习（RLVR）来直接优化世界模型。它在文本游戏、网页导航和机器人操作等领域的语言和视频世界模型上均展示了显著的性能提升。
+· stable-worldmodel：一个旨在实现可复现世界模型研究的平台，为数据收集、训练和评估提供了统一的接口，覆盖了大量标准化环境。
+· LingBot-World 2.0：蚂蚁灵波科技开源的世界模型系列，包括1.3B、14B等多个版本，基于视频生成技术构建世界模拟器。
+· Infinite World：一个开源系统，通过多模态大模型构建持续演进的交互式世界，将多模态理解、世界模拟和交互整合在一个连续循环中。
+· WKM (World Knowledge Model)：一个参数化的世界知识模型，旨在通过提供全局先验知识和动态状态知识，来促进智能体的规划能力。
+
+📚 知识图谱与常识库
+
+这类项目致力于构建结构化的知识库，为模型提供事实和常识基础。
+
+· CSKG (CommonSense Knowledge Graph)：一个综合性的常识知识图谱，整合了Wikidata、WordNet、FrameNet等多个来源，为常识推理研究提供支持。
+· ConceptNet：由MIT媒体实验室开发的免费常识知识库，旨在为计算机提供其应该已经知道的广泛常识知识。
+· FactNet：一个十亿级规模的多语言知识图谱，统一了17亿条原子断言和30.1亿个可审计的证据指针，源自316个维基百科版本。
+· NovaCOMET：一个开放的常识知识模型，结合了知识模型和通用任务模型的优势，并通过符号知识蒸馏技术进行训练。
+· Theogony：一个开放、民主的“世界大脑”项目，旨在构建AI背后的共享知识层，作为一个开放的公共资源，由所有人共同拥有和检查。
+
+📊 数据集与语料
+
+这些项目提供了用于训练世界观认知的大规模、高质量数据。
+
+· FineWiki：由Hugging Face发布的高质量维基百科文本数据集，覆盖325种以上语言，适合用于多语言知识建模和百科知识增强。
+· Common Corpus：目前最大的开放且合规的LLM预训练数据集，包含1.99万亿Token，涵盖政府、文化、科学、网络、代码和语义等六个集合。
+· Cosmopedia：Hugging Face发布的目前最大的开放合成数据集，包含超过3000万个样本和250亿Token。
+· Open Artificial Knowledge (OAK)：一个超过5亿Token的大规模资源，旨在解决数据问题，并可免费获取。
+· SynthWorlds：通过受控的平行世界来分离语言模型中的推理和知识，为研究模型的知识 grounding 提供了新的实验范式。
+
+🛠️ 训练框架与工具
+
+这些框架和工具专门用于训练或增强模型的世界知识。
+
+· GraphGen：一个由知识图谱引导的合成数据生成框架。它从源文本构建细粒度知识图谱，然后识别LLM的知识差距并生成数据来填补。
+· KG-R1：一个用于知识图谱问答的强化学习框架，通过单个LLM智能体和轻量级KG检索服务器，支持PPO和GRPO训练。
+· World2VLM：一个框架，使用世界模型作为训练时的教师，将空间想象力蒸馏到视觉语言模型（VLM）中，使其能够在推理时无需外部模拟就能思考未来的视图和行动后果。
+· Wikontic：一个从文本中提取三元组，并通过本体 typing、模式验证和实体去重来构建与Wikidata本体对齐的知识图谱的管道。
+· Codette：一个模块化的认知架构，用于建模多视角推理，可在消费级硬件上运行，并实现了多智能体AI的伦理推理。
+
+🎯 评估基准
+
+这些基准用于评估模型对世界知识的理解和掌握程度。
+
+· WorldVQA：一个精心策划的基准，用于评估多模态大语言模型（MLLM）中以视觉为中心的原子世界知识，包含3,500个VQA对，覆盖9个类别。
+· EWoK (Elements of World Knowledge)：一个受认知启发的框架，用于评估语言模型对世界建模所依赖的概念知识的理解，其核心数据集EWoK-core-1.0包含4,374个条目，覆盖11个世界知识领域。
+· KoLA：一个精心设计的基准，用于严格评估大型语言模型的世界知识。它评估了21个开源和商业LLM，并公开了数据集和排行榜。
+· BeyondQuestions (BeQu)：一个开放的LLM知识评估基准，包含随机实体、领域平衡实体和不存在实体等多个列表，用于探测模型的幻觉。
+
+📖 资源列表与社区
+
+这些是持续更新的资源集合，方便你追踪该领域的最新进展。
+
+· Awesome-World-Models：一个精选的世界模型论文和项目列表，涵盖具身AI、自动驾驶、NLP和智能体等应用领域。
+· Awesome-LLM-Resources：一个全面的LLM资源总结，包括多模态生成、Agent、模型训练和推理等，是获取最新资源的综合入口。
+· OpenWorldLib：由北京大学等机构推出的一个统一、规范、可扩展的先进世界模型推理框架。
+
+你目前是想优先使用这些项目来构建训练数据，还是搭建训练环境，或者是评估模型？告诉我你的侧重点，我可以帮你进一步分析哪些项目最适合你的需求。为你整理了做菜、银行/物业、电商运营和通用运营决策四个方向的训练资源，按数据集、代码库和项目分类如下。
+
+🍳 做菜与食谱
+
+大规模精细标注数据集
+
+· ReciFine (EACL 2026 Findings)：目前最大的人工评估精细标注食谱数据集，在 220万 食谱上标注了超过 9700万 个实体，覆盖 10种 实体类型（工具、厨师动作、食材状态、时长等）。实验证明，基于 ReciFine 微调的模型在可控食谱生成上显著优于仅用食材列表训练。
+· Chinese Recipe Flow Graph (CRFG)：江南大学构建的中文食谱细粒度建模数据集，包含 304 个食谱、25,025 个实体、19,369 个关系实例和 727 种食材（附营养数据），NER 和关系抽取 F1 分别达到 82% 和 91%。
+
+可直接微调的 GitHub 项目
+
+· niju-nix/recipe-generation-finetuning：在 RecipeNLG 数据集上对 Qwen2.5-7B-Instruct 进行 LoRA 微调，使用 Unsloth + vLLM 训练，并用 LLM-as-judge 在 10,000 条食谱上做 8 个维度的评估。LoRA r=8/16/32 的适配器已在 HuggingFace 发布，可直接加载。
+· karlbuscheck/teaching-distilgpt2-to-cook：在 12万 食材-指令对的数据集上微调 DistilGPT-2，包含完整的 Colab Notebook 和训练流程。
+
+中文烹饪 Agent 项目
+
+· CookHero (Decade-qiu/CookHero)：基于 LLM + RAG + Agent 的中文智能烹饪管理平台，内置食谱来自 Anduin2017/HowToCook，支持 ReAct 推理、多模态图片识别、个性化饮食计划和营养分析，技术栈为 FastAPI + React + Milvus。
+· Cheffy (ALearningCurve/cheffy-agentic-rag)：RAG + Agentic Search 的食谱检索系统，集成 MealDB、Tasty、Spoonacular 等外部 API，支持单 Agent 和多 Agent 两种检索模式。
+
+🏦 银行与物业客服
+
+意图标注数据集
+
+· Bitext 客服数据集：包含 26,872 个问答对（约 1000 条/意图），覆盖 27种意图 和 30种实体，同时涵盖 Retail Banking 和 Real Estate/Construction（物业相关）两个垂直领域。约 357万 tokens，可直接用于意图检测和对话微调。
+· Banking-773：银行领域细粒度意图数据集，包含 13,083 条客服查询，标注了 77种 意图，是 DialoGLUE 基准的一部分。
+
+已微调模型
+
+· Llama-3.1-8B-Instruct-customerservice：在上下文摘要的多轮银行客服 QA 数据集上进行 QLoRA 微调，训练数据包含 128,335 条训练实例和 18,333 条验证实例，对话轮次 2-53 轮（平均 10.06 轮）。
+· Bitext-Jamba-1.5-Mini-Banking-Customer-Support：在 Bitext 银行客服数据集上微调的 AI21 Jamba 1.5 Mini 模型。
+
+🛒 电商运营决策
+
+长程仿真基准
+
+· MerchantBench (arXiv:2607.28956)：365天 订单级电商运营仿真环境，基于 98,843 条真实电商产品记录，配备 26种 工具供 Agent 交互。覆盖产品采购、定价控制、现金流管理和混合延迟反馈适应，评估 8 个 LLM 在 48 次 365 天运行中的长期决策连贯性。最佳 LLM 仅达到人类参与者平均净资产的 27.3%。代码在 KhanCold/merchantbench。
+· E-Commerce Bench (arXiv:2608.30730)：一年期 电商基准，LLM Agent 并发运行多个在线商店，进行市场研究、供应商谈判、库存采购、销售优化和退货处理。GPT-5.6 Sol 将初始 100,000 股本增长到 1,431,425，但欺诈防范排名第 16。代码在 QwenLM/E-CommerceBench。
+
+📊 通用运营决策
+
+行业数据集索引
+
+· industry-datasets (rawatpranjal/industry-datasets)：精选商业数据集列表，覆盖 241 个数据集、31 个类别，包括零售、电商、超市、销售预测、金融交易、物流等方向，是运营决策数据的综合入口。
+
+零售需求估计
+
+· FreshRetailNet-50K：首个大规模生鲜零售截断需求估计基准，包含 50,000 个门店-产品 90天 时间序列，来自 898 家门店、18 个城市、863 个易腐 SKU，含约 20% 有机缺货数据。提供小时级销售、缺货状态、折扣、天气等丰富特征。代码在 Dingdong-Inc/frn-50k-baseline。
+
+💡 使用建议
+
+如果优先扩充烹饪决策数据，ReciFine（220万食谱、9700万实体）和 CookHero（中文 RAG+Agent）是最直接的选择。如果侧重银行客服场景，Bitext 数据集（26,872 问答对）覆盖面广且直接可微调，物业相关数据可从其 Real Estate/Construction 垂直领域提取。如果目标是训练电商运营决策能力，MerchantBench 和 E-Commerce Bench 提供了长程仿真环境，但注意它们是评估基准而非训练数据集，需结合 industry-datasets 中的真实运营数据来构建训练样本。你提到的《千恋万花》这类Galgame，其核心魅力在于叙事分支与角色决策。针对这个方向，我为你整理了一批可直接使用的游戏训练资料，覆盖从视觉小说语料到游戏决策基准的多个层面。
+
+🎮 Galgame / 视觉小说数据集
+
+这类资源直接来自Galgame或视觉小说，非常适合训练模型的叙事理解和角色扮演能力。
+
+· All Novel Can Be Galgame：一个将中文小说转化为Galgame叙事格式的Agent系统训练项目。包含669本中文小说，用于训练叙事类型分类、场景边界检测和角色归因三个协作Agent。
+· GaLLM (Galgame LLM)：基于Sakura-14B在Galgame数据上微调的模型，专门用于日语、中文、韩语的多人对话角色扮演（含旁白）。
+· Visual Novels Dataset：包含约6000万tokens的视觉小说解析脚本，涵盖对话和旁白，是训练对话结构和文本生成的优质语料。
+· Galgame_Speech_ASR_16kHz：一个大规模的日语Galgame语音ASR语料库，用于训练和微调日语动漫风格语音识别模型。
+· GalgameCharacterSkills：一个角色蒸馏工具，给定Galgame脚本，可以自动将角色蒸馏为技能或角色卡，支持使用VNDB信息增强。
+
+🧠 游戏决策与选项数据集
+
+这类数据集专注于游戏中的选择行为和决策过程，与你训练OpenJev的决策能力高度相关。
+
+· Rushes：包含来自8,167名用户在6款游戏中的44,226个决策事件，记录了完整的候选选项、用户选择和叙事上下文，适合研究个性化决策。
+· MACHIAVELLI Benchmark：包含134款“选择你的冒险”游戏，提供超过50万个以社会决策为中心的丰富场景。
+· CHADPOD Benchmark：专注于识别故事中角色做出关键决策的叙事点，包含1,462个二元分类任务，用于训练模型理解决策对故事走向的影响。
+· Game Reasoning CoT：包含551条记录，覆盖国际象棋、德州扑克等游戏，每条都包含详细的思维链推理和最终最优决策。
+· LifeChoice：从470本书中构建，包含2,512个角色的决策点，用于研究角色扮演智能体的“人格驱动决策”。
+
+💬 游戏对话与角色扮演语料
+
+这类语料侧重于游戏中的对话生成和角色扮演能力。
+
+· Mini Trade Game NPC Dataset：包含繁体中文的合成训练数据，用于模拟游戏中的商人NPC行为，其响应结构化为JSON，包含动作、消息和游戏状态变化。
+· Chinese-Roleplay-Novel：一个中文角色扮演数据集，其数据格式包含任务进度、角色状态、物品清单和对话选项，非常适合训练叙事驱动的决策模型。
+· 游戏对话语料提取项目：如 ZZZDialog、GenshinDialog 等，可以从《绝区零》、《原神》等游戏中提取文本对话语料，用于构建自定义数据集。
+
+🎲 游戏决策基准与评估
+
+这些基准用于评估和训练模型在复杂游戏环境中的战略决策能力。
+
+· Orak：一个基础性基准，提供DeepSeek蒸馏的专家轨迹，用于在多样化的视频游戏中训练和评估LLM Agent。
+· SpireEval：一个开源架构，用于将游戏 “Slay The Spire” 转化为结构化的数据集，以评估LLM的战略表现和决策过程。
+· MindGames：包含29,571场多智能体博弈，提供了94,132条玩家轨迹和243M tokens的数据，用于评估多智能体环境下的社交和战略推理。
+
+🛠️ 代码与工具库
+
+· Novel2Galgame (lin1753/novel-agent)：包含训练代码，展示了如何将670本中文小说训练为三个协作Agent，最终将小说自动转换为Galgame视觉小说格式。
+· GalgameDatasetMaker (KitsuneX07)：一个从Galgame中提取人物语音和对应文本的工具，用于制作SVC/TTS项目的数据集。
+· YMgal data-export：致力于推动Galgame数据开放共享，提供JSONL格式的游戏、机构、人物、角色及其关联关系数据服务。
+
+这些资源从叙事脚本、决策事件到对话语料都有覆盖。如果你想优先构建角色对话能力，可以从 Visual Novels Dataset 和 GaLLM 入手；如果侧重决策建模，Rushes 和 MACHIAVELLI 是更直接的选择；而 Novel2Galgame 则提供了将叙事文本转化为游戏格式的完整代码参考。当然，除了Galgame，其他类型的游戏训练资料也很丰富。我为你整理了更多游戏相关的数据集和项目，按类型分类如下：
+
+🎲 游戏决策与选项数据集
+
+· Rushes：包含8,167名用户在6款游戏中的44,226个决策事件，记录了完整的候选选项和用户选择，适合研究个性化决策。
+· Orak Benchmark：覆盖12款主流游戏的基准，提供DeepSeek蒸馏的专家轨迹，专为训练LLM Agent设计。
+· Klondike Solitaire LLM Decisions：包含28,904条逐决策轨迹，记录LLM在纸牌游戏中的每个决策，适合蒸馏研究。
+· Dethroned-ai：AI作为国王的卡牌游戏，每回合的原始模型调用和决策都可导出为数据集。
+
+💬 游戏对话与角色扮演语料
+
+· FIREBALL：来自《龙与地下城》真实游戏，包含800万+条游戏话语、210万条命令和120万条游戏状态，规模极大。
+· DDD (Dungeons & Dragons Dataset)：包含1,544个故事、9,771个角色和5,600万Llama tokens的长篇多轮多角色协作RPG故事。
+· MCPDial：面向《我的世界》的角色驱动对话数据集，包含玩家与NPC之间的人格化对话。
+· CausalDialogue：包含41个精心设计的说话者，拥有多样化背景和兴趣，适合训练角色一致性。
+
+🧠 游戏推理与思维链数据
+
+· Game Reasoning CoT：包含551条记录，覆盖国际象棋、德州扑克等，每条包含详细思维链推理和最终最优决策。
+· GameQA-140K：大规模多模态推理数据集，利用Code2Logic框架从游戏代码合成高质量视觉语言CoT数据。
+· TurnaboutLLM：基于《逆转裁判》等侦探游戏的演绎推理基准，评估LLM的推理能力。
+
+🎮 游戏脚本与代码数据集
+
+· Godot GDscript Code Dataset：包含5,000+个GitHub仓库的GDScript代码，约660MB。
+· Unity Code and GDD Pairs：包含Unity游戏机制脚本与对应的GPT-4生成游戏设计文档配对，覆盖平台跳跃、库存系统、战斗机制等。
+· Roblox-luau-coding_L1：包含12,282个真实Luau代码示例，用于训练Roblox游戏脚本编写。
+· MapleStory Worlds Creator Code：基于官方示例代码构建的mlua脚本数据集，每个示例包含自然语言任务、推理和注释代码。
+
+🎯 大规模游戏轨迹与行为数据集
+
+· WildWorld：从《怪物猎人》等AAA动作RPG自动采集，包含1.08亿帧和450+种动作，附有角色骨架、世界状态等同步标注。
+· NitroGen：视频-动作基础模型，在40,000小时、1,000+款游戏的游玩视频上训练。
+· PokeAgent Challenge：包含超过2,000万条对战轨迹的数据集，以及启发式、RL和LLM基准模型。
+
+🇨🇳 中文游戏数据集
+
+· SVFSearch：首个面向中文游戏领域的短视频帧搜索基准，包含5,000个四选一测试样本和4,198个辅助训练样本。
+· Jubensha（剧本杀）数据集：首个中文剧本杀数据集，包含1,100+个游戏实例的角色脚本和预设规则。
+· Mini Trade Game NPC Dataset：包含繁体中文的合成训练数据，用于模拟游戏中的商人NPC行为，响应结构化为JSON。
+
+📊 游戏基准与评估工具
+
+· Game Reasoning Arena：基于Google OpenSpiel库的框架，系统评估LLM在战略棋盘游戏中的决策能力。
+· GAMEBoT：透明评估LLM推理能力的游戏竞技场，在8款游戏中基准测试了17个主流LLM。
+· TextQuests：基于25款经典Infocom交互式小说游戏的基准，评估AI在长周期探索性文本环境中的内在推理能力。
+· LudoBench：基于Ludo棋盘的轻量级可解释框架，评估LLM在不确定性下的战略推理能力。
+· TowerMind：塔防游戏学习环境和基准，设计了五个难度级别评估LLM在不同多模态输入下的表现。
+
+这些资源覆盖了决策建模、对话生成、推理训练、脚本编写和行为克隆等多个维度。如果你需要针对某个特定游戏类型（如RPG、策略、棋牌）或特定能力（如角色一致性、长程规划）进一步筛选，可以告诉我。提升模型的决策能力，关键在于将“思考”和“行动”更紧密地结合。单纯增加知识不够，需要通过高质量的思维链（CoT） 数据和交互式学习来引导模型学会推理和权衡。以下资源按决策能力的核心维度分类，可以帮你系统性地构建训练方案。
+
+🧠 通用决策与推理能力
+
+· Good Thinking Corpus v1.0：包含27,252条训练记录，覆盖182个分类码，用于教授批判性思维、逻辑、决策理论和博弈论。
+· claude-opus-4.6-4.7-reasoning-8.7k：包含8,706条由Claude Opus生成的多领域英文样本，每条附有150-500词的深度推理过程，覆盖28个细分类别。
+· MIA 多步推理与决策轨迹数据集：专注于训练智能体的长期记忆利用与多步决策能力。
+· VNOVA AI决策助手数据集：包含100个合成决策场景，覆盖职业、教育、财务等日常决策领域。
+· MPCCD-MLF：医疗、法律与金融领域的多轮专业咨询对话数据集，强调专家决策形成过程的可解释推理表达。
+
+🎮 游戏中的决策与交互
+
+· Orak Benchmark：覆盖12款主流游戏，提供DeepSeek蒸馏的专家轨迹，专为训练LLM Agent设计。
+· Rushes：包含8,167名用户在6款游戏中的44,226个决策事件，记录了完整的候选选项和用户选择。
+· PokeAgent Challenge：提供超过2000万条对战轨迹的数据集，包含启发式、RL和LLM基准模型。
+· Game Reasoning CoT：包含551条记录，覆盖国际象棋、德州扑克等，每条包含详细思维链推理和最终最优决策。
+· CHADPOD / MACHIAVELLI：CHADPOD含1,462个二元分类任务，MACHIAVELLI包含134款“选择你的冒险”游戏。
+
+🖼️ 多模态决策
+
+· EQA-Decision：400万规模的具身问答数据集，覆盖静态场景、空间理解、任务动态和即时决策四大模块。
+· OmniDrive：整体视觉-语言数据集，通过反事实推理评估潜在场景及其结果来增强决策制定。
+· CoT-VLNBench：首个面向四足机器人导航的大规模思维链推理基准和数据集。
+· VIVA：基于人类价值观的视觉接地决策基准。
+
+🚀 强化学习（RL）与交互式决策
+
+· AgentTrove：开源大规模AI智能体轨迹数据集，整合219类数据源，为智能体模型的监督微调与强化学习提供数据。
+· Compass-Data-22k：22k条轨迹的数据集，其强化微调子集通过标注所有可行动作，提供了全景式的决策视角。
+· DeliveryGym：一个3D RL环境，让智能体通过与环境交互，从行动后果中学习长期规划。
+· Masked Diffusion Language Models for Agentic RL：包含239,403条跨9个开源环境的状态-动作轨迹数据集。
+
+🇨🇳 中文决策资源
+
+· OpenRobotHarness-Data-v0.1：面向中文机器人Harness决策层的小规模人工策划数据集，涵盖澄清歧义、上下文检查、失败重规划等。
+· UCI_sft_3000：首个面向中文信用违约预测的SFT微调数据集，将结构化数据序列化为自然语言对话，适配推理模型。
+· CAPC-CG：首个中文政策指令开放数据集，标注了政策信号类型，覆盖1949-2023年间的330万个段落单元。
+· RareMed-Dialogue：高质量、可审计的中文多轮临床对话数据集，由10,114个真实疑难复杂病例构建。
+
+📊 决策能力评估基准
+
+· BusinessCaseBench：包含615个来自238个商业案例的问题，覆盖18个学科，评估模型在商业决策上的能力。
+· C-SUITEBENCH：多模态基准，将模型置于CEO角色，在50个场景下评估其高风险战略决策能力。
+· GeneBench-Pro：研究级基准，衡量AI智能体在计算生物学中处理模糊性并做出关键判断的能力。
+· LudoBench：包含480个手工制作的场景，跨越12个行为决策类别，评估LLM的战略推理能力。
+
+🛠️ 决策代码库与训练工具
+
+· Logic-Distillation：IJCAI 2025论文代码，提出逐函数从代码中学习的方法，用于决策任务的逻辑蒸馏。
+· Luce：一个校准决策模型的完整配方（init → synth → train → eval → serve），让模型输出诚实的决策概率。
+· Bespoke Nimble：专注于本地类型化决策、对比数据整理和模型评估，使用Qwen3.5-9B作为基础模型。
+· ifllm-learn：一个小型研究工具包，将标记示例转化为本地、类型化的LLM决策，并附带概率校准。
+
+💡 如何系统性地提升决策能力
+
+1. 从“推理链”入手：优先使用claude-opus-4.6-4.7-reasoning-8.7k或Game Reasoning CoT，让模型学会“先思考，再决策”。
+2. 引入“交互式学习”：利用Orak或DeliveryGym等RL环境，让模型在试错中优化决策策略。
+3. 针对“多模态”场景：使用EQA-Decision或OmniDrive，训练模型在视觉输入下做出判断。
+4. 构建“评估闭环”：通过BusinessCaseBench或C-SUITEBENCH定期评估模型的决策质量，指引迭代方向。
+5. 结合你的具体场景：将上述通用能力与你之前关注的电商、客服、游戏、烹饪等领域数据结合，进行领域自适应微调。
+
+你目前是打算优先用这些资源来扩充某类特定场景（比如游戏或电商）的决策数据，还是想搭建一个通用的决策能力训练流程？告诉我你的侧重点，我可以帮你进一步分析哪些资源最适合你的项目。面对如此庞大的资源体系，确实需要一套系统性的方案来整合。下面按照核心决策能力 → 多模态与推理 → 领域专用 → 世界知识 → 开源工具 → Claude Code 替代的路径，把所有资源梳理成可操作的体系。
+
+---
+
+🧠 一、核心决策能力（OpenJev 蒸馏的核心）
+
+综合索引
+
+Awesome-LLM-RL（Linear95）是最全面的决策资源列表，系统收录了决策相关的论文、代码库和基准，涵盖世界模型、奖励模型、智能体模型和多模态决策基准。
+
+通用决策数据集
+
+· Good Thinking Corpus v1.0：27,252条训练记录，182个分类码，覆盖逻辑、决策理论、博弈论、认知偏差、微观经济学和Dennett思维工具六大方向。
+· VNOVA 决策助手数据集：100个合成决策场景，训练推理和情境理解能力。
+· llm-alignable-dm：医疗分诊决策数据集，含决策者属性标注，代码在 ITM-Kitware/llm-alignable-dm。
+· Newcomb-like Questions：纽科姆类决策理论问题的自然语言问答数据集，代码在 casparoe/newcomblike_questions_dataset。
+
+游戏决策数据集
+
+· SpireEval：将《Slay The Spire》转化为结构化决策数据集，代码在 Max-Suslov/game-bench。
+· Game Reasoning Arena：基于Google OpenSpiel的战略棋盘游戏评估框架，代码在 SLAMPAI/game_reasoning_arena。
+· Orak（KRAFTON）：多样化视频游戏LLM智能体基准，数据集结构化为MDP转移。
+· TowerMind：塔防游戏学习环境和基准，代码在 tb6147877/TowerMind。
+· Dethroned-ai：AI国王卡牌游戏，每回合原始模型调用和决策可导出为数据集。
+· GAMEBoT：ACL 2025，透明评估LLM游戏推理能力。
+
+Galgame/视觉小说
+
+· YMgal data-export：JSONL格式的Galgame游戏、人物、角色及关联关系数据。
+· STEINS;GATE Voice Dataset：官方标注的说话人姓名和转录文本。
+· Visual Novels Dataset（alpindale）：约6000万tokens的视觉小说解析脚本。
+· B-Corpus：来自R18视觉小说的语料库。
+
+---
+
+🔬 二、多模态与推理
+
+思维链（CoT）
+
+· LongPerceptualThoughts：30k长CoT推理轨迹，含完整的数据合成管线，代码在 andrewliao11/LongPerceptualThoughts。
+· PrOntoQA：用于形式化分析LLM推理任务的合成问答数据集。
+· ChainScope：研究CoT推理忠实性的数据集和评估脚本。
+· Generator_for_reasoning：基于Qwen-3-235B的推理数据生成器，支持CoT、程序思维和跳跃思维三种风格。
+
+多模态推理
+
+· DriveLMM-o1：自动驾驶逐步推理数据集，含结构化推理标注，代码在 ayesha-ishaq/DriveLMM-o1。
+· WOMD-Reasoning：Waymo开放运动数据集的推理扩展，代码在 yhli123/WOMD-Reasoning。
+· FLIP Reasoning Challenge：基于Idena区块链人类验证任务的推理基准。
+· D2-V2X：空间感知的问答-理由-答案数据集，用于协同推理决策。
+
+数学推理
+
+· Awesome-AI-Math-Datasets：数学LLM训练与评估数据集的综合合集，代码在 amao0o0/awesome-AI-Math-Datasets。
+· OlymMATH：挑战推理边界的数学数据集，含582,400条评估条目，代码在 RUCAIBox/OlymMATH。
+· Math-CoT-20k：经验证的长CoT数学推理数据。
+· OpenMathReasoning：306K独特数学问题，来自AoPS论坛。
+
+---
+
+🏢 三、领域专用资源
+
+电商决策
+
+· CASCADE：首个从淘宝App衍生的大规模在线连续净转化率预测数据集，代码在 alimama-tech/NetCVR。
+· Online Shoppers Purchasing Intention：12,330条会话级记录，含行为特征和购买完成标记。
+
+客服对话
+
+· CSConv：1,855条真实客服-代理对话，经LLM重写以反映策略使用，代码在 aliyun/qwen-dianjin。
+· CCSE-CS：76,847轮中文客服对话，覆盖电商、银行、电信、医疗四领域，含文化感知共情策略标注。
+· NATCS：多领域自然客服对话数据集。
+· Customer Service SFT 50K：50,000条ShareGPT格式客服对话，覆盖8行业18种问题类型。
+
+银行客服
+
+· BANKING77：13,083条在线银行查询，标注77种意图，是DialoGLUE基准的一部分。
+· The Banking Dataset：11个合成数据集，覆盖客户资料、交易、投诉、贷款、ATM等。
+
+烹饪食谱
+
+· teaching-distilgpt2-to-cook：12万食材-指令对，微调DistilGPT-2生成完整食谱，代码在 karlbuscheck/teaching-distilgpt2-to-cook。
+· RecipeLLM：基于InternVL2-2B/4B/8B，数据来自美食天下、下厨房，代码在 lzl2040/RecipeLLM。
+· Recipe RAG LLM：约20,000条土耳其菜谱的RAG系统，代码在 EmircanDemirTR/recipe-rag-llm。
+
+人类大脑决策
+
+· 爱荷华赌博任务（IGT）EEG数据集：59名参与者的行为与EEG同步数据，发表于Scientific Data。
+· 利己 vs 亲社会决策眼动数据集：14名被试的4,180条视觉行为指标和3,744条眼动记录，数据在Harvard Dataverse。
+· 模糊决策多模态MRI+EEG-TMS数据集：研究顶叶皮层抑制对模糊条件下决策的影响，含MRI和EEG-TMS两个session。
+
+果蝇数据集
+
+· 大规模行为轨迹数据集：超过30,000只果蝇、105个遗传品系的行为电影和轨迹。
+· 果蝇交配行为数据集：用于YOLO光遗传学操作研究的行为视频。
+· Walking behavior of flies：28,059条序列的行走行为数据，Zenodo可获取。
+· Fly Anipose：6摄像头果蝇腿部关键点姿态估计数据集。
+
+---
+
+📚 四、世界知识与书籍
+
+大规模合成教科书
+
+· Cosmopedia：目前最大的开放合成数据集，包含超过3000万个文件、250亿tokens，由Mixtral-8x7B-Instruct生成，涵盖教科书、博客、故事、WikiHow文章。
+
+世界知识评估
+
+· EWoK-core-1.0：4,374个条目，覆盖11个世界知识领域，受认知科学启发的评估框架。
+
+综合知识库
+
+· rml-ai：475MB世界知识数据，包含常识推理（CommonsenseQA）、指令遵循（OpenOrca）、问答（OpenBookQA、PubMedQA）和故事生成（Books3）。
+
+---
+
+🌍 五、世界模型开源项目
+
+· GigaWorld-1（open-gigaai）：机器人世界模型，开源训练、推理、数据处理、checkpoint转换和LoRA合并工作流，Stage-1权重已发布，支持Nano（1.3B）和Pro（5B）。
+· stable-worldmodel：可复现世界模型研究平台，提供标准化数据层和转换工具。
+· nano-world-model：极简世界模型训练仓库，基于扩散强迫的视频世界模型，完全开源含checkpoint。
+· CausalWM（AetherLabsAI）：因果推理世界模型，通过运动与几何的显式思维链预测未来视频。
+· Aether（InternRobotics）：ICCV 2025杰出论文，几何感知统一世界建模。
+
+---
+
+🛠️ 六、蒸馏与训练工具
+
+蒸馏工具包
+
+· EasyDistill（阿里云，EMNLP 2025）：覆盖黑盒/白盒蒸馏的完整工具包，支持数据合成、SFT、排序优化和RL，适配System 1和System 2模型，所有模型checkpoint和数据集已开源，代码在 modelscope/easydistill。
+· DeepSeek-Distillation（hwei-hw）：收集基于DeepSeek-R1的公开蒸馏数据集，包括数学推理数据。
+
+多语言训练数据
+
+· CUTE：中文、维吾尔语、藏语、英语四语平行与非平行语料，各25GB，代码在 CNLI-NLP/CUTE。
+· LLM-Ko-Datasets：韩语LLM数据集精选，涵盖预训练、SFT、DPO、RLHF和CoT。
+· WanJuanSiLu：面向低资源语言的高质量网页文本数据集，代码在 opendatalab/WanJuan3.0。
+
+前端设计
+
+· WebCode2M：256万实例的真实网页设计数据集，每例含设计图像、对应网页代码和布局细节。
+· Design2Code：484个多样化真实网页的测试用例，评估多模态LLM从截图生成代码的能力。
+· FrontCoder：自动数据管线产出75B tokens用于持续预训练，60K长度控制的高质量指令-代码对，代码在 leanfeng1/FrontCoder。
+
+后端架构
+
+· advanced-fullstack-ai-knowledge-base：企业级后端规格数据，含Laravel 13规范、状态管理、REST/gRPC API设计和服务器端逻辑模式。
+
+---
+
+🤖 七、Claude Code 替代方案与指南
+
+开源替代
+
+· OpenCoder（ducan-ne）：完整的Claude Code替代方案，UI/UX类似，基于Vercel AI SDK，支持OpenAI、Anthropic、Google等任意LLM提供商，跨平台支持Windows/Linux/MacOS，支持MCP工具集成。
+· DM Code：免费开源的Claude Code替代，运行于终端，支持macOS/Linux/Windows，可在11个免费模型间切换（Anthropic、Google、Groq、Mistral）。
+· 1code（21st-dev）：Claude Code的桌面UI，支持git worktree隔离和并行智能体执行。
+
+综合资源列表
+
+· awesome-claude-code（subinium）：精心策划的Claude Code工具、技能、插件和MCP服务器列表。
+
+---
+
+💡 八、整合策略：如何系统性地使用这些资源
+
+建议分四个阶段推进，每个阶段聚焦不同的能力维度：
+
+阶段一：基础决策能力搭建
+
+优先使用 Awesome-LLM-RL 作为总索引，选取 Good Thinking Corpus（通用逻辑）、Orak（游戏决策）和 SpireEval（策略决策）三个数据集，构建覆盖“逻辑推理 → 交互决策 → 战略规划”的基础决策训练集。
+
+阶段二：领域能力注入
+
+从电商（CASCADE）、客服（CSConv、CCSE-CS、BANKING77）、烹饪（RecipeLLM） 中选取你最需要的2-3个领域，每个领域选取1-2个数据集进行混合。注意BANKING77和CCSE-CS同时覆盖银行和电商场景，可以一次获取两个领域的能力。
+
+阶段三：多模态与推理增强
+
+· 用 LongPerceptualThoughts 或 Math-CoT-20k 强化长链推理能力。
+· 用 DriveLMM-o1 或 WOMD-Reasoning 注入多模态场景下的决策推理。
+· 如需世界知识 grounding，引入 Cosmopedia 的合成教科书数据。
+
+阶段四：世界模型与蒸馏优化
+
+· 用 GigaWorld-1 或 stable-worldmodel 搭建世界模型训练环境，让模型在模拟环境中学习长期决策。
+· 用 EasyDistill 工具包完成最终的蒸馏流程，支持黑盒/白盒两种模式。
+· 多语言需求用 CUTE 或 LLM-Ko-Datasets 补充。
+
+关键注意事项
+
+1. 数据配比：高质量决策数据（如CoT推理链）通常需要3-5倍过采样，才能有效“激活”模型的推理能力。
+2. 格式统一：所有数据集最终统一为 prompt + response + 可选 reasoning 的三元组格式，便于混合训练。
+3. 评估闭环：用 GAMEBoT 或 Game Reasoning Arena 定期评估决策质量，指引下一轮数据迭代方向。
+
+你目前是想先从哪个阶段开始动手？我可以帮你进一步细化该阶段的数据集筛选和训练配置方案。代码审查的开源生态很丰富，我按AI审查工具、静态分析工具、数据集与基准、Awesome资源列表几个维度帮你梳理了一下。
+
+🤖 AI驱动的代码审查工具
+
+· Open Code Review (阿里巴巴)：源自阿里内部、服务数万开发者的工业级工具。采用“确定性工程+LLM Agent”混合架构，用规则引擎精准定位问题（如NPE、XSS），LLM负责深度理解。比通用Agent精准度更高，token消耗仅约1/9。GitHub: alibaba/open-code-review
+· PR-Agent (CodiumAI)：热门AI代码审查工具（4k+ Stars），自动分析PR、提供反馈和改进建议。GitHub: Codium-ai/pr-agent
+· ai-code-reviewer：基于DeepSeek API，零依赖单文件运行，支持30+语言，可审查单文件、目录或Git Diff。GitHub: wynn2025/ai-code-reviewer
+· ai-review (Nikita-Filonov)：支持GitHub、GitLab、Bitbucket、Azure DevOps等平台，兼容OpenAI、Claude、Gemini、Ollama等多种LLM后端。GitHub: Nikita-Filonov/ai-review
+· diffray CLI：免费开源的多Agent代码审查CLI，支持从终端直接运行。GitHub: diffray-ai/diffray
+· openlens：开源AI代码审查器，并行运行安全、Bug、性能和风格四个专用Agent来审查Git Diff。GitHub: openlens-dev/openlens
+· OpenHack (Hadrian)：MIT许可的AI源代码审查工具，以远低于人工审查的成本提供高质量结果。GitHub: hadriansecurity/openhack
+
+⚙️ 静态分析与自动化审查工具
+
+· reviewdog：将任意代码分析工具（linter等）的检查结果自动作为代码审查评论发布到PR中，与语言无关（7.4k+ Stars）。GitHub: reviewdog/reviewdog
+· Danger：在CI中自动化常见代码审查任务，如检查PR描述、变更日志等（5.3k+ Stars）。GitHub: danger/danger
+· Semgrep：快速开源静态分析工具，用于查找Bug和执行代码规范，支持30+语言。GitHub: semgrep/semgrep
+· CodeQL (GitHub)：深度代码分析引擎，支持语义查询和数据流分析，有VSCode插件。GitHub: github/codeql
+· SonarQube：开源代码质量和安全管理平台，支持多种语言的静态代码分析，检测漏洞和代码坏味。
+· static-analysis：精选静态分析工具列表，涵盖所有编程语言、配置文件和构建工具。GitHub: analysis-tools-dev/static-analysis
+
+📊 代码审查数据集与基准
+
+· AACR-Bench (阿里巴巴)：行业首个多语言、仓库级上下文感知的代码审查评估数据集，包含200个真实PR、10种语言，经80+资深工程师交叉验证。GitHub: alibaba/aacr-bench
+· CuREV / CuREV+：精选代码审查数据集，提供6GB的JSONL数据，包含高质量和低质量审查评论对。HuggingFace: OussamaBS/CuREV 和 OussamaBS/CuREV-plus
+· Qodo PR-Review-Bench：大规模代码审查评估数据集，包含100个真实合并PR和580个Ground Truth问题。HuggingFace: Qodo/PR-Review-Bench
+· HistoryCR：包含177,638个PR、832,592个提交、238,012条审查评论的大规模数据集，覆盖42个仓库。
+· CodeReview-Bench：评估模型在代码审查任务上性能的基准。HuggingFace: ronantakizawa/codereview-bench
+· CodeReviewQA：包含900个人工策划的高质量示例，覆盖9种编程语言，来自开源项目的已关闭PR。HuggingFace: Tomo-Melb/CodeReviewQA
+· python-autotrain：Python代码审查数据集，包含代码片段和对应的审查评论，格式化为指令微调对话。HuggingFace: PrathamKotian26/code-review-python-autotrain
+· code-review-dpo-3k：3,000对DPO偏好数据，用于训练LLM生成具体、可操作的代码审查意见，覆盖4种编程语言。HuggingFace: stindardlogic/code-review-dpo-3k
+
+📚 Awesome列表与资源聚合
+
+· joho/awesome-code-review：最经典的代码审查资源列表（4.3k+ Stars），涵盖文章、论文和工具。GitHub: joho/awesome-code-review
+· baz-scm/awesome-reviewers：即用型Agentic代码审查系统提示词集合，从生产级开源仓库的审查讨论中提炼。GitHub: baz-scm/awesome-reviewers
+
+这些资源覆盖了从工业级AI审查工具、经典静态分析器到高质量训练数据集的完整链路。结合你之前关注的OpenJev蒸馏方向，AACR-Bench和CuREV可以作为评估和训练代码审查决策能力的直接素材。你目前是想先跑通某个审查工具，还是想用这些数据集来训练模型？告诉我你的侧重点，我可以帮你进一步分析。针对Minecraft服务端的训练，目前的开源生态已经相当成熟，从数据集、训练环境到代码框架都有覆盖。我为你整理了几个主要方向，方便你按需选用。
+
+🎮 强化学习环境 (RL Environments)
+
+· CraftGround：一个高性能的强化学习环境，速度可达约300 TPS，远超传统的MineRL。它支持最新的Minecraft版本（1.21.0+），在基准测试中的平均成功率（5.9%）也高于MineRL（3.1%）。GitHub: yhs0602/CraftGround。
+· MineLand：一个多智能体模拟器，提供Gym风格的Python接口，最多可同时运行48个智能体，适合研究大规模智能体交互和协作。GitHub: cocacola-lab/MineLand。
+· SafeVerse：一个闭环训练平台，支持“重建 -> 攻击 -> 免疫进化”的工作流。智能体可以在从真实视频重建的高保真数字孪生场景中，通过在线强化学习不断适应动态的对抗条件。
+· Microsoft Project Malmo：微软开源的AI研究平台，基于Minecraft构建，支持深度学习和多智能体协作等研究。
+
+🤖 AI智能体训练框架
+
+· MineStudio：一个简化Minecraft AI智能体开发的软件包，集成了模拟器、数据、模型、离线预训练、在线微调和推理等完整流程，并包含最大的Contractor数据集。
+· craftmind：基于Minecraft和PyTorch的AI智能体训练项目。其最新版本聚焦于LLM智能体，支持通过自然语言在聊天框下达任务，由服务端智能体通过LLM规划+行为树执行。
+· minecraft-ai-npc：一个使用LLM在Minecraft中创建AI NPC的完整解决方案，覆盖了服务器搭建、底层行为逻辑、数据集构建到模型训练的全过程。
+
+📊 训练数据集 (Datasets)
+
+· Solaris Training Dataset：通过SolarisEngine收集的训练数据集，用于训练Minecraft的多玩家世界模型，包含1264万帧、两名玩家的数据，以20 FPS录制。
+· Agent Society Distillation Dataset：包含1,355条SFT样本，专门蒸馏了Claude Sonnet在Minecraft生存/社交沙盒中的逐tick决策，适合微调小型本地模型。
+· DaemonCraft Gemma-Andy Dataset：包含33,000条合成JSON示例，用于教导LLM如何作为具身Minecraft伙伴的“身体协调器”，将自然语言意图和世界状态转化为已验证的JSON工具调用。
+· MineRL / VPT Contractor Data：MineRL提供了超过6000万帧的人类玩家模仿学习数据。VPT的Contractor数据集则在此基础上进一步扩展，适合训练行为克隆和世界模型。
+
+🧠 多智能体与竞赛基准
+
+· PillagerBench：一个竞争性多智能体框架，专注于团队对战场景，旨在通过强化学习技术提升LLM智能体的战术水平。GitHub: aialt/PillagerBench。
+· MineRL Competition：NeurIPS 2019发起的经典竞赛，专注于样本高效的强化学习，使用人类先验数据。竞赛平台提供了完整的基准测试框架。
+
+🛠️ 服务端插件开发资源
+
+如果你需要为服务端编写自定义插件来支持训练或游戏逻辑，以下资源很实用：
+
+· Minecraft Developer Guide (中文)：一份全面的中文开发指南，包含服务端开发、Java基础、常用网站与资源等。
+· Minecraft Plugin Development Skill：一个用于构建和修改Paper、Spigot或Bukkit服务端插件的技能指南，涵盖了plugin.yml设置、命令、监听器、调度器、玩家状态、经济系统等核心概念。
+
+你目前是想先搭建一个训练环境，还是需要我帮你梳理某个具体项目（比如CraftGround）的详细配置步骤？1. 检索增强生成（RAG）
+
+· GuarantRAG：显式解耦“推理”与“证据整合”，先用参数知识生成“内部答案”，再强制模型以检索文档为正样本、内部答案为负约束，抑制内部幻觉。在五个 QA 基准上准确率提升高达 12.1%，幻觉降低 16.3%。
+· RE-IAG（ACM 2026）：将推理与证据组织成对齐的图结构，仅在内部推理停滞时才触发检索，把检索从“被动增强”转为“主动约束”，减少错误累积。对比解码（Contrastive Decoding）：通过最大化“专家模型”与“业余模型”的输出差异，惩罚那些通用但可能错误的 token，保留事实性更强的续写。
+· ActLCD（Active Layer-Contrastive Decoding）：将解码建模为序贯决策问题，用强化学习策略动态决定何时应用对比层，在五个基准上超越 SOTA。针对搜索能力增强的训练，目前开源社区已经有一套从数据、框架到评估的完整方案。以下是按类别梳理的核心资源，你可以根据 OpenJev 的蒸馏目标选择性使用。
+
+📊 核心训练数据集
+
+通用Agent与搜索轨迹
+
+· UltraData-SFT-Agent-2609 (OpenBMB)：约 48.4万条执行轨迹，覆盖 Search Agent、Tool Use、Code Agent 等四类任务，涉及网页搜索、多跳问答等场景，专为 MiniCPM5-2B 等模型设计。
+· OpenSeeker：完全开源了 10.3k 英文和 1.4k 中文的搜索训练样本，基于 Qwen3-30B-A3B 微调，在多个 Deep Search 基准上取得同规模最优表现。
+· Search Agent SFT Data (NVIDIA)：四阶段流水线生成的合成搜索轨迹，从 Wikidata 知识图谱路径出发，转化为 BrowseComp 风格谜题，已处理为 SFT 就绪格式。
+· Harness-1：包含 899条 SFT 轨迹，已与 openai/gpt-oss-20b 基座模型合并，适合快速实验。
+
+强化学习专用数据集
+
+· ASearcher-train-data：包含 ASearcher-Base-35k 和 ASearcher-LRM-35k 两个子集，专为搜索智能体的大规模异步 RL 训练设计。
+· SearchVL-SFT-36k / SearchVL-RL-8k (OpenSearch-VL)：通过 Wikipedia 路径采样和模糊实体重写构建，前者用于 SFT（平均每条含 6.3次工具调用），后者用于 RL 训练。
+· StepSearch：包含子问题级别的搜索轨迹，仅用 19k 训练数据就能让 3B 和 7B 模型在搜索 RL 基线上分别取得 11.2% 和 4.2% 的绝对提升。
+· PaperSearchQA：包含 1600万篇生物医学论文摘要的搜索语料库，以及 6万个可回答的事实性 QA 样本，专为科学文献搜索推理设计，可与 Search-R1 代码库配合使用。
+· R-Search (ACL 2026)：通过多奖励强化学习赋予 LLM 搜索推理能力，代码和数据集已开源。
+
+多模态与垂直领域搜索
+
+· DeepMMSearchVQA (DeepMMSearch-R1)：多模态 VQA 数据集，通过自动化流水线融合真实网络搜索信息，包含多跳问答和多轮对话样本。
+· Gen-Searcher：包含 Gen-Searcher-SFT-10k 和 Gen-Searcher-RL-6k，专注于图像生成领域的智能体搜索能力训练。
+· INTERS：涵盖查询理解、文档理解、查询-文档关系三大类 20个信息检索任务的指令微调数据集。
+
+🛠️ RL训练框架与代码库
+
+· Search-R1：专为训练“推理-搜索交替”LLM设计的 RL 框架，基于 veRL 构建，支持 PPO、GRPO 等多种 RL 方法，兼容 Llama3、Qwen2.5 等模型及本地/在线搜索引擎。GitHub: PeterGriffinJin/Search-R1
+· ASearcher (AReaL)：开源大规模异步 RL 框架，解耦轨迹收集与模型训练，消除 GPU 空闲时间，支持超过 40轮工具调用的长程搜索训练。GitHub: inclusionAI/AReaL
+· DeepDive (THUDM)：利用知识图谱和多轮 RL 推进深度搜索智能体训练，QA对和SFT轨迹已完全开源（共 3,250 条）。GitHub: THUDM/DeepDive
+· ORBIT：通过4轮数据管线（生成→自验证→外部评判）将维基百科种子转化为可验证的多跳 QA 数据集，支持 GRPO 训练。GitHub: castorini/orbit
+· R-Search：通过多奖励强化学习赋予 LLM 搜索推理能力，代码和数据集已开源。GitHub: QingFei1/R-Search
+
+🧠 关键训练方法
+
+· SAIL (Search-Augmented Instruction Learning)：构建 (指令, grounding信息, 响应) 三元组训练集，让模型学习筛选可信来源、过滤干扰段落。在 LLaMA-7B 上微调后，在开放性问答和事实核查任务上显著提升。代码：luohongyin/SAIL
+· s3 (Gain Beyond RAG Reward)：轻量级、模型无关的搜索智能体训练框架，将搜索器与生成器解耦，仅需 2.4k 数据即可通过 RL 训练搜索器，性能超越用 70倍 数据训练的基线。
+· SimpleDeepSearcher：通过战略数据工程（而非复杂训练范式）合成高质量训练数据，模拟真实用户与实时网络搜索环境的交互。GitHub: RUCAIBox/SimpleDeepSearcher
+
+📚 电子书与实战资料
+
+· 《检索增强生成：理论与实践》 (王昊奋 等)：电子工业出版社2026年出版，系统构建从 RAG 理论根基到工程实践的完整知识脉络，涵盖 RAG 典型范式与优化思路。
+· 《知识增强大模型》：聚焦 RAG 与 GraphRAG，涵盖大模型、向量数据库、图数据库、知识图谱等内容，10章全面覆盖知识增强技术栈。
+· 《大模型应用落地：实战AI搜索》：基于大模型赋能 AI 搜索的经验总结，从0到1搭建专属 AI 搜索应用，配套全流程源码。
+
+💡 使用建议
+
+如果优先快速跑通搜索训练流程，从 Search-R1 框架 + ASearcher-train-data 入手，两者配合可覆盖 SFT 到 RL 的完整链路。如果需要多模态搜索能力，OpenSearch-VL 提供了从数据构建到训练算法的完整开源方案。如果追求学术文献搜索，PaperSearchQA 的1600万摘要语料库和6万 QA 对可直接用于 RLVR 训练。如果需要极低数据量高效训练，s3 框架仅需 2.4k 数据即可超越用 70 倍数据训练的基线。
+
+你目前是想优先用这些资源来扩充搜索训练数据，还是搭建一个搜索能力训练流程？告诉我你的侧重点，我可以帮你进一步分析哪些资源最适合你的项目。减少大模型幻觉是一个系统性工程，需要从训练数据、模型架构、推理过程到评估检测进行全链路干预。以下方案结合了最新的学术研究和工程实践，你可以根据 OpenJev 的蒸馏场景选择性组合。
+
+---
+
+🏋️ 训练阶段干预
+
+1. 数据侧：过滤与重加权
+
+· NOVA 框架（ACL 2025）：通过内部一致性探测（ICP）和语义等价识别（SEI），筛除模型“不熟悉”的指令数据，从数据源头减少幻觉诱因。
+· 选择性重加权（PNAS 2026）：仅重复 5% 的训练样本，就能将幻觉率降低高达 40%，且不牺牲准确率。这挑战了“训练数据必须去重”的常规做法，核心思路是刻意注入轻度校准偏差来抑制稀有事实的过度泛化。
+· 选择性弃权学习（Seal）（ACL 2025）：在 SFT 阶段引入特殊 [REJ] token，让模型学会拒绝回答与参数知识不对齐的问题，从源头抑制“不懂装懂”。
+
+2. 架构侧：解码层干预
+
+· DeLask（IEEE 2026）：发现幻觉倾向于从更深层的解码器层产生。DeLask 动态跳过这些“问题层”，并将它们的隐藏状态与前层部分聚合，在保留连贯性的同时抑制错误信号。
+
+---
+
+🧠 推理阶段干预
+
+1. 检索增强生成（RAG）
+
+· GuarantRAG：显式解耦“推理”与“证据整合”，先用参数知识生成“内部答案”，再强制模型以检索文档为正样本、内部答案为负约束，抑制内部幻觉。在五个 QA 基准上准确率提升高达 12.1%，幻觉降低 16.3%。
+· RE-IAG（ACM 2026）：将推理与证据组织成对齐的图结构，仅在内部推理停滞时才触发检索，把检索从“被动增强”转为“主动约束”，减少错误累积。
+
+2. 解码策略
+
+· 对比解码（Contrastive Decoding）：通过最大化“专家模型”与“业余模型”的输出差异，惩罚那些通用但可能错误的 token，保留事实性更强的续写。
+· ActLCD（Active Layer-Contrastive Decoding）：将解码建模为序贯决策问题，用强化学习策略动态决定何时应用对比层，在五个基准上超越 SOTA。
+
+3. 提示工程与自验证
+
+· 组合策略：一项研究系统比较了 CoT + RAG + 自洽性 + 自验证 的组合效果，发现多策略叠加能显著降低幻觉并保持推理深度。
+· 基于提示工程的框架（IEEE 2026）：结合动态阈值、交叉验证、自验证、CoT 和 RAG，在 Claude 3.7 和 DeepSeek-V3 上实现 2.23%–4.94% 的准确率提升，F1 提升约 7.09%，尤其对事实性幻觉效果显著。
+
+4. 知识图谱约束
+
+· 图约束推理（GCR）：通过 KG-Trie（基于 trie 的知识图谱路径索引）在解码时约束生成，确保推理严格遵循知识图谱的结构，消除无根据的推理路径。
+
+---
+
+📊 评估与检测
+
+1. 公开基准
+
+基准 规模 关注点
+TruthfulQA 817 题/38 类 专门设计来诱发常见错误观念，但需注意榜单过拟合问题
+HaluEval 35,000 样本 综合幻觉评测，含 QA、对话、摘要三类
+HaluBench 15,000 样本 多 LLM 基准，采用任务感知的评估指标对齐策略
+C-FAITH 60,702 条目 中文细粒度幻觉评估基准，基于 1,399 份知识文档构建
+
+2. 检测方法
+
+检测方法可分为三大类：基于反向验证（语法/逻辑设计复杂，易产生误差）、基于内部知识（依赖模型自身推理能力，自动化程度高）、基于外部数据库（准确性高但受资源限制）。
+
+---
+
+🛠️ 工程落地建议
+
+1. 分层防御：没有单一技术能消灭幻觉。建议在数据层（NOVA 过滤）+ 训练层（选择性重加权）+ 推理层（RAG + 自验证）+ 解码层（对比解码） 各部署一道防线。
+2. 区分幻觉类型：事实性幻觉（编造人物、API）主要靠 RAG 和后处理校验；忠实性幻觉（指令遵循失败、摘要不一致）靠 Prompt 约束和 SFT 能压住一截。
+3. 持续评估：用 HaluEval 或 C-FAITH（中文场景）定期量化幻觉率，指引数据迭代方向。
+4. 人机协同兜底：在医疗、法律等高风险场景，HITL（Human-in-the-Loop）策略可实现高达 95% 的幻觉降低，但需权衡可扩展性。
+
+结合你正在做的 OpenJev 蒸馏，如果优先考虑低成本快速见效，建议从 选择性重加权（训练数据层） 和 GuarantRAG（推理层） 入手；如果追求可证明的可靠性保证，E³-Guarded Generation 框架提供了证据接地、逻辑蕴含和执行验证三层原则，并有形式化保证。
+
+你是想优先从训练数据侧还是推理策略侧开始优化 OpenJev 的幻觉问题？针对小说聚合的需求，目前主要有两类资源：一是已经聚合好的大规模数据集，可以直接下载用于训练；二是多源聚合工具/爬虫，可以自己按需抓取。
+
+📚 聚合好的小说数据集（直接可用）
+
+通用网文语料
+
+· webnovel-chinese (HuggingFace)：约 9000本网文小说，约 9B tokens，已清洗分割为jsonl格式（title/chapter/text字段），Apache-2.0许可。
+· webnovel_cn (HuggingFace)：约 2170万条数据，可加载5万条子集使用。
+· MNBVC (GitHub)：超大规模中文语料集，小说是其中的重要组成部分，目前总数据量已超 60TB。
+· Qidian-Webnovel-Corpus (GitHub)：包含 110本起点小说的正文及所有读者评论和回复。
+
+特定类型/风格语料
+
+· LightNovel5000 (HuggingFace)：约 1500本中文翻译轻小说，含PDF插图和txt文本。
+· MultiGenre-ChineseNovel (GitHub)：来源起点，覆盖 13个体裁（仙侠、科幻、都市等）。
+· hsc-wuxia-200k (HuggingFace)：10万条武侠风格数据。
+· 男频网文写作风格微调数据集 (OpenI)：900万字，专门用于风格微调。
+· Dxniz/Novelist (HuggingFace)：包含详细写作维度标注（如文笔、世界观、张力评分），适合训练高质量创意写作。
+
+叙事理解与角色扮演专用
+
+· novel-agent-sft-dataset (HuggingFace)：包含 669本中文小说的原始文本、标注和训练数据，专为训练叙事Agent系统（场景分割、角色归因）设计。
+· BeyondDialogue (HuggingFace)：从 123本中英文小说中提取了 280个中文角色和 31个英文角色的真实对话数据。
+
+🛠️ 多源聚合工具与爬虫（按需抓取）
+
+· go-novel-dl (GitHub)：Go语言开发的多源下载器，支持 CLI和Web界面，可跨站点并发搜索（已适配ESJZone、SFACG、刺猬猫等），导出txt/epub/html。
+· SoNovel (GitHub)：开源全网小说搜索下载工具，支持NAS自部署，一键下载EPUB/TXT。
+· FictionDown (GitHub)：支持起点、笔趣阁等站点，可自动校对、广告过滤，导出Markdown/TXT/EPUB。
+· lightnovel-crawler (GitHub)：支持从多个在线源生成和下载电子书，覆盖大量轻小说站点。
+· zhuishushenqi (GitCode)：小说数据服务API项目，书籍列表接口包含约30万本小说的元数据。
+· INovelRec (GitHub)：将 7666本中文网文（约36GB）构建为可搜索的推荐系统，含完整训练和评估流程。
+
+💡 使用建议
+
+· 追求数据规模：优先用 MNBVC（60TB+）或 webnovel-chinese（9B tokens）。
+· 训练叙事/角色能力：用 novel-agent-sft-dataset 和 BeyondDialogue，标注信息更丰富。
+· 需要特定类型：轻小说用 LightNovel5000，武侠用 hsc-wuxia-200k，男频风格用 OpenI数据集。
+· 需要自己按需抓取：从 go-novel-dl 或 SoNovel 入手，支持多源聚合。编程书聚合的资源很丰富，我按类别帮你整理了一下：
+
+📚 GitHub 上的书单索引仓库
+
+这类仓库主要是书籍清单，提供书名、作者和官方链接，不直接提供下载，但胜在权威、系统。
+
+· free-programming-books-zh_CN：最经典的中文编程书索引，收录了海量免费中文书籍，覆盖语言、操作系统、AI 等方向，社区维护活跃。
+· lining808/CS-Ebook：强调“精”而非“多”，只收录各方向经典书籍，不提供下载链接，推荐通过 Z-Library 等自行检索。
+· jackfrued/awesome-programming-books：经典编程书籍大全，涵盖计算机系统、算法、前后端开发、数据库、测试等方向。
+· holasoymalva/awesome-programming-books：另一份精选书单，侧重推荐经典入门书籍，如《Eloquent JavaScript》《You Don't Know JS》等。
+
+📦 大型合集资源（含网盘链接）
+
+这类资源直接提供打包下载，适合需要快速获取大量电子书的场景。
+
+· samywong1994/tulingbiancheng：230+本图灵编程高清文字版无水印电子书合集，涵盖机器学习、Linux、Python、iOS/Android 开发等，提供夸克、123盘、Google Drive 等多种网盘链接。
+· dmz社区 700+本PDF合集：60+编程语言、700+本PDF的超级大合集，覆盖 C/C++、Java、Python 等全科。
+· CS-Books：累计收录 1000+本计算机经典电子书，覆盖 20+ 学科方向，附带下载链接和提取码。
+· Jackpopc/CS-Books-Store：计算机类常用电子书整理，附带下载链接，覆盖 Java、Python、Linux、Go、C/C++、算法、AI、面试等方向。
+
+🗂️ 数据集与训练语料
+
+如果你是想用于模型训练，这类结构化的数据集更合适。
+
+· zabiullah/pdf-books-collection (HuggingFace)：包含 1043 本 PDF 教材，约 13.56 GB，覆盖计算机科学、编程、算法、深度学习、LLM 等主题。
+· OpenCSF：一个 1.5TB 的免费计算机科学图书馆，从公开网络资源中抓取整理。
+· Goodreads-Computer-Books (OpenML)：从 Goodreads 收集的计算机书籍数据集，包含评分、书籍 ID 等元数据，适合做推荐系统或书籍分析。
+
+🌐 综合网站与平台
+
+· free-programming-books (EbookFoundation)：GitHub 上星标近 40 万的明星项目，按 43 种语言汇总免费编程书籍、课程、播客等，有配套的静态阅读站 ebookfoundation.github.io。
+· SaltTiger (盐虎)：个人网站，专注分享高品质计算机编程英文电子书，更新频率高。
+
+💡 使用建议
+
+· 如果想系统学习，从 free-programming-books-zh_CN 或 CS-Ebook 这类书单索引入手，按图索骥。
+· 如果需要批量获取，tulingbiancheng（230+本图灵书）和 CS-Books（1000+本）的网盘合集最直接。
+· 如果是训练模型，zabiullah/pdf-books-collection（13.56GB 结构化数据）或 OpenCSF（1.5TB 原始语料）更合适。
+
+你目前是想用这些书来扩充训练数据，还是想系统性地学习某个方向？告诉我你的侧重点，我可以帮你进一步筛选。你列出的这份语言清单非常全面。要找到覆盖所有这些语言的书籍资源，核心是关注几个大型的通用索引仓库，再结合针对特定语言的合集。
+
+📚 核心聚合索引（覆盖最广）
+
+这几个是资源最丰富的起点，大部分语言都能在这里找到对应书单。
+
+· free-programming-books (EbookFoundation)：这是GitHub上最知名的免费编程书籍索引，由社区协作维护，覆盖了超过40种自然语言的书单，并按编程语言和主题分类。它还有一个在线的搜索页面，非常方便查找。
+· free-programming-books-zh_CN (justjavac)：经典的中文编程书籍索引，内容分为“语言无关类”（如操作系统、算法、编译原理）和“语言相关类”，你清单里的主流语言基本都有收录。
+· awesome-programming-books (holasoymalva)：另一个精选的“Awesome”列表，主要收集由作者或出版商免费提供的书籍，按JavaScript、Python、C/C++、Java等语言分类。
+
+🗂️ 按语言分类的专属书单
+
+对于你清单中一些生态成熟的语言，通常有专门维护的书籍合集，它们会比通用索引更深入。
+
+主流与系统语言
+
+· Rust：sger/RustBooks 是一个专门的Rust书籍列表。rust-boom/rust-boom 则是一个综合资源集合，包含了《Rust语言圣经》等中文资料。
+· Go：dariubs/GoBooks 是一个维护多年的Go语言书籍列表，结构清晰。
+· C/C++：在中文社区，BeyondPang/C-C- 和 onlyet/cpp-ebook 等仓库提供了《C专家编程》、《C++ Primer Plus》等经典书籍的网盘链接。
+· Java：RongleXie/java-books-collections 按入门、进阶、架构、JVM等维度整理了Java书籍，非常系统。
+· Python：kerwinruby/IT_eBooks 等综合性仓库中包含了《Python核心编程》等书籍。
+· Swift/Kotlin：这类移动开发语言通常有专门的Awesome列表，如 bystritskiy/awesome-ios-books 收录了Swift和iOS开发书籍。
+
+函数式与逻辑语言
+
+· Haskell：Functional-Programming-Graz/HaskellBeginnersRessources 是一个为初学者整理的资源列表，包含了《Learn You a Haskell For Great Good》等经典入门书。
+· Elixir/Erlang：sger/ElixirBooks 是专门的Elixir书籍列表。
+· Scala：xiaozhiliaoo/ScalaBooks 提供了Scala书籍列表，包括《Programming in Scala》等。
+· Clojure：practicalli 组织维护了多个Clojure开源书籍和教程。
+· OCaml：ocaml-community/awesome-ocaml 在其“books”部分收录了OCaml书籍。
+· Prolog：在 free-programming-books 的Prolog部分可以找到《Adventure in Prolog》等资源。
+· Lisp：commonlispbr/archive 仓库包含Common Lisp的书籍和规范。
+· Scheme：Learning-SICP 项目是学习《计算机程序的构造和解释》的宝贵资源。
+· Agda：plfa/plfa.github.io 是《Programming Language Foundations in Agda》的官方仓库，有中文版。
+· Coq：coq-community/awesome-coq 是Coq资源的精选列表，包含书籍部分。
+
+领域特定与科学计算语言
+
+· Fortran：Beliavsky/Fortran-related-books 按主题列出了包含Fortran代码的书籍。
+· Julia：vituri/awesome-julia 是一个综合资源列表，包含书籍部分。
+· SQL：hahaha8899/freebooks 等综合仓库通常包含SQL Server、MySQL、PostgreSQL等数据库相关的书籍。
+· SAS：可以找到《Learning SAS by Example》等书籍的习题解答仓库。
+· Stata：有专门的资源库汇总了Stata相关的经典书籍和教材。
+
+新兴与特定领域语言
+
+· Solidity：bkrem/awesome-solidity 是一个精选列表，包含书籍部分。
+· Vyper：spadebuilders/awesome-vyper 是Vyper的精选资源列表。
+· GDScript：Reimenn/MyGDScripBook 是一个GDScript的图文入门教程。
+· Zig：pedropark99/zig-book 是一本关于Zig的开放书籍，也有中文翻译。
+· Crystal：《Crystal Programming》是一本基于项目的入门书籍。
+· Elm：sporto/awesome-elm 列出了《Elm in Action》等书籍。
+· PureScript：paf31/purescript-book 是《PureScript by Example》的源文件仓库。
+· ReScript：rescript-lang/awesome-rescript 是ReScript的资源集合。
+· Nim：《Nim in Action》是被广泛推荐的入门书籍。
+· Idris：《Type-Driven Development with Idris》是学习Idris的重要书籍。
+· Lean：可以找到《Theorem Proving in Lean》等资源。
+· Verilog/VHDL/SystemVerilog：电子工程世界（eeworm）等网站有大量相关书籍和教程下载。
+· LabVIEW：LadderOperator/labview_book 是《我和LabVIEW》一书的开源仓库。
+· PowerShell：awesome-powershell 列表包含书籍部分。
+· Perl：uhub/awesome-perl 的“Tutorials and Books”部分列出了《Modern Perl》等资源。
+· Groovy：可以找到《Groovy in Action》等书籍的源代码仓库。
+· Ada：DarkyHArry/ADA-Language 仓库存储了Ada语言的书籍和文件。
+· Pascal/Delphi：DeveloppeurPascal/DelphiBooks-WebSite 是一个Delphi和Pascal书籍的目录网站。
+· Forth：可以找到Chuck Moore的Forth书籍镜像和《Starting Forth》等在线资源。
+· REXX：有在线的REXX书籍列表，包含《The REXX Language》等。
+· AWK：oiclover/awk 是《The AWK Programming Language》的中文翻译。
+· VBScript：有《VBScript Programmer’s Reference》等参考手册的电子书汇总。
+· ActionScript：有包含《ActionScript 3.0 Cookbook》等经典书籍的合集。
+· Haxe：可以找到《Haxe Game Development Essentials》等书籍。
+· Vala：《Introduction to Vala Programming》是一本入门书籍。
+
+💎 训练数据专用资源
+
+如果你的目标是用于模型训练，除了书籍索引，以下结构化数据集可能更直接：
+
+· zabiullah/pdf-books-collection：一个HuggingFace数据集，包含1043本PDF教材，约13.56GB，覆盖计算机科学、编程等主题。
+· OpenCSF：一个约1.5TB的免费计算机科学图书馆，从公开网络资源抓取。
+· Goodreads-Computer-Books：包含书籍评分和元数据的数据集，适合分析或推荐系统任务。
+
+💡 使用建议
+
+面对你清单里上百种语言，建议采取分层策略：
+
+1. 优先使用核心索引：从 free-programming-books 系列入手，它们能最高效地覆盖大多数主流和小众语言。
+2. 针对重点语言深入：对于你训练目标中权重较高的语言（如Rust、Go、Python），再使用其专属书单进行深度挖掘。
+3. 关注中文资源：free-programming-books-zh_CN 是获取中文技术书籍的最佳入口。
+4. 区分索引与数据集：书籍索引提供的是“书单”，而HuggingFace上的数据集提供的是“文本内容”，根据你的训练阶段选择使用。针对Shell（Bash/Zsh/PowerShell）工具调用训练，目前已有多个大规模、高质量的数据集和配套的RL训练框架，可以直接用于模型微调。
+
+📊 核心训练数据集
+
+CLI-1M: 行业多样化的NL→Shell训练语料库
+目前规模最大、最全面的公开数据集，包含975,933个自然语言到Shell命令的配对，覆盖18个行业、6种Shell（包括Bash、Zsh、PowerShell、Fish、Nushell、Oils-osh）和13种语言。提供SFT、DPO偏好对以及cross_shell配置（约410k条），方便进行跨Shell迁移训练。使用方式：
+
+```python
+from datasets import load_dataset
+ds = load_dataset("carosh/cli-1m", revision="v1.0", split="train")
+zsh_ds = ds.filter(lambda x: x["shell"] == "zsh")
+```
+
+Terminal Command Execution SFT
+一个合并的对话式SFT数据集，专为训练安全的终端命令助手设计，覆盖POSIX shells、Linux、macOS、WSL、Windows Command Prompt、PowerShell、Nushell等环境。数据格式兼容TRL/Unsloth，并附有安全标签（safe、caution、destructive等），对训练模型的安全意识很有帮助。
+
+Bash Command Dataset v1 (6K)
+包含6,153条高质量的英语指令与Bash命令配对，适合快速微调模型将自然语言翻译为Bash命令。
+
+ShellOps
+一个可验证的CLI Agent数据集套件，包含1,624个标准CLI任务，专注于文件系统操作（如查找、聚合、编辑），适合RL训练和可验证评估。
+
+ShIOEnv
+一个Bash Shell环境，用于生成210万条输入-输出对，专门用于建模命令合成和系统执行的底层行为。
+
+NL2Bash (经典基准)
+包含约10,000条从StackOverflow等网站收集的Bash单行命令及其英文描述，是NL2Shell领域的奠基性数据集，适合作为基线参考。
+
+其他相关资源
+
+· ajibawa-2023/Shell-Code-Large: 约640,000个Shell脚本源代码样本。
+· Shell Commands Dataset (UCI): 来自网络安全培训的21,459条Shell命令，涵盖Bash、ZSH和Metasploit shells。
+· byroneverson/shell-cmd-instruct: 约500条MacOS终端命令的训练示例。
+· dr-ry/finetuned-roberta-powershell-detector: 基于PowerShell命令的微调模型，可用于检测恶意脚本。
+
+🛠️ 训练框架与工具
+
+Harbor RL (Terminal-Bench)
+一个强化学习训练配方，在沙盒化容器中为Agent提供Bash工具访问权限，通过测试结果给予奖励，实现端到端的RL训练。
+
+pi-agent-rl-toolkit
+基于GRPO的RL工具包，训练模型在598个多样化任务中使用Bash、读取、写入、Python等工具。
+
+SETA
+开源RL工具包，提供400个终端Agent任务和CAMEL工具包，用于构建和调试终端Agent。
+
+grepseek
+训练紧凑型LLM通过Unix Shell命令直接搜索原始文本语料库，而非依赖预计算的索引。
+
+shell-rt
+一个轻量级终端自动补全工具，从用户的Zsh和Bash历史记录（~/.zsh_history、~/.bash_history）中学习，适合个性化命令预测。
+
+📄 相关论文与综述
+
+· Terminal Agents: A Survey of AI Agents in Command-Line Environments: 系统综述了终端环境中的AI Agent，涵盖了工具使用、规划和自主交互等核心机制。
+· awesome-terminal-agents: 持续更新的终端Agent论文、基准、工具和运行时系统列表。
+· Learning CLI Agents with Structured Action Credit under Selective Observation: 提出了ShellOps数据集，并研究了在选择性观测下训练CLI Agent的方法。
+· ShIOEnv: A CLI Behavior-Capturing Environment...: 介绍了用于数据集策管的Shell输入-输出环境。
+· On Data Engineering for Scaling LLM Terminal Capabilities: 探讨了扩展LLM终端能力的数据工程方法，并发布了Terminal-Corpus数据集。
+
+💡 使用建议
+
+如果优先快速跑通SFT流程，CLI-1M是首选，其规模和Shell覆盖度最广，且支持按Shell类型过滤。如果需要训练安全的命令助手，Terminal Command Execution SFT内置的安全标签非常有用。如果目标是RL训练，可以从Harbor RL或pi-agent-rl-toolkit入手。如果需要Zsh特有的数据，除了CLI-1M的cross_shell配置外，Shell Commands Dataset (UCI)也包含ZSH命令样本。提升模型的理解能力，需要从语义理解、阅读理解、长文本理解、多轮对话、指令遵循等多个维度系统性地注入高质量数据，并配合专门的训练框架。
+
+📊 核心训练数据集
+
+语义理解与知识增强
+
+· FineWiki：高质量Wikipedia文本数据集，覆盖325种以上语言，为模型提供干净、权威的百科知识来源。
+· CCI 4.0：智源研究院开源的中文互联网语料库，总量达35TB，适合提升中文语义理解。
+· FLAN Collection：约300GB的指令微调数据集，涵盖分类、推理等多种NLP任务，能显著增强模型的多任务泛化理解能力。
+
+阅读理解专项
+
+· TriviaQA：大规模阅读理解问答数据集，包含95K问题-答案对和66万篇证据文档，适合训练复杂推理能力。
+· RACE：包含超过28,000篇文章和近100K道题目，是训练机器阅读理解能力的经典数据集。
+· LFED：文学小说评估数据集，专门用于评估和提升模型对长篇小说的理解与推理能力。
+
+长文本理解
+
+· LongBlocks：多语言合成长上下文数据集，包含193,219个长文本问答示例，覆盖书籍、论文、代码等。
+· InfLLM-V2-data-5B：50亿tokens的长文本训练数据，专为训练长上下文模型设计。
+· oolong-pairs：MIT OASYS Lab发布的长上下文推理聚合数据集，约2.28GB，适合训练模型在超长文本中聚合信息的能力。
+
+多轮对话理解
+
+· MMDU-45k：大规模多轮多图对话指令微调数据集，专门提升模型在多轮、多图场景下的对话理解能力。
+· RHELM：微软发布的基准数据集，涵盖长程记忆、对话记忆、RAG、幻觉检测等任务，适合评估和训练多轮对话中的记忆与理解能力。
+
+指令遵循与Agent理解
+
+· UltraData-SFT-Agent-2609：约48.4万条执行轨迹，覆盖工具调用、网页搜索、代码执行等，显著提升模型对复杂指令的理解与执行能力。
+· Nemotron-Instruction-Following-Chat-v3：约887K条样本，专为增强多轮交互和精确指令遵循能力设计。
+· Infinity-Instruct：全面的指令数据集，能同时增强模型的基础能力和聊天能力。
+
+特定领域深度理解
+
+· Spark-234K：约23.4万组科学推理问答，源自336万篇科学论文，大幅提升科学文献理解能力。
+· SciMDR：包含30万QA对和2万篇科学论文的跨模态理解数据集，专为科学文档推理设计。
+· GeoGPT-CoT-QA：首个公开的地学长思维链问答数据集，提升地学领域的专业理解能力。
+
+🛠️ 前沿训练框架与方法
+
+· Relation-R1：统一关系理解框架，结合认知链式思维（CoT）的SFT和GRPO强化学习，优先视觉-语义 grounding，减少语言偏见。
+· G-RaR (Rubric-Based RL)：通过基于评分标准的LLM-as-judge奖励系统，将SFT与GRPO结合，训练模型产生结构化推理。
+· Seek-R1：轻量级长链推理训练框架，采用课程学习，涵盖SFT、DPO等阶段。
+· MM-Doc-R1：面向长文档视觉问答的Agentic框架，通过多轮迭代信息发现和相似性策略优化（SPO）提升理解能力。
+
+🎯 评估基准
+
+· MMDU：多轮多图对话理解基准，评估模型在多轮交互中的理解能力。
+· MultiVerse：包含647个多轮对话的基准，覆盖484个不同任务，评估多轮对话理解。
+· LFED：文学小说理解评估基准。
+
+💡 系统化提升策略
+
+建议分三步走：
+
+1. 基础理解能力：使用 FineWiki 和 CCI 4.0 进行预训练或继续预训练，夯实语言与知识基础。
+2. 专项能力强化：用 TriviaQA 和 RACE 强化阅读理解；用 LongBlocks 和 InfLLM-V2-data-5B 提升长文本理解；用 UltraData-SFT-Agent-2609 增强指令遵循与工具使用理解。
+3. 框架与方法：采用 Relation-R1 或 G-RaR 等框架，结合GRPO等RL方法，通过结构化奖励进一步提升复杂场景下的理解与推理能力。
+
+你目前是想优先提升模型在哪个具体维度的理解能力（比如长文本、多轮对话、还是专业领域）？告诉我你的侧重点，我可以帮你进一步筛选最匹配的数据集和训练方案。要系统性地提升大模型的理解能力，确实需要从语义理解、阅读理解、长文本、多轮对话、指令遵循等多个维度全面注入高质量数据，并配合前沿的训练框架。以下是按维度梳理的核心资源与蒸馏成果。
+
+📊 核心训练数据集
+
+语义理解与知识增强
+
+· FineWiki：高质量Wikipedia文本数据集，覆盖325种以上语言，为模型提供干净、权威的百科知识来源。
+· CCI 4.0：智源研究院开源的中文互联网语料库，总量达35TB，适合提升中文语义理解。
+· FLAN Collection：约300GB的指令微调数据集，涵盖分类、推理等多种NLP任务，显著增强模型的多任务泛化理解能力。
+
+阅读理解专项
+
+· TriviaQA：大规模阅读理解问答数据集，包含95K问题-答案对和66万篇证据文档，适合训练复杂推理能力。
+· RACE：包含超过28,000篇文章和近100K道题目，是训练机器阅读理解能力的经典数据集。
+· LFED：文学小说评估数据集，专门用于评估和提升模型对长篇小说的理解与推理能力。
+
+长文本理解
+
+· LongBlocks：多语言合成长上下文数据集，包含193,219个长文本问答示例，覆盖书籍、论文、代码等，覆盖30+种自然语言和15种编程语言。
+· InfLLM-V2-data-5B：50亿tokens的长文本训练数据，专为训练长上下文模型设计。
+· oolong-pairs：MIT OASYS Lab发布的长上下文推理聚合数据集，约2.28GB，适合训练模型在超长文本中聚合信息的能力。
+· MMUIE：大规模多领域通用长文档信息抽取数据集，覆盖34个领域、723种实体类型和456种关系类型，用于训练长文档信息提取能力。
+
+多轮对话理解
+
+· MMDU-45k：大规模多轮多图对话指令微调数据集，专门提升模型在多轮、多图场景下的对话理解能力。
+· RHELM：微软发布的基准数据集，涵盖长程记忆、对话记忆、RAG、幻觉检测等任务，适合评估和训练多轮对话中的记忆与理解能力。
+· MTO：首个多轮Text-to-OverpassQL数据集，包含7,800+段对话和20,000+条话语，用于训练上下文感知的语义解析能力。
+· MTRAG-UN：多轮RAG对话基准，包含666个任务和2,800+轮对话，覆盖6个领域，专门评估多轮检索增强生成中的理解能力。
+
+指令遵循与Agent理解
+
+· UltraData-SFT-Agent-2609：约48.4万条执行轨迹，覆盖工具调用、网页搜索、代码执行等，显著提升模型对复杂指令的理解与执行能力。
+· Nemotron-Instruction-Following-Chat-v3：约887K条样本，专为增强多轮交互和精确指令遵循能力设计。
+· Infinity-Instruct：全面的指令数据集，能同时增强模型的基础能力和聊天能力。
+
+特定领域深度理解
+
+· Spark-234K：约23.4万组科学推理问答，源自336万篇科学论文，大幅提升科学文献理解能力。
+· SciMDR：包含30万QA对和2万篇科学论文的跨模态理解数据集，专为科学文档推理设计。
+· GeoGPT-CoT-QA：首个公开的地学长思维链问答数据集，提升地学领域的专业理解能力。
+
+🛠️ 前沿训练框架与方法
+
+· Relation-R1：统一关系理解框架，结合认知链式思维（CoT）的SFT和GRPO强化学习，优先视觉-语义 grounding，减少语言偏见。
+· G-RaR (Rubric-Based RL)：通过基于评分标准的LLM-as-judge奖励系统，将SFT与GRPO结合，训练模型产生结构化推理。
+· Seek-R1：轻量级长链推理训练框架，采用课程学习，涵盖SFT、DPO等阶段。
+· MM-Doc-R1：面向长文档视觉问答的Agentic框架，通过多轮迭代信息发现和相似性策略优化（SPO）提升理解能力。
+· Long-Context RL Recipe：结合On-Policy优化和蒸馏的长上下文推理训练方法，使用GRPO目标与教师KL正则化项来稳定训练。
+
+🎯 评估基准
+
+· MMDU：多轮多图对话理解基准，评估模型在多轮交互中的理解能力。
+· MultiVerse：包含647个多轮对话的基准，覆盖484个不同任务，评估多轮对话理解。
+· LFED：文学小说理解评估基准。
+· XL-DocBench：超长文档理解基准，包含1,519个人工验证问题，上下文最长可达2,303页。
+· MGAL：多语言粒度感知长上下文基准，基于联合国报告构建，覆盖8K到128K tokens，涵盖六种联合国官方语言。
+· LiveLongBench：首个基于直播口语文本的长文本数据集，反映真实场景中的冗余和对话特性。
+
+🚀 模型蒸馏成果（文本方向）
+
+前沿大模型蒸馏数据集
+
+· Claude-Distills：统一格式并去重的Claude蒸馏数据集集合，总计140,504条样本，涵盖代码、数学、推理、心理学等多类别。
+· CoT Distillation Collection：包含GLM-5.1-Reasoning-1M、DeepSeek-V4-Distill-Combined-14000x、Kimi-K2.5-Reasoning-1M等多个大规模思维链蒸馏数据集。
+· Superior-Reasoning-SFT：DASD pipeline生成的SFT数据集，在HuggingFace数据集趋势榜排名#1，使用温度调度学习、散度感知采样和混合策略蒸馏，仅需少量训练数据即可达到SOTA。
+· Matrix2-Pretrain-25k：合并了DeepSeek V4 Pro、Kimi K2.6和Qwen3.7 Max三个前沿模型的25,367条高质量推理与知识蒸馏样本。
+· GLM-5.2 General Distill：由GLM-5.2教师模型生成的指令-响应对，用于将小型本地学生模型蒸馏为GLM-5.2的通用指令遵循风格。
+
+蒸馏模型权重
+
+· DASD-4B-Thinking：轻量级推理模型，在AIME24、AIME25、LiveCodeBench和GPQA-Diamond等基准上超越32B规模的模型。
+· DASD-30B-A3B-Thinking-Preview：使用MoE架构的蒸馏模型，通过稀疏专家路由在保持效率的同时扩展模型容量。
+· Align-TI-2B：通过Token交互蒸馏的多模态模型，性能超越LLaVA-1.5-7B。
+· Apertus Mini：16个小模型集合，通过蒸馏和量化从Apertus v1 8B教师模型构建，训练时长仅为常规预训练的1/10。
+· LaMini-LM：从ChatGPT蒸馏的小型高效语言模型集合，训练于258万条大规模指令数据集。
+· Qwen3-1.7B-Coder-Distilled-SFT：从30B Coder教师模型蒸馏，再在约54,600个逻辑推理问题上进行SFT的两阶段训练模型。
+· DistilQwen：从Qwen3-30B教师模型蒸馏到1.7B/0.6B学生模型，使用Proof-weighted蒸馏，在推理任务上达到2.25倍效率。
+· QINGYI-KDA-0.6B：以Qwen3-0.6B-Base为基座，将28层全注意力中的21层替换为KDA线性注意力层，经分层对齐、知识蒸馏、SFT与DPO得到的混合架构模型（657.5M参数）。
+
+蒸馏工具包
+
+· EasyDistill 2：配置驱动的知识蒸馏工具包，用于将黑盒教师模型转化为高质量训练数据，支持文本和多模态蒸馏，涵盖指令蒸馏、思维链推理和视觉-语言蒸馏。
+· Distill Anything：覆盖蒸馏全生命周期的工具，从教师生成数据集、学生训练到盲评打分，支持合成数据生成和自指令式提示扩展。
+· Dasd-thinking：Distribution-Aligned Sequence Distillation的官方实现，提供完整的蒸馏pipeline和模型checkpoint。
+
+💡 系统化提升策略
+
+建议分四步走：
+
+1. 基础理解能力：使用 FineWiki 和 CCI 4.0 进行预训练或继续预训练，夯实语言与知识基础。
+2. 专项能力强化：用 TriviaQA 和 RACE 强化阅读理解；用 LongBlocks 和 InfLLM-V2-data-5B 提升长文本理解；用 UltraData-SFT-Agent-2609 增强指令遵循与工具使用理解。
+3. 蒸馏与推理能力：使用 Claude-Distills、CoT Distillation Collection 等蒸馏数据集进行SFT，或直接采用 DASD-4B-Thinking 等蒸馏模型权重进行微调。
+4. 框架与方法：采用 Relation-R1 或 G-RaR 等框架，结合GRPO等RL方法，通过结构化奖励进一步提升复杂场景下的理解与推理能力。
+
+你目前是想优先从哪个维度开始着手搭建训练流程？告诉我你的侧重点，我可以帮你进一步细化该方向的数据集筛选和训练配置方案。提升代码语义理解能力，目前有几个2026年的新数据集和基准可以直接使用，下面按训练数据集和评估基准分别整理。
+
+📊 核心训练数据集
+
+TraceEval（执行验证的多语言语义推理）
+包含 10,583 个真实程序（2,129 测试 / 8,454 训练），从 1,600+ 开源仓库中提取，覆盖 Python、JavaScript、Java 三种语言。核心任务是让模型从源代码中恢复程序的运行时调用结构，每个正例边都由执行验证机械见证，消除了标注噪声。在训练集上微调 Qwen2.5-Coder 系列，F1 最高提升 72.9%，32B 版本达到 +55.6 F1，接近 Claude-Opus-4.6 零样本水平。仓库：yikun-li/TraceEval。
+
+CodeSense（真实世界细粒度语义推理）
+ICLR 2026 工作，从 Python、C、Java 真实仓库中收集项目，执行测试并采集执行轨迹，构建了面向细粒度语义推理任务的 ground truth 数据集。相比合成数据集和教学编程题，CodeSense 直接针对真实软件工程场景中的代码理解，同时开源了执行追踪框架和工具集，可以方便地为新仓库构建 ground truth。项目页面：codesense-bench.github.io。
+
+SWE-QA（多跳代码理解）
+LREC 2026 工作，包含 9,072 道多项选择题，从 12 个 SWE-bench Python 仓库中系统生成。题目设计了两种核心推理模式：Declaration-and-Call（将实体定义链接到使用位置）和 Interacting-Entity（考察多个协作组件间的动态关系）。生成过程结合了基于解析的实体提取和 LLM 辅助的出题，并精心验证了干扰项，确保区分真正的理解与表面模式匹配。15 个模型评估中，最佳准确率仅 74.41%，说明多跳推理仍是显著瓶颈。
+
+SWE-ZERO / SWE-HERO（分阶段语义微调）
+NVIDIA 发布的两阶段 SFT 配方，从 Qwen3-Coder-480B 蒸馏轨迹。SWE-ZERO 包含 30 万条无执行环境的轨迹，专门让模型掌握代码语义和仓库级推理；SWE-HERO 包含 1.3 万条基于执行的精炼轨迹，将语义直觉转化为严格的工程工作流。SWE-HERO-32B 在 SWE-bench Verified 上达到 62.2% 的解决率，且仅用 Python 训练就在 SWE-bench Multilingual 上取得 44.1% 的零样本迁移表现。数据集：nvidia/SWE-Zero2Hero。
+
+OPEN-SWE-TRACES（多语言双模式蒸馏）
+包含 207,489 条智能体轨迹，覆盖 Python、Go、TS、JS、Rust、Java、PHP、C、C++ 九种语言，来源于 20,000 个真实 PR。采用混合推理合成策略：Minimax-M2.5 生成带显式“思考”过程的轨迹，Qwen3.5-122B 提供高质量“非思考”轨迹。在 Qwen3-30B 系列上微调后，最佳模型在 SWE-bench Multilingual 上达到 57.1% 的解决率。
+
+CodeEvo（交互驱动的代码语义合成）
+ACL 2026 工作，采用双 Agent 架构：Coder 负责迭代式解决方案合成，Reviewer 负责编排生成轨迹。通过 Schema 系统性地架构逻辑和复杂度，结合确定性编译器反馈与语义评估的混合验证协议，构建了 CodeEvo-100K 大规模指令-代码对数据集，带有分级难度。仓库：QiushiSun/CodeEvo。
+
+🎯 评估基准
+
+CodeSense 和 TraceEval 同时兼具训练集和评估基准功能。此外：
+
+CoRe（NeurIPS 2025 Spotlight）
+包含 12,553 个人工验证的任务实例，通过数据依赖、控制依赖和信息流三类静态分析任务，直接评估 LLM 的代码语义推理能力。
+
+EquiBench
+通过等价性检查（判断两个程序是否对所有输入产生相同输出）评估 LLM 的程序语义推理能力。在最具挑战性的类别中，最佳准确率仅 63.8% 和 76.2%，仅略高于 50% 随机基线。
+
+TF-Bench（NeurIPS 2025）
+基于 System F 类型推断评估 LLM 的程序语义推理能力，Claude-3.7-Sonnet 在 TF-Bench_pure 上仅达到 55.85% 准确率。
+
+RepoReasoner（FSE 2026）
+面向仓库级代码推理的基准，评估两种互补能力：Output Prediction（跨文件的有状态执行推理）和 Call Chain Prediction（高层调用链推理）。
+
+🛠️ 蒸馏工具
+
+CodeRAG：轻量级语义代码搜索与蒸馏工具，通过实时本地签名提取和意图分析，将代码库上下文压缩为紧凑的语义摘要，存储在本地 DuckDB 向量索引中，优化 token 效率。
+
+MapCoder-Lite：将大规模多 Agent 编码系统的复杂推理蒸馏到单个 7B 模型中的框架，代码在 aiha-lab/MapCoder-Lite。
+
+ai-distiller：超快开源工具，智能提取大型代码库中的公共 API、类型和结构，将 90-98% 的代码压缩为 AI 友好的上下文，支持 12+ 种语言。
+
+建议优先从 TraceEval 和 CodeSense 入手，两者都提供了执行验证的 ground truth，语义信号最可靠；如果需要仓库级推理能力，SWE-QA 和 SWE-ZERO/HERO 更直接；多语言场景则用 OPEN-SWE-TRACES。● Minecraft 仓库不在本地。现有源 1,450 个代码文件全宽松许可（MIT/Apache），按函数级切片可出 ~1.5 万块，够一批。写切片脚本。
+
+● Bash(python3 - <<'EOF'
+      import json, os, random…)
+  ⎿  mistralrs: 2488
+     mistralrs-quant: 722
+     ocr: 1396
+     … +4 lines (按 ctrl+o 展开)可以，在训练MoE模型的过程中，完全可以动态地增加参数量。这被称为渐进式训练（Progressive Training）或专家扩展（Expert Expansion），是一种提升训练效率和模型可扩展性的前沿技术。
+
+主要技术途径
+
+动态扩展主要沿着宽度和深度两个维度进行，通常通过以下核心机制实现：
+
+· 专家增殖 (Expert Upcycling)：通过复制现有专家并扩展路由器来增加专家数量（宽度）。复制提供“热初始化”，继承已学知识，随后通过训练打破对称性，驱动新专家特化。为防止完全对称，通常给复制专家参数添加微小高斯噪声，鼓励功能分化。
+· 渐进式训练框架 (如 EMO)：将MoE容量视为可扩展内存，在训练中逐步增加专家池。EMO框架根据稀疏度缩放定律推导各阶段最优Token预算，匹配固定专家性能的同时提升实际训练效率。
+· 专家融合与模块化增长：Branch-Train-Stitch (BTS) 等方法可独立训练专家，再以低成本拼接融合。正交增长策略则证明深度（层复制）和宽度（专家复制）增长相互独立，可自由组合，从17B扩展至70B仍能优于从头训练。
+
+关键注意事项
+
+· 计算预算的协同增长：这是最关键的一点。仅增加专家总数而保持激活专家数（top-k）不变，不会带来性能提升。必须按比例增加激活专家数，让Token被路由到新容量，才能有效利用新增参数。
+· 训练稳定性与路由漂移：新增专家可能导致路由器重新分配旧样本，造成遗忘。解决方案包括：冻结现有专家或路由器以保护旧知识，或采用稳定路由、自适应冻结机制限制破坏性更新。
+· 内存与通信瓶颈：专家总数增加会使全对全通信、优化器状态内存和分布式训练开销显著增长。实际训练耗时可能大幅增加，即使理论FLOPs不变。
+
+总结与建议
+
+对于你正在训练的开源MoE模型，动态增加参数量是高度可行且推荐的。建议从增加专家数量（宽度扩展） 入手，采用专家复制加微扰的热启动策略，并同步提高top-k值。同时需监控路由负载均衡，并准备好应对内存和通信开销的增长。
+
+你目前具体使用的是哪个开源MoE模型（如DeepSeek、Mixtral还是Qwen-MoE）呢？如果你能告诉我具体的模型和当前的训练框架，我可以帮你看看有没有更针对性的实现建议或代码参考。结合你对“性能稳定”和“长上下文理解能力强”的要求，目前最值得推荐的方案是：采用 NVIDIA NeMo 提供的 128K SFT 微调配方，对 Qwen3-0.6B 进行 YaRN 缩放下的监督微调。这并非单纯的推理参数修改，而是通过训练让模型真正适应长上下文。
+
+🎯 为什么这是最佳方案？
+
+· 有成熟的官方配方：NVIDIA NeMo 已为 Qwen3-0.6B 提供了完整的 128K SFT 训练配方，包含优化配置和启动脚本，避免了从零摸索。
+· 性能与稳定性经过验证：该方案在 150 步训练后，验证损失（val_loss）稳定下降至 ~0.82，且未出现发散或不稳定的迹象，证明了其训练的稳定性。
+· 有效提升长上下文理解：长上下文 SFT 能让模型真正学习如何在长序列中定位和利用信息。直接应用 YaRN 缩放往往无法稳定恢复长上下文检索能力，而经过微调的模型表现更佳。
+
+🛠️ 核心实施步骤
+
+1. 配置 YaRN 位置编码
+
+在训练配置中，将 RoPE 的缩放类型设置为 YaRN，并按比例调整缩放因子。从 40K 扩展到 128K 时，关键参数如下：
+
+· rope_type: "yarn"
+· factor: 3.2 (即 128K / 40K)
+· original_max_position_embeddings: 40960 (Qwen3-0.6B 的原生上下文长度)
+· rope_theta: 1000000
+· yarn_beta_fast: 32.0
+· yarn_beta_slow: 1.0
+
+2. 执行长上下文 SFT 训练
+
+使用 NeMo 提供的配方脚本进行微调，以下为关键配置要点：
+
+· 训练脚本参考：NeMo Megatron-Bridge 仓库中的 qwen3_600m_sft_128k.sh。
+· 并行配置：处理 128K 序列长度通常需要上下文并行（CP），例如设置 CP=8（至少 8 张 GPU）。
+· 稳定性设置：建议启用 cross_entropy_loss_fusion = False 和 calculate_per_token_loss = True 等配置来增强训练稳定性。
+· 数据准备：可使用 nvidia/Nemotron-Cascade-2-SFT-Data 等数据集，其中包含长序列样本。
+
+📊 性能与稳定性权衡
+
+· 短文本性能衰减：YaRN 静态缩放可能影响短文本任务性能。建议在微调数据中混合不同长度的样本，以缓解此问题。
+· 计算开销：128K 上下文会显著增加显存占用和计算时间。若资源有限，可先尝试扩展到 64K（factor 设为 1.6），其训练损失与 128K 接近，可作为更轻量的起点。
+· 社区资源：Hugging Face 上有如 jukofyork/Qwen3-0.6B-YaRN-GGUF 等已扩展的模型，可用于快速验证，但长期最佳效果仍推荐自行微调。
+
+💎 总结
+
+“YaRN 缩放 + 长上下文 SFT”是兼顾稳定性与长上下文理解能力的最佳路径。它利用官方验证过的配方，通过训练让 0.6B 的小模型真正适应 128K 的上下文窗口。如果资源有限，可先从 64K 开始，再逐步扩展。
+
+你目前计划将上下文扩展到多少 K 呢？如果确定了具体的目标长度，或者想了解特定训练框架（如 Megatron、DeepSpeed）的配置细节，可以告诉我，我帮你细化具体的参数设置～● 配方拿到了，但它是 Megatron 全家桶 + 8 卡 CP 上下文并行 + NeMo 容器环境——Kaggle T4×2 跑不了原样，能做的是提取对 we 环境有效的核心配置移植。三个可移植点：你提炼的方向是对的。在 Kaggle T4×2 的环境下，Megatron 全家桶和 8 卡 CP 确实无法原样运行，核心思路就是提取对 Hugging Face Trainer + PEFT 环境有效的配置进行移植。结合 NeMo 配方源码和社区实践，可移植的核心配置点主要有以下三个：
+
+🎯 可移植的核心配置点
+
+1. YaRN RoPE 缩放参数（必须移植）
+这是长上下文扩展的基石。NeMo 配方中使用的是 factor=3.2（128K/40K）。移植到 HF 生态时，在模型 config 中设置：
+
+```python
+rope_scaling = {
+    "type": "yarn",
+    "factor": 3.2,
+    "original_max_position_embeddings": 40960,
+    "rope_theta": 1000000,
+    "yarn_beta_fast": 32.0,
+    "yarn_beta_slow": 1.0
+}
+```
+
+其中 yarn_beta_fast=32.0 和 yarn_beta_slow=1.0 是 NeMo 配方验证过的稳定值。
+
+2. 长上下文训练稳定性配置（建议移植）
+NeMo 配方中特别强调了几个稳定性开关：cross_entropy_loss_fusion=False、calculate_per_token_loss=True、ddp.average_in_collective=False、use_distributed_optimizer=False。在 HF Trainer 中，前两个可通过自定义 loss 函数或 Trainer 参数间接实现；后两个与 Megatron 的分布式优化器相关，在 T4×2 的 DDP 环境下不直接适用，但 cross_entropy_loss_fusion=False 的思路（即不使用融合的 CE loss）值得在自定义 loss 时保留，以避免长序列下的数值不稳定。
+
+3. 数据配置（必须移植）
+NeMo 配方使用的是 nvidia/Nemotron-Cascade-2-SFT-Data 的 math 子集，前 10000 条样本，序列长度中位数约 12K，p95 约 57K，>40K 的样本占 11%。这个数据分布对长上下文训练很关键——需要在你的 SFT 数据中确保有足够比例的 32K-128K 长样本，否则模型学不到长距离依赖。
+
+⚙️ T4×2 上的适配调整
+
+· 序列长度：T4 单卡 16GB 显存，2 卡共 32GB。128K 全参 SFT 不现实，建议先用 LoRA/QLoRA 在 32K-64K 上做实验。有社区实践显示 Qwen3-0.6B 的 LoRA 微调在单卡上即可运行。
+· 并行策略：放弃 NeMo 的 8 卡 CP，改用 DDP + 梯度累积。通过 gradient_accumulation_steps 来模拟大 batch，同时用 max_seq_length=32768 或 65536 控制单样本长度。
+· 精度：T4 不支持 bf16，只能用 fp16，需注意 loss scaling。有 Kaggle 上的 Qwen3-0.6B 微调实践使用了 fp16 混合精度。
+· 参考脚本：Unsloth 的 Qwen3-0.6B 微调 notebook 是 T4×2 上可直接运行的起点，你可以在它的基础上注入 YaRN 配置和长样本数据。
+
+💎 总结
+
+三个可移植点中，YaRN 参数和数据配置是必须移植的，稳定性配置中的 cross_entropy_loss_fusion=False 思路可保留，但 Megatron 专属的分布式优化器配置直接丢弃即可。在 T4×2 上，建议以 LoRA + 32K/64K 序列长度作为第一步验证，确认 YaRN 配置生效、长样本能被正常训练后，再考虑逐步扩展。

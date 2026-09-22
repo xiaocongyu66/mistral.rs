@@ -178,3 +178,96 @@
 
 ### 格式统一铁律（提炼终点）
 全部数据 → prompt + response + 可选 reasoning 三元组 → 3-5 倍过采样决策/CoT 数据 → GAMEBoT/Arena 定期评估闭环。
+
+## qwen3.txt 资料总集（2026-09-22，2740 行多主题对话存档）
+原文存档：distill/qwen3_resources_archive.txt；工程陷阱原文：/tmp/upcycle_risks.md
+
+### 最高优先级：AlexWortega/moe-600m-qwen3-upcycle 的 UPCYCLE.md
+Qwen3-0.6B upcycle 工程陷阱的社区记录，与我们的管线直接对应：
+1. RoPE half-split 陷阱：interleaved vs half-split 静默打乱 attention（偏差 2.58，
+   症状="upcycling 效果不好"）。我们用 transformers 原生实现，不受影响。
+2. **专家构建策略差异（升级方向）**：他们用重要性切分（E[a_j^2]*||down[:,j]||^2 排序，
+   shared expert 拿 top-768 承载 47% 重要度质量，routed 蛇形均分 CV=0.0001），
+   我们用复制+微扰（专家同质化风险）。upcycle_to_moe.py 的下一版改造方向。
+3. parity check 门禁：RoPE/logits 与 HF 逐位对比（max|d|=0）后才允许训练——该加。
+4. 其他静默雷：muP 缩放、weight_decay 侵蚀 embedding/norm（~20%）、EMA 冗余。
+
+### 代码审查素材（已验证本地有 aacr-bench）
+- AACR-Bench（评估+训练素材）、CuREV（17.7 万 PR）——代码审查决策直接素材。
+
+### 大规模语料（超本土化需求时启用）
+HPLT 3.0(30T tokens/200 语言)、Common Corpus(1.99T)、MNBVC(60TB 中文)、
+CCI 4.0(35TB 中文)、Institutional Books 1.0(98.3 万本书)、FineTranslations(万亿级平行)。
+
+### CoT/蒸馏全家桶
+claude-opus-4.6-4.7-reasoning-8.7k、OmniThought(RV/CD 双指标)、CoT-Trace-Inverted-28K
+(课程学习：短→长渐进)、Open-CoT-Reasoning-Mini(10B 以下专用)、TART(34.4 万)、
+Dolci-Think-SFT-32B-Multilingual(32K 长序列六语言)、mCoT-MATH(630 万/11 语言)、
+CODI(连续空间自蒸馏)、TRS(技能卡片蒸馏, ACL 2026 Oral)。
+
+### 决策理论电子书（合成数据种子语料）
+Foundations of Computational Decision Analysis、MIT《Algorithms for Decision Making》
+(代码库配套)、MDP+RL(Puterman)、Good Thinking Corpus v1.0(27,252 条/182 分类码，
+Zenodo)、Risky Choices(=choices13k 自然语言重构,已用)、Newcomb-like(已用)、
+《Theories of Rational Decisions》(Zollman)、《An Introduction to Cognitive Economics》。
+
+### 搜索增强（此前判定不适用，维持）
+Search-R1/ASearcher/SAIL/s3/StepSearch 等——decide 层无检索循环，架构不适用。
+GuarantRAG/RE-IAG/对比解码——RAG 质量技术，若做 RAG 路线再启用。
+
+### Minecraft 生态（与决策产品弱关联，暂存档）
+CraftGround(300 TPS RL 环境)、MineStudio、Agent Society Distill(1,355 SFT)、
+Forge Coder(22,916 Java 文件)、MinecraftModSources(50 万源文件)。
+
+## qwen3.txt 增量补录（250-2059 区段，此前跳读遗漏的内容）
+
+### 决策数据集重磅清单（直接对口产品核心，此前漏读）
+- **DfE-DB：380 万条人类决策记录**（系统性数据库，多任务经验决策）——决策域最大单一源。
+- **ITC Database：117 万条跨期选择**（intertemporal choice，直接对应我们的风险决策题式）。
+- **MACHIAVELLI：50 万场景**（research/ 本地已有仓库，未利用！）。
+- **HALT Benchmark**：1,248 实例，"何时停止/调查/升级/拒绝"——与 decide 层的弃答
+  （Seal [REJ] token）设计直接对应。
+- **LISTEN Benchmark**：LLM 从大量候选集引出用户偏好并选最佳——set-attention 的评估面。
+- **UAVBench 5 万无人机场景 / AgentDrive 30 万驾驶场景**——高可靠性决策域数据。
+- **GameTheory-Bench 2,146 题专为 RLVR 设计**、QualGames（行为博弈论）、
+  Dictator Game Benchmark（12 国）、CaSiNo（谈判对话）、WereBench（狼人杀 15 规则变体）。
+- **SportD 1,415 足球决策场景 / NFL 4th Down（1999-2025 逐场）**——体育决策。
+- **FiFAR**：50 名欺诈分析师对 3 万实例的预测——人机决策"学习延迟"素材。
+- 法律域：LFPBench、IMLJP（中文刑事判决预测）、MultiJustice、Arabic-LJP。
+- 医疗域：llm-alignable-dm（62 分诊场景+决策者属性）、MIMIC-SR-ICD11、
+  Clinical-Tool-Learning（RiskCalcs/RiskQA）。
+- 金融域：SME Credit Risk 1,200 份、BD-SME-Credit-Risk、UCI_sft_3000
+  （**首个中文信用违约 SFT，结构化数据序列化为自然语言对话**——与我们的
+  state+questions 格式高度同构）。
+
+### 果蝇资料全景（用户保留项，非"删除"）
+发育阶段图像（300 张/类×8 阶段）、Tephritid26（38,081 图/26 种检疫实蝇）、
+SpaceAnimal（中国空间站多动物姿态）、30,000 只行为轨迹（Scientific Data 2025）、
+FlyWire 全脑连接组（14 万神经元/5,000 万突触）、FAFB、雄性 CNS、Hemibrain、
+FlyAtlas 2、衰老细胞图谱、Genome Nexus。**用户说"去掉果蝇"指的是管线移除，
+资料保留在存档中备用。**
+
+### 推理蒸馏工具包（比 CODI 更轻的选项）
+- **R-Chain（modelscope/r-chain）**：轻量级，系统复现 R1 蒸馏流程，含 MathR 数据集。
+- **ReasonLite-0.6B（AMD）**：6 亿参数数学推理模型，全开源（权重+数据+代码），
+  课程蒸馏——与我们 0.6B 学生完全同规格的先行者。
+- **DRP**：数学技能感知步骤分解蒸馏，GSM8K token 917→328 且准确率 91.7→94.1。
+- **Chinese-Data-Distill-From-R1**：11 万条中文蒸馏（数学 36,568），Math-Verify 校验。
+- **Chinese Reasoning Dataset v1**：10,140 条中文数学逻辑（100% 验证无幻觉）。
+- **CAPC-CG**：中文政策指令开放数据集 330 万段落（research/ 本地已有）。
+- **OpenRobotHarness-Data-v0.1**：中文机器人 Harness 决策层（澄清/重规划）。
+
+### 中文小说语料全景（stage 1 长文本热身备选）
+webnovel-chinese（9B tokens 已清洗 jsonl）、webnovel_cn（2,170 万条）、
+MNBVC 60TB、Qidian-Webnovel-Corpus（110 本+读者评论）、MultiGenre-ChineseNovel
+（13 体裁）、BeyondDialogue（123 本小说角色对话）、novel-agent-sft-dataset
+（669 本场景分割/角色归因标注）、Dxniz/Novelist（文笔/世界观/张力评分标注）。
+
+### 训练方法论参考（校准方向）
+- **Luce**：校准决策模型完整配方（init→synth→train→eval→serve），输出诚实概率。
+- **ifllm-learn / Bespoke Nimble**：本地类型化 LLM 决策 + 概率校准——与我们的
+  "类型化决策引擎"同型项目，配方可参考。
+- **Logic-Distillation（IJCAI 2025）**：逐函数从代码学习，决策任务逻辑蒸馏。
+- **Superior-Reasoning-SFT**：DASD pipeline（温度调度学习+散度感知采样+混合策略
+  蒸馏），HF 趋势榜 #1，少数据 SOTA——与我们"质量优先"路线同向。
+- **The Smol Training Playbook（HF）**：何时从头训练的决策流程图 + SFT/DPO/GRPO 踩坑。
