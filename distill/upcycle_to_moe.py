@@ -109,7 +109,8 @@ def upcycle(src, out_dir, num_experts, top_k, noise, seed):
 
     # router for every layer
     for layer in range(n_layers):
-        gate = torch.randn(hidden, num_experts) * 1e-3
+        # HF gate is nn.Linear(hidden, num_experts): weight is [E, H]
+        gate = torch.randn(num_experts, hidden) * 1e-3
         new_sd[f"model.layers.{layer}.mlp.gate.weight"] = gate
 
     os.makedirs(out_dir, exist_ok=True)
@@ -190,6 +191,16 @@ def main():
                         "type": "yarn", "rope_type": "yarn"}
     cfg.max_position_embeddings = 131072
     cfg.save_pretrained(a.out)
+    import json as _json
+    _p = os.path.join(a.out, "config.json")
+    with open(_p) as _f:
+        _cj = _json.load(_f)
+    _cj["model_type"] = "qwen3_moe"
+    _cj["architectures"] = ["Qwen3MoeForCausalLM"]
+    _cj["num_experts"] = a.num_experts
+    _cj["num_experts_per_tok"] = a.top_k
+    with open(_p, "w") as _f:
+        _json.dump(_cj, _f, indent=2)
     n_dense = sum(v.numel() for v in sd.values())
     n_moe = sum(v.numel() for v in new_sd.values())
     print(f"dense {n_dense/1e6:.1f}M -> moe {n_moe/1e6:.1f}M ({n_moe/n_dense:.2f}x) -> {a.out}")
