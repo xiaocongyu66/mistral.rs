@@ -19,6 +19,27 @@ def _round(x, n):
     return round(x, n) if isinstance(x, (int, float)) else x
 
 
+def rlcd_loss(logits, target, reference_logits, utility_weight=1.0,
+              calibration_weight=0.5, kl_weight=0.02):
+    """JevForge-style RLCD objective over finite candidates.
+
+    loss = -utility + calibration_weight*Brier + kl_weight*KL(policy||ref)
+    where utility = sum(p * target/peak): put mass on teacher-favored candidates.
+    """
+    log_probs = torch.log_softmax(logits.float(), dim=-1)
+    probs = log_probs.exp()
+    brier = ((probs - target) ** 2).sum(-1)
+    peak = target.max(-1, keepdim=True).values.clamp_min(1e-8)
+    utility = (probs * (target / peak)).sum(-1)
+    ref_log_probs = torch.log_softmax(reference_logits.float(), dim=-1)
+    kl = (probs * (log_probs - ref_log_probs)).sum(-1)
+    loss = (utility_weight * -utility
+            + calibration_weight * brier
+            + kl_weight * kl).mean()
+    return loss, {"utility": float(utility.mean()), "brier": float(brier.mean()),
+                   "kl": float(kl.mean())}
+
+
 def dump(path, obj):
     Path(path).write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n")
 
@@ -133,6 +154,12 @@ def main():
                     help="teacher temperature applied to soft targets")
     ap.add_argument("--temperature-final", type=float, default=None,
                     help="anneal T linearly from --temperature to this over total steps")
+    ap.add_argument("--rlcd-steps", type=int, default=0,
+                    help="RLCD refinement after SFT (JevForge port: utility + "
+                         "Brier calibration + KL anchor); 0 = disabled")
+    ap.add_argument("--rlcd-utility-weight", type=float, default=1.0)
+    ap.add_argument("--rlcd-calibration-weight", type=float, default=0.5)
+    ap.add_argument("--rlcd-kl-weight", type=float, default=0.02)
     ap.add_argument("--entropy-weighting", action="store_true",
                     help="sample train questions proportional to teacher entropy")
     args = ap.parse_args()
@@ -414,6 +441,109 @@ def main():
         "max_gpu_allocated_gb": torch.cuda.max_memory_allocated() / 1e9})
     print(json.dumps({"done": str(out), "best_step": best_step,
                       "temperature": temperature, "eval": final}), flush=True)
+
+    # ---- stage 3: RLCD refinement (JevForge port) ----
+    if args.rlcd_steps > 0:
+        print(f"[rlcd] starting {args.rlcd_steps} steps "
+              f"(utility={args.rlcd_utility_weight} "
+              f"calib={args.rlcd_calibration_weight} kl={args.rlcd_kl_weight})",
+              flush=True)
+        # reference = the SFT best checkpoint; cache its logits once per
+        # example so no second model copy is needed on GPU
+        ref_sd = load_file(out / "best.safetensors")
+        model.load_state_dict(ref_sd)
+        model.eval()
+        ref_cache = []
+        with torch.no_grad():
+            for s in range(0, len(bysplit["train"]), args.batch_questions):
+                group = bysplit["train"][s:s + args.batch_questions]
+                lg, _ = model(group, tokenizer.pad_token_id)
+                for i, ex in enumerate(group):
+                    k = len(ex["candidate_ids"])
+                    ref_cache.append(lg[i, :k].float().cpu())
+        model.train()
+        print(f"[rlcd] reference logits cached for {len(ref_cache)} questions",
+              flush=True)
+
+        rlcd_opt = torch.optim.AdamW(
+            [{"params": list(model.backbone.parameters()),
+              "lr": args.backbone_lr * 0.5},
+             {"params": [p for n, p in model.named_parameters()
+                         if not n.startswith("backbone.")],
+              "lr": args.head_lr * 0.5}], weight_decay=0.01)
+        rlcd_logs, rlcd_best, rlcd_best_step = [], float("inf"), None
+        rng = random.Random(args.seed + 7)
+        t_rlcd = time.perf_counter()
+        for rstep in range(args.rlcd_steps):
+            idxs = rng.sample(range(len(bysplit["train"])),
+                              min(args.batch_questions, len(bysplit["train"])))
+            group = [bysplit["train"][i] for i in idxs]
+            lg, _ = model(group, tokenizer.pad_token_id)
+            losses, diags = [], []
+            for i, ex in enumerate(group):
+                k = len(ex["candidate_ids"])
+                if ex["teacher_probs"] is None:
+                    continue
+                target = torch.tensor(ex["teacher_probs"][:k], device=lg.device)
+                loss, diag = rlcd_loss(lg[i, :k], target,
+                                        ref_cache[idxs[i]].to(lg.device),
+                                        args.rlcd_utility_weight,
+                                        args.rlcd_calibration_weight,
+                                        args.rlcd_kl_weight)
+                losses.append(loss)
+                diags.append(diag)
+            if not losses:
+                continue
+            rloss = torch.stack(losses).mean()
+            rlcd_opt.zero_grad(set_to_none=True)
+            rloss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            rlcd_opt.step()
+            entry = {"rlcd_step": rstep + 1, "rlcd_loss": round(float(rloss), 4),
+                     **{k: round(sum(d[k] for d in diags) / len(diags), 4)
+                        for k in diags[0]}}
+            if (rstep + 1) % args.eval_every == 0 or rstep + 1 == args.rlcd_steps:
+                torch.cuda.empty_cache()
+                try:
+                    m = evaluate(model, bysplit["dev"][:300],
+                                 tokenizer.pad_token_id, 2)
+                    entry["dev"] = m
+                    sc = m["teacher_ce" if args.objective == "teacher"
+                            else "gold_nll"]
+                    if sc is not None and sc < rlcd_best:
+                        rlcd_best, rlcd_best_step = sc, rstep + 1
+                        save_file({kk: v.detach().cpu().contiguous().clone()
+                                   for kk, v in model.state_dict().items()},
+                                  out / "rlcd_best.safetensors")
+                except torch.OutOfMemoryError:
+                    torch.cuda.empty_cache()
+                    print("[rlcd] eval OOM, skipped", flush=True)
+            rlcd_logs.append(entry)
+            if (rstep + 1) % 25 == 0:
+                print(json.dumps(entry), flush=True)
+        dump(out / "rlcd_log.json", rlcd_logs)
+        if rlcd_best_step:
+            model.load_state_dict(load_file(out / "rlcd_best.safetensors"))
+            temperature, calib_nll = fit_temperature(
+                model, bysplit["calibration"], tokenizer.pad_token_id, amp_dtype)
+            dump(out / "temperature.json", {
+                "T": temperature, "calib_nll_at_T": calib_nll,
+                "stage": "rlcd", "rlcd_best_step": rlcd_best_step,
+                "calibration_questions": len(bysplit["calibration"])})
+            final = evaluate(model, evaluation, tokenizer.pad_token_id,
+                             args.batch_questions, out / "predictions.jsonl")
+            dump(out / "summary.json", {
+                "best_step": best_step, "rlcd_best_step": rlcd_best_step,
+                "temperature": temperature,
+                "selected_on": "dev CE after RLCD", "init": init_info,
+                "training_seconds": time.perf_counter() - start,
+                "rlcd_seconds": time.perf_counter() - t_rlcd,
+                "final_all_eval": final,
+                "max_gpu_allocated_gb": torch.cuda.max_memory_allocated() / 1e9})
+            print(f"[rlcd] DONE best={rlcd_best:.4f} step={rlcd_best_step}",
+                  flush=True)
+        else:
+            print("[rlcd] no dev improvement; keeping SFT checkpoint", flush=True)
 
 
 if __name__ == "__main__":
