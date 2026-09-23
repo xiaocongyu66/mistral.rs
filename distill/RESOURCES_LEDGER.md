@@ -369,3 +369,32 @@ MNBVC 60TB、Qidian-Webnovel-Corpus（110 本+读者评论）、MultiGenre-Chine
    最后已知状态：流式源 42 个成功、MACHIAVELLI ready、device_map=auto 13GiB/GPU
 10. **磁盘约束**：HPLT 3.0 / MNBVC 60TB / Institutional Books 等大型语料暂用流式加载
     （不落本地），等 quota 重置后启用
+
+## RLCD 双件套接入（2026-09-23，JevForge 训练 + Switchyard 服务）
+
+### 训练侧：JevForge (zwliJay/jev-forge, 19 stars)
+- 仓库已克隆：/root/research/jev-forge（9.8MB）
+- **核心实现**：jevforge/rlcd.py 345 行，独立研究基线（非 TypeSafe 复现声明）
+- **三项损失**：`loss = utility_weight*-utility + calibration_weight*Brier + kl_weight*KL(policy||ref)`
+  - utility = sum(p * target/peak)：把概率质量推向教师偏好的候选
+  - Brier：完整分布的 proper scoring rule（校准）
+  - KL：锚定到 SFT 参考策略（防漂移）
+- **双模式**：exact（低方差默认）/ sampled（分组 REINFORCE + 组内基线）
+- **移植完成（commit f9fc8cc）**：colab_train.py stage 3
+  - `--rlcd-steps` 参数（默认 0 禁用），SFT 600 步后自动追加
+  - **关键适配**：reference logits 预计算缓存（每题一次，存 CPU）——
+    T4 16GB 放不下 2.45B 模型的第二副本，缓存方案省一半显存
+  - RLCD 后自动重拟合温度 + 重评 dev + 更新 summary.json
+  - rlcd_best.safetensors 独立保存（不覆盖 SFT best）
+- 超参（JevForge 默认）：utility 1.0 / calib 0.5 / kl 0.02，lr 减半（backbone 5e-6，head 5e-5）
+
+### 服务侧：Switchyard PR #793 (NVIDIA-NeMo/Switchyard, 3203 stars, OPEN)
+- 仓库已克隆：/root/research/switchyard（23MB）
+- **crates/libsy/src/algorithms/rlcd.rs**：723 行 Rust，RLCD 决策路由
+  - 构建 decision request：把每个路由目标列为候选 option
+  - 一次前向拿全部候选的校准概率 → argmax 路由
+  - **verdict 校验（直接可复用到我们的 /v1/systemone API 层）**：
+    每候选恰好出现一次、概率有限且在 [0,1]、和≈1（容差 0.02）、
+    target 必须是 argmax；校验失败 fold 到默认目标
+- **意义**：这就是我们 decide 层 API（任务 #14）的服务形态参考——
+  Apeireth-Decis 导出时按此契约暴露，可直接接入 Switchyard 生态
