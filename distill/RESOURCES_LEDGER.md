@@ -398,3 +398,25 @@ MNBVC 60TB、Qidian-Webnovel-Corpus（110 本+读者评论）、MultiGenre-Chine
     target 必须是 argmax；校验失败 fold 到默认目标
 - **意义**：这就是我们 decide 层 API（任务 #14）的服务形态参考——
   Apeireth-Decis 导出时按此契约暴露，可直接接入 Switchyard 生态
+
+## 128K 长上下文数据（2026-09-23 第二批，全部 HF API 验证 200）
+
+### 文本流式（stage 1 热身即用，已入 stream_sources）
+- caskcsg/NExtLong-128K-dataset（771 下载，text 字段，负文档扩展/抗干扰）
+- bowen-upenn/PersonaMem-v2（16k 下载，128K/1M 个性化记忆）
+- caskcsg/entropylong_128k（已注册）
+
+### 预 tokenized（input_ids/position_ids，留给大卡 128K 训练阶段）
+- ghostcc3/mix-context-post-training-128k（563 下载，72K 样本，短 64-9K + 长 8K-200K
+  packed，FineWeb-Edu+RedPajama）——Mix-Context 思路=防灾难性遗忘的关键配方
+- DAMO-NLP-SG/Mistral-7B-LongPO-128K-tokenized（45K 样本，短到长偏好优化）
+
+### 长文本占比现状（用户问题答案）
+实测 unified 306k states：96.3% <2K 字符，中位数 262，>8K 为 0%。
+NVIDIA 配方要求 >40K 占 11% —— 缺口只能靠 stage 1 热身的流式长源 +
+未来大卡上的 Mix-Context 混合训练弥补。T4 上 max_length 2048 是硬顶。
+
+### 配方参考（验证过的仓库）
+- ProLong: github.com/princeton-nlp/ProLong（40B tokens 训出 128K SOTA）
+- FranxYao/Long-Context-Data-Engineering（1-5B tokens per-source-length 配方）
+- 渐进策略：4K→32K→64K→128K（LongRecipe），T4 只能走第一级
