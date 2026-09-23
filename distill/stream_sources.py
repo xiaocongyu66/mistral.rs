@@ -54,9 +54,9 @@ SOURCES = [
     ("hsilvosa/hsc-wuxia-200k", None, "train", None, 0.02, "wuxia 200k"),
     ("wdndev/webnovel-chinese", None, "train", None, 0.02, "chinese webnovels"),
     ("bh2821/LightNovel5000", None, "train", None, 0.02, "light novels"),
-    # -- long-context 128K (YaRN RoPE scaling + continual pretrain) --
-    ("caskcsg/entropylong_128k", None, "train", "text", 0.03, "EntropyLong 128K (ICLR 2026, FineWeb-Edu+Cosmopedia, dep-verified)"),
-    ("allenai/Mix-Context-Post-Training-128K", None, "train", "text", 0.02, "Mix-Context 128K packed (FineWeb-Edu+RedPajama, 64-200K)"),
+    # -- long-context 128K (YaRN RoPE scaling + continual pretrain; HF-verified 2026-09-23) --
+    ("caskcsg/entropylong_128k", None, "train", "text", 0.03, "EntropyLong 128K (ICLR 2026, dep-verified)"),
+    ("caskcsg/NExtLong-128K-dataset", None, "train", "text", 0.03, "NExtLong 128K (negative-doc expansion, distractor-aware)"),
     # -- general web for coverage --
     ("openwebtext", None, "train", "text", 0.04, "OpenWebText (general web, ~38GB)"),
     # -- long-form books & fiction (natural long sequences) --
@@ -68,8 +68,7 @@ SOURCES = [
     # -- code (long files = long sequences) --
     ("codeparrot/codeparrot-clean", None, "train", "content", 0.08, "python code (long files)"),
     # -- additional 128K sources (verified HF API) --
-    ("HuggingFaceFW/fineweb-2", "eng_Latn", "train", "text", 0.04, "FineWeb-2 English (massive web)"),
-    ("HuggingFaceFW/fineweb-2", "zho_Hans", "train", "text", 0.04, "FineWeb-2 Chinese (massive web)"),
+    ("bowen-upenn/PersonaMem-v2", None, "train", None, 0.02, "PersonaMem 128K personalized memory"),
 ]
 
 # opus_books yields dict translations, not a plain string field
