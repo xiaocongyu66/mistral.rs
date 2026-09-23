@@ -165,8 +165,14 @@ def main():
     args = ap.parse_args()
 
     sys.path.insert(0, args.nanojev_scripts)
-    from train_toy_decisions import (DecisionModel, benchmark, dump, evaluate,
-                                     load_examples, loss_for)
+    from train_toy_decisions import (DecisionModel, benchmark, dump,
+                                     evaluate as evaluate_raw, load_examples, loss_for)
+
+    def evaluate(model, examples, pad_token, batch, path=None):
+        # group similar-length sequences so padding inside a batch stays small;
+        # metrics are order-independent sums, so the sort changes nothing else
+        ordered = sorted(examples, key=lambda e: max(map(len, e["leaf_tokens"])))
+        return evaluate_raw(model, ordered, pad_token, batch, path)
 
     use_amp = args.dtype in ("fp16", "bf16")
     amp_dtype = torch.float16 if args.dtype == "fp16" else torch.bfloat16
