@@ -182,7 +182,9 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
-    param_dtype = {"fp16": torch.float16, "bf16": torch.bfloat16,
+    # master weights stay fp32 for fp16 mode: GradScaler cannot unscale
+    # fp16 gradients; autocast handles the forward conversion (standard AMP)
+    param_dtype = {"fp16": torch.float32, "bf16": torch.bfloat16,
                    "fp32": torch.float32}[args.dtype]
     fix_gate_orientation(args.model)
     _cfg = AutoConfig.from_pretrained(args.model)
