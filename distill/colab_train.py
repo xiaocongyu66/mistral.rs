@@ -142,6 +142,9 @@ def main():
                     help="gradient accumulation steps: micro_batch=batch/accum")
     ap.add_argument("--no-grad-checkpoint", action="store_true")
     ap.add_argument("--eval-every", type=int, default=50)
+    ap.add_argument("--eval-batch", type=int, default=None)
+    ap.add_argument("--eval-subset", type=int, default=0,
+                    help="periodic dev size stratified by family; 0 = full dev")
     ap.add_argument("--max-length", type=int, default=2048)
     ap.add_argument("--backbone-lr", type=float, default=1e-5)
     ap.add_argument("--head-lr", type=float, default=1e-4)
@@ -236,6 +239,24 @@ def main():
     missing = [s for s, g in bysplit.items() if not g]
     if missing:
         raise ValueError(f"empty splits: {missing}")
+    eval_batch = args.eval_batch or args.batch_questions
+    dev_full = bysplit["dev"]
+    dev_periodic = dev_full
+    if args.eval_subset and args.eval_subset < len(dev_full):
+        by_family = {}
+        for ex in dev_full:
+            by_family.setdefault(ex.get("family_id", ""), []).append(ex)
+        rng = random.Random(args.seed + 3)
+        for group in by_family.values():
+            rng.shuffle(group)
+        families = sorted(by_family)
+        dev_periodic = []
+        while len(dev_periodic) < args.eval_subset and any(by_family.values()):
+            for family in families:
+                if by_family[family] and len(dev_periodic) < args.eval_subset:
+                    dev_periodic.append(by_family[family].pop())
+    print(f"eval: periodic={len(dev_periodic)} full={len(dev_full)} batch={eval_batch}",
+          flush=True)
 
     model = DecisionModel(lm.model, args.set_head).to(param_dtype)
     if torch.cuda.device_count() > 1:
@@ -392,8 +413,9 @@ def main():
             time.sleep(5)
             router_buf.clear()
             try:
-                metrics = evaluate(model, bysplit["dev"], tokenizer.pad_token_id,
-                                   args.batch_questions)
+                eval_set = (dev_full if step + 1 == args.head_steps + args.steps
+                            else dev_periodic)
+                metrics = evaluate(model, eval_set, tokenizer.pad_token_id, eval_batch)
                 router_buf.clear()
                 item["dev"] = metrics
                 score = metrics["teacher_ce" if args.objective == "teacher" else "gold_nll"]
@@ -403,8 +425,8 @@ def main():
                 router_buf.clear()
                 print("[eval] OOM, retrying with halved batch", flush=True)
                 try:
-                    metrics = evaluate(model, bysplit["dev"], tokenizer.pad_token_id,
-                                       max(1, args.batch_questions // 2))
+                    metrics = evaluate(model, eval_set, tokenizer.pad_token_id,
+                                       max(1, eval_batch // 2))
                     router_buf.clear()
                     item["dev"] = metrics
                     score = metrics["teacher_ce" if args.objective == "teacher" else "gold_nll"]
@@ -437,7 +459,7 @@ def main():
         "calibration_questions": len(bysplit["calibration"])})
 
     final = evaluate(model, evaluation, tokenizer.pad_token_id,
-                     args.batch_questions, out / "predictions.jsonl")
+                     eval_batch, out / "predictions.jsonl")
     timing = benchmark(model, bysplit["test"], tokenizer.pad_token_id)
     dump(out / "timing.json", timing)
     dump(out / "train_log.json", logs)
@@ -449,7 +471,6 @@ def main():
         "max_gpu_allocated_gb": torch.cuda.max_memory_allocated() / 1e9})
     print(json.dumps({"done": str(out), "best_step": best_step,
                       "temperature": temperature, "eval": final}), flush=True)
-
     # ---- stage 3: RLCD refinement (JevForge port) ----
     if args.rlcd_steps > 0:
         print(f"[rlcd] starting {args.rlcd_steps} steps "
