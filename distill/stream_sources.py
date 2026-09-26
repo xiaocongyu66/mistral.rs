@@ -11,9 +11,9 @@ SOURCES = [
     # -- comprehension capacity: the backbone must UNDERSTAND before it can decide --
     ("HuggingFaceFW/finewiki", None, "train", "text", 0.16, "325-lang wiki (clean)"),
     ("wikimedia/wikipedia", "20231101.zh", "train", "text", 0.14, "chinese wiki"),
-    ("HuggingFaceTB/cosmopedia", "web_v1", "train", "text", 0.12, "synthetic textbooks"),
+    ("HuggingFaceTB/cosmopedia", "openstax", "train", "text", 0.12, "synthetic textbooks"),
     ("HuggingFaceFW/fineweb-edu", "sample-10BT", "train", "text", 0.12, "curated web"),
-    ("Helsinki-NLP/opus_books", "en-zh", "train", "translation", 0.06, "parallel books zh/en"),
+    ("Helsinki-NLP/opus_books", "de-en", "train", "translation", 0.06, "parallel books"),
     ("wikimedia/wikipedia", "20231101.en", "train", "text", 0.06, "english wiki"),
     ("sedthh/gutenberg_multilang", None, "train", "text", 0.04, "multilingual books"),
     # -- reasoning / math --
@@ -21,15 +21,14 @@ SOURCES = [
     ("AI-MO/NuminaMath-CoT", None, "train", "problem", 0.03, "competition math"),
     # -- code --
     ("codeparrot/codeparrot-clean", None, "train", "content", 0.08, "python code"),
-    ("bigcode/the-stack-smol", None, "train", "content", 0.03, "multilingual code"),
     # -- open web --
     ("HuggingFaceFW/fineweb", "sample-10BT", "train", "text", 0.08, "open web"),
     # -- comprehension: books / wiki / long-form (user batch, verified in registry) --
     ("HuggingFaceTB/cosmopedia", "stories", "train", "text", 0.04, "synthetic stories"),
     ("HuggingFaceTB/cosmopedia", "stanford", "train", "text", 0.03, "synthetic textbooks"),
-    ("CohereForAI/aya_collection", "aya_eng", "train", "inputs", 0.03, "multilingual instructions"),
+    ("CohereForAI/aya_collection", "aya_dataset", "train", "inputs", 0.03, "multilingual instructions"),
     ("open-thoughts/OpenThoughts2-1M", None, "train", "conversations", 0.03, "reasoning traces"),
-    ("nvidia/OpenCodeReasoning", None, "train", "input", 0.03, "code reasoning"),
+    ("nvidia/OpenCodeReasoning", None, "split_0", "input", 0.03, "code reasoning"),
     ("TIGER-Lab/MathInstruct", None, "train", "instruction", 0.02, "math cot"),
     ("nguha/legalbench", None, "train", "text", 0.02, "legal reasoning"),
     ("PolyAI/banking77", None, "train", "text", 0.02, "banking intents"),
@@ -41,13 +40,11 @@ SOURCES = [
     ("teknium/OpenHermes-2.5", None, "train", "conversations", 0.03, "1M high-quality general"),
     ("openbmb/UltraFeedback", None, "train", "prompt", 0.02, "preference calibration"),
     # -- user-verified registry batch: chinese long-form / decision / math-scale --
-    ("MegaScience/Chinese-Reasoning-Dataset-v1", None, "train", None, 0.03, "chinese reasoning"),
     ("Mxode/Meow-Reasoning-100K", None, "train", None, 0.02, "chinese cot 100k"),
     ("nvidia/OpenMathInstruct-2", None, "train", "problem", 0.02, "14M math scale"),
     ("open-r1/OpenR1-Math-220k", None, "train", "problem", 0.02, "r1 math traces"),
     ("bespokelabs/Bespoke-Stratos-17k", None, "train", None, 0.02, "stratos reasoning"),
     ("MBZUAI/Bactrian-X", "en", "train", "input", 0.02, "52-lang instructions"),
-    ("tasksource/100k-choice-dilemmas", None, "train", None, 0.02, "choice dilemmas"),
     # -- decision-domain direct hits (registry batch) --
     ("KRAFTON/Orak", None, "train", None, 0.02, "game decision corpus"),
     # -- chinese long-form fiction (registry batch) --
@@ -59,16 +56,8 @@ SOURCES = [
     ("caskcsg/NExtLong-128K-dataset", None, "train", "text", 0.03, "NExtLong 128K (negative-doc expansion, distractor-aware)"),
     # -- general web for coverage --
     ("openwebtext", None, "train", "text", 0.04, "OpenWebText (general web, ~38GB)"),
-    # -- long-form books & fiction (natural long sequences) --
-    ("sedthh/gutenberg_multilang", None, "train", "text", 0.04, "gutenberg multilang books"),
-    ("wikimedia/wikipedia", "20231101.en", "train", "text", 0.06, "english wiki (long articles)"),
-    # -- reasoning traces (naturally long chains) --
-    ("open-thoughts/OpenThoughts2-1M", None, "train", "conversations", 0.03, "reasoning traces (long CoT)"),
-    ("teknium/OpenHermes-2.5", None, "train", "conversations", 0.03, "1M general (some long)"),
-    # -- code (long files = long sequences) --
-    ("codeparrot/codeparrot-clean", None, "train", "content", 0.08, "python code (long files)"),
     # -- additional 128K sources (verified HF API) --
-    ("bowen-upenn/PersonaMem-v2", None, "train", None, 0.02, "PersonaMem 128K personalized memory"),
+    ("bowen-upenn/PersonaMem-v2", None, "train_text", None, 0.02, "PersonaMem 128K personalized memory"),
     # -- agentic / execution traces (verified HF API 2026-09-26) --
     ("nvidia/OPEN-SWE-TRACES", None, "train", None, 0.03, "207k multilingual SWE agent traces"),
     ("openbmb/UltraData-SFT-Agent-2609", None, "train", None, 0.03, "484k search/tool/code agent trajectories"),
@@ -88,7 +77,6 @@ TRUST_REMOTE_CODE = {"PolyAI/banking77", "clinc/clinc_oos", "nguha/legalbench"}
 SOURCE_FIXES = {
     "nvidia/Nemotron-SFT-Agentic-v2": {"cfg": None, "split": "search"},
     "nvidia/Nemotron-SFT-Multilingual-v1": {"cfg": None, "split": "math_zh"},
-    "nvidia/OpenCodeReasoning": {"cfg": "split_0", "split": "train"},
     "m-a-p/COIG-CQIA": {"cfg": "coig_pc", "split": "train"},
     "KRAFTON/Orak": {"cfg": "ace_attorney", "split": "train"},
 }
@@ -139,40 +127,70 @@ def _flatten_struct(v):
 def build_stream(tokenizer, seed=17, max_sources=None):
     """Yield text from weighted-round-robin over streaming sources."""
     from datasets import load_dataset
-    import itertools, random
+    import random, time
+    INIT_STAGGER_S = 1.0
+    RATE_LIMIT_BACKOFFS = (8, 20)
+    STRIKES_PER_STREAM = 3
     streams = []
     for repo, cfg, split, field, w, note in SOURCES[: max_sources or len(SOURCES)]:
         fx = SOURCE_FIXES.get(repo)
         if fx:
             cfg = fx.get("cfg", cfg)
             split = fx.get("split", split)
-        try:
-            # trust all hub sources: streaming iter() lazily executes
-            # loader code long after load_dataset returns
-            ds = load_dataset(repo, cfg, split=split, streaming=True,
-                              trust_remote_code=True)
-            streams.append({"it": iter(ds), "field": field, "w": w, "note": note, "repo": repo})
+        if streams:
+            time.sleep(INIT_STAGGER_S)
+        ds = None
+        for attempt in range(len(RATE_LIMIT_BACKOFFS) + 1):
+            try:
+                # trust all hub sources: streaming iter() lazily executes
+                # loader code long after load_dataset returns
+                ds = load_dataset(repo, cfg, split=split, streaming=True,
+                                  trust_remote_code=True)
+                break
+            except Exception as e:
+                transient = "429" in str(e) or "Too Many Requests" in str(e)
+                if transient and attempt < len(RATE_LIMIT_BACKOFFS):
+                    time.sleep(RATE_LIMIT_BACKOFFS[attempt])
+                    continue
+                print(f"[stream] SKIP {repo}/{cfg}: {str(e)[:120]}", flush=True)
+                ds = None
+                break
+        if ds is not None:
+            streams.append({"it": iter(ds), "field": field, "w": w, "note": note,
+                            "repo": repo, "strikes": STRIKES_PER_STREAM})
             print(f"[stream] {repo}/{cfg} w={w} ({note})", flush=True)
-        except Exception as e:
-            print(f"[stream] SKIP {repo}/{cfg}: {str(e)[:120]}", flush=True)
     if not streams:
         return
     total_w = sum(s["w"] for s in streams)
     rng = random.Random(seed)
-    while True:
+    while streams:
         r = rng.random() * total_w
         acc = 0.0
+        chosen = None
         for s in streams:
             acc += s["w"]
             if r <= acc:
-                try:
-                    row = next(s["it"])
-                except StopIteration:
-                    continue
-                txt = extract_text(row, s["field"])
-                if len(txt) >= 200:
-                    yield txt
+                chosen = s
                 break
+        if chosen is None:
+            chosen = streams[-1]
+        try:
+            row = next(chosen["it"])
+        except StopIteration:
+            total_w -= chosen["w"]
+            streams.remove(chosen)
+            continue
+        except Exception as e:
+            chosen["strikes"] -= 1
+            print(f"[stream] {chosen['repo']} error ({chosen['strikes']} left): {str(e)[:100]}", flush=True)
+            if chosen["strikes"] <= 0:
+                total_w -= chosen["w"]
+                streams.remove(chosen)
+                print(f"[stream] {chosen['repo']} dropped (circuit breaker)", flush=True)
+            continue
+        txt = extract_text(row, chosen["field"])
+        if len(txt) >= 200:
+            yield txt
 
 
 if __name__ == "__main__":
