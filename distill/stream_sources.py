@@ -28,7 +28,7 @@ SOURCES = [
     ("HuggingFaceTB/cosmopedia", "stanford", "train", "text", 0.03, "synthetic textbooks"),
     ("CohereForAI/aya_collection", "aya_dataset", "train", "inputs", 0.03, "multilingual instructions"),
     ("open-thoughts/OpenThoughts2-1M", None, "train", "conversations", 0.03, "reasoning traces"),
-    ("nvidia/OpenCodeReasoning", None, "split_0", "input", 0.03, "code reasoning"),
+    ("nvidia/OpenCodeReasoning", "split_0", "split_0", "input", 0.03, "code reasoning"),
     ("TIGER-Lab/MathInstruct", None, "train", "instruction", 0.02, "math cot"),
     ("nguha/legalbench", None, "train", "text", 0.02, "legal reasoning"),
     ("PolyAI/banking77", None, "train", "text", 0.02, "banking intents"),
@@ -59,11 +59,11 @@ SOURCES = [
     # -- additional 128K sources (verified HF API) --
     ("bowen-upenn/PersonaMem-v2", None, "train_text", None, 0.02, "PersonaMem 128K personalized memory"),
     # -- agentic / execution traces (verified HF API 2026-09-26) --
-    ("nvidia/OPEN-SWE-TRACES", None, "train", None, 0.03, "207k multilingual SWE agent traces"),
-    ("openbmb/UltraData-SFT-Agent-2609", None, "train", None, 0.03, "484k search/tool/code agent trajectories"),
+    ("nvidia/OPEN-SWE-TRACES", "v1.2", "train", None, 0.03, "207k multilingual SWE agent traces"),
+    ("openbmb/UltraData-SFT-Agent-2609", "Search-Agent", "train", None, 0.03, "484k search/tool/code agent trajectories"),
     # -- wave 2 (verified HF API 2026-09-26) --
     ("carosh/cli-1m", None, "train", None, 0.03, "CLI-1M 975k NL2Shell (18 industries)"),
-    ("liwu/MNBVC", None, "train", "text", 0.03, "MNBVC 60TB chinese corpus"),
+    ("liwu/MNBVC", "law_judgement", "train", "text", 0.03, "MNBVC legal long-form chinese"),
     ("nvidia/AV-Skills", None, "train", None, 0.02, "2.8M audio-visual conversations"),
     ("OussamaBS/CuREV-plus", None, "train", None, 0.02, "code-review comments dataset"),
 ]
