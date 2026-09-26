@@ -69,6 +69,14 @@ SOURCES = [
     ("codeparrot/codeparrot-clean", None, "train", "content", 0.08, "python code (long files)"),
     # -- additional 128K sources (verified HF API) --
     ("bowen-upenn/PersonaMem-v2", None, "train", None, 0.02, "PersonaMem 128K personalized memory"),
+    # -- agentic / execution traces (verified HF API 2026-09-26) --
+    ("nvidia/OPEN-SWE-TRACES", None, "train", None, 0.03, "207k multilingual SWE agent traces"),
+    ("openbmb/UltraData-SFT-Agent-2609", None, "train", None, 0.03, "484k search/tool/code agent trajectories"),
+    # -- wave 2 (verified HF API 2026-09-26) --
+    ("carosh/cli-1m", None, "train", None, 0.03, "CLI-1M 975k NL2Shell (18 industries)"),
+    ("liwu/MNBVC", None, "train", "text", 0.03, "MNBVC 60TB chinese corpus"),
+    ("nvidia/AV-Skills", None, "train", None, 0.02, "2.8M audio-visual conversations"),
+    ("OussamaBS/CuREV-plus", None, "train", None, 0.02, "code-review comments dataset"),
 ]
 
 # opus_books yields dict translations, not a plain string field
@@ -91,10 +99,40 @@ ALIASES = ("text", "content", "raw_content", "raw", "body", "document", "markdow
 def extract_text(row, preferred=None):
     if preferred and isinstance(row.get(preferred), str):
         return row[preferred]
+    if preferred:
+        flat = _flatten_struct(row.get(preferred))
+        if flat:
+            return flat
     for k in ALIASES:
         v = row.get(k)
         if isinstance(v, str) and len(v) > 50:
             return v
+    for k in ("conversations", "messages", "instruction", "query", "prompt", "question"):
+        flat = _flatten_struct(row.get(k))
+        if flat:
+            return flat
+    return ""
+
+
+def _flatten_struct(v):
+    """Flatten conversations/messages fields (list-of-dicts or nested dicts) to text."""
+    if isinstance(v, str):
+        return v if len(v) > 50 else ""
+    if isinstance(v, (list, tuple)):
+        parts = []
+        for item in v:
+            if isinstance(item, str):
+                parts.append(item)
+            elif isinstance(item, dict):
+                for key in ("content", "value", "text", "output", "response", "answer"):
+                    if isinstance(item.get(key), str) and item[key].strip():
+                        parts.append(item[key])
+                        break
+        joined = "\n".join(p.strip() for p in parts if p.strip())
+        return joined if len(joined) > 50 else ""
+    if isinstance(v, dict):
+        joined = "\n".join(x for x in v.values() if isinstance(x, str) and x.strip())
+        return joined if len(joined) > 50 else ""
     return ""
 
 
