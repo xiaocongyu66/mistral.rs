@@ -40,7 +40,6 @@ SOURCES = [
     ("teknium/OpenHermes-2.5", None, "train", "conversations", 0.03, "1M high-quality general"),
     ("openbmb/UltraFeedback", None, "train", "prompt", 0.02, "preference calibration"),
     # -- user-verified registry batch: chinese long-form / decision / math-scale --
-    ("Mxode/Meow-Reasoning-100K", None, "train", None, 0.02, "chinese cot 100k"),
     ("nvidia/OpenMathInstruct-2", None, "train", "problem", 0.02, "14M math scale"),
     ("open-r1/OpenR1-Math-220k", None, "train", "problem", 0.02, "r1 math traces"),
     ("bespokelabs/Bespoke-Stratos-17k", None, "train", None, 0.02, "stratos reasoning"),
@@ -59,7 +58,7 @@ SOURCES = [
     # -- additional 128K sources (verified HF API) --
     ("bowen-upenn/PersonaMem-v2", None, "train_text", None, 0.02, "PersonaMem 128K personalized memory"),
     # -- agentic / execution traces (verified HF API 2026-09-26) --
-    ("nvidia/OPEN-SWE-TRACES", "v1.2", "train", None, 0.03, "207k multilingual SWE agent traces"),
+    ("nvidia/OPEN-SWE-TRACES", "v1.2", "minisweagent", None, 0.03, "SWE agent traces"),
     ("openbmb/UltraData-SFT-Agent-2609", "Search-Agent", "train", None, 0.03, "484k search/tool/code agent trajectories"),
     # -- wave 2 (verified HF API 2026-09-26) --
     ("carosh/cli-1m", None, "train", None, 0.03, "CLI-1M 975k NL2Shell (18 industries)"),
