@@ -19,27 +19,6 @@ def _round(x, n):
     return round(x, n) if isinstance(x, (int, float)) else x
 
 
-def rlcd_loss(logits, target, reference_logits, utility_weight=1.0,
-              calibration_weight=0.5, kl_weight=0.02):
-    """JevForge-style RLCD objective over finite candidates.
-
-    loss = -utility + calibration_weight*Brier + kl_weight*KL(policy||ref)
-    where utility = sum(p * target/peak): put mass on teacher-favored candidates.
-    """
-    log_probs = torch.log_softmax(logits.float(), dim=-1)
-    probs = log_probs.exp()
-    brier = ((probs - target) ** 2).sum(-1)
-    peak = target.max(-1, keepdim=True).values.clamp_min(1e-8)
-    utility = (probs * (target / peak)).sum(-1)
-    ref_log_probs = torch.log_softmax(reference_logits.float(), dim=-1)
-    kl = (probs * (log_probs - ref_log_probs)).sum(-1)
-    loss = (utility_weight * -utility
-            + calibration_weight * brier
-            + kl_weight * kl).mean()
-    return loss, {"utility": float(utility.mean()), "brier": float(brier.mean()),
-                   "kl": float(kl.mean())}
-
-
 def dump(path, obj):
     Path(path).write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n")
 
@@ -142,40 +121,27 @@ def main():
                     help="gradient accumulation steps: micro_batch=batch/accum")
     ap.add_argument("--no-grad-checkpoint", action="store_true")
     ap.add_argument("--eval-every", type=int, default=50)
-    ap.add_argument("--eval-batch", type=int, default=None)
-    ap.add_argument("--eval-subset", type=int, default=0,
-                    help="periodic dev size stratified by family; 0 = full dev")
     ap.add_argument("--max-length", type=int, default=2048)
     ap.add_argument("--backbone-lr", type=float, default=1e-5)
     ap.add_argument("--head-lr", type=float, default=1e-4)
     ap.add_argument("--seed", type=int, default=17)
     ap.add_argument("--adam8bit", action="store_true",
                     help="8-bit AdamW (bitsandbytes); needed for 1.2B+ MoE on 16GB")
+    ap.add_argument("--freeze-backbone", action="store_true",
+                    help="CPU rehearsal: train head only, no backbone grads")
     ap.add_argument("--dtype", default="fp16", choices=["fp16", "bf16", "fp32"],
                     help="autocast dtype; fp16 uses T4-native tensor cores + GradScaler")
     ap.add_argument("--temperature", type=float, default=1.0,
                     help="teacher temperature applied to soft targets")
     ap.add_argument("--temperature-final", type=float, default=None,
                     help="anneal T linearly from --temperature to this over total steps")
-    ap.add_argument("--rlcd-steps", type=int, default=0,
-                    help="RLCD refinement after SFT (JevForge port: utility + "
-                         "Brier calibration + KL anchor); 0 = disabled")
-    ap.add_argument("--rlcd-utility-weight", type=float, default=1.0)
-    ap.add_argument("--rlcd-calibration-weight", type=float, default=0.5)
-    ap.add_argument("--rlcd-kl-weight", type=float, default=0.02)
     ap.add_argument("--entropy-weighting", action="store_true",
                     help="sample train questions proportional to teacher entropy")
     args = ap.parse_args()
 
     sys.path.insert(0, args.nanojev_scripts)
-    from train_toy_decisions import (DecisionModel, benchmark, dump,
-                                     evaluate as evaluate_raw, load_examples, loss_for)
-
-    def evaluate(model, examples, pad_token, batch, path=None):
-        # group similar-length sequences so padding inside a batch stays small;
-        # metrics are order-independent sums, so the sort changes nothing else
-        ordered = sorted(examples, key=lambda e: max(map(len, e["leaf_tokens"])))
-        return evaluate_raw(model, ordered, pad_token, batch, path)
+    from train_toy_decisions import (DecisionModel, benchmark, dump, evaluate,
+                                     load_examples, loss_for)
 
     use_amp = args.dtype in ("fp16", "bf16")
     amp_dtype = torch.float16 if args.dtype == "fp16" else torch.bfloat16
@@ -191,9 +157,7 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
-    # master weights stay fp32 for fp16 mode: GradScaler cannot unscale
-    # fp16 gradients; autocast handles the forward conversion (standard AMP)
-    param_dtype = {"fp16": torch.float32, "bf16": torch.bfloat16,
+    param_dtype = {"fp16": torch.float16, "bf16": torch.bfloat16,
                    "fp32": torch.float32}[args.dtype]
     fix_gate_orientation(args.model)
     _cfg = AutoConfig.from_pretrained(args.model)
@@ -239,24 +203,6 @@ def main():
     missing = [s for s, g in bysplit.items() if not g]
     if missing:
         raise ValueError(f"empty splits: {missing}")
-    eval_batch = args.eval_batch or args.batch_questions
-    dev_full = bysplit["dev"]
-    dev_periodic = dev_full
-    if args.eval_subset and args.eval_subset < len(dev_full):
-        by_family = {}
-        for ex in dev_full:
-            by_family.setdefault(ex.get("family_id", ""), []).append(ex)
-        rng = random.Random(args.seed + 3)
-        for group in by_family.values():
-            rng.shuffle(group)
-        families = sorted(by_family)
-        dev_periodic = []
-        while len(dev_periodic) < args.eval_subset and any(by_family.values()):
-            for family in families:
-                if by_family[family] and len(dev_periodic) < args.eval_subset:
-                    dev_periodic.append(by_family[family].pop())
-    print(f"eval: periodic={len(dev_periodic)} full={len(dev_full)} batch={eval_batch}",
-          flush=True)
 
     model = DecisionModel(lm.model, args.set_head).to(param_dtype)
     if torch.cuda.device_count() > 1:
@@ -306,7 +252,13 @@ def main():
     evaluation = sum([bysplit[s] for s in ["dev", "calibration", "test", "ood"]], [])
     head = [p for n, p in model.named_parameters() if not n.startswith("backbone.")]
     body = list(model.backbone.parameters())
-    groups = [{"params": body, "lr": args.backbone_lr}, {"params": head, "lr": args.head_lr}]
+    if args.freeze_backbone:
+        for p in body:
+            p.requires_grad_(False)
+        groups = [{"params": head, "lr": args.head_lr}]
+        print("backbone frozen (rehearsal mode)", flush=True)
+    else:
+        groups = [{"params": body, "lr": args.backbone_lr}, {"params": head, "lr": args.head_lr}]
     if args.adam8bit:
         import bitsandbytes as bnb
         optimizer = bnb.optim.AdamW8bit(groups, weight_decay=0.0)
@@ -370,21 +322,29 @@ def main():
                      if ex.get("teacher_probs") is not None else ex)
                     for ex in mb
                 ]
-            with torch.autocast("cuda", dtype=amp_dtype, enabled=use_amp):
-                z, _ = model(mb, tokenizer.pad_token_id)
-                mloss = loss_for(z, mb, args.objective).mean() / n_micro
-            if router_buf:
-                # buffered hidden states are graph-less under reentrant checkpointing
-                # (initial pass runs no_grad); recompute gate logits on detached
-                # inputs so the aux grad reaches gate weights in any mode
-                gates = [fn(h.detach()) for fn, h in router_buf]
-                mloss = mloss + _load_balance(gates, 0.01).to(mloss.device)
-            router_buf.clear()
-            if not torch.isfinite(mloss):
-                continue
-            scaler.scale(mloss).backward()
-            router_buf.clear()
-            step_loss += mloss.item()
+            try:
+                with torch.autocast("cuda", dtype=amp_dtype, enabled=use_amp):
+                    z, _ = model(mb, tokenizer.pad_token_id)
+                    mloss = loss_for(z, mb, args.objective).mean() / n_micro
+                if router_buf:
+                    # buffered hidden states are graph-less under reentrant checkpointing
+                    # (initial pass runs no_grad); recompute gate logits on detached
+                    # inputs so the aux grad reaches gate weights in any mode
+                    gates = [fn(h.detach()) for fn, h in router_buf]
+                    mloss = mloss + _load_balance(gates, 0.01).to(mloss.device)
+                router_buf.clear()
+                if not torch.isfinite(mloss):
+                    continue
+                scaler.scale(mloss).backward()
+                router_buf.clear()
+                step_loss += mloss.item()
+            except torch.OutOfMemoryError:
+                # survive the micro-batch: release graph memory and continue
+                router_buf.clear()
+                optimizer.zero_grad(set_to_none=True)
+                torch.cuda.empty_cache()
+                print("[train] micro-batch OOM, skipped", flush=True)
+                break
         if router_buf:
             router_buf.clear()
         scaler.unscale_(optimizer)
@@ -413,9 +373,8 @@ def main():
             time.sleep(5)
             router_buf.clear()
             try:
-                eval_set = (dev_full if step + 1 == args.head_steps + args.steps
-                            else dev_periodic)
-                metrics = evaluate(model, eval_set, tokenizer.pad_token_id, eval_batch)
+                metrics = evaluate(model, bysplit["dev"], tokenizer.pad_token_id,
+                                   args.batch_questions)
                 router_buf.clear()
                 item["dev"] = metrics
                 score = metrics["teacher_ce" if args.objective == "teacher" else "gold_nll"]
@@ -425,8 +384,8 @@ def main():
                 router_buf.clear()
                 print("[eval] OOM, retrying with halved batch", flush=True)
                 try:
-                    metrics = evaluate(model, eval_set, tokenizer.pad_token_id,
-                                       max(1, eval_batch // 2))
+                    metrics = evaluate(model, bysplit["dev"], tokenizer.pad_token_id,
+                                       max(1, args.batch_questions // 2))
                     router_buf.clear()
                     item["dev"] = metrics
                     score = metrics["teacher_ce" if args.objective == "teacher" else "gold_nll"]
@@ -459,7 +418,7 @@ def main():
         "calibration_questions": len(bysplit["calibration"])})
 
     final = evaluate(model, evaluation, tokenizer.pad_token_id,
-                     eval_batch, out / "predictions.jsonl")
+                     args.batch_questions, out / "predictions.jsonl")
     timing = benchmark(model, bysplit["test"], tokenizer.pad_token_id)
     dump(out / "timing.json", timing)
     dump(out / "train_log.json", logs)
@@ -471,108 +430,6 @@ def main():
         "max_gpu_allocated_gb": torch.cuda.max_memory_allocated() / 1e9})
     print(json.dumps({"done": str(out), "best_step": best_step,
                       "temperature": temperature, "eval": final}), flush=True)
-    # ---- stage 3: RLCD refinement (JevForge port) ----
-    if args.rlcd_steps > 0:
-        print(f"[rlcd] starting {args.rlcd_steps} steps "
-              f"(utility={args.rlcd_utility_weight} "
-              f"calib={args.rlcd_calibration_weight} kl={args.rlcd_kl_weight})",
-              flush=True)
-        # reference = the SFT best checkpoint; cache its logits once per
-        # example so no second model copy is needed on GPU
-        ref_sd = load_file(out / "best.safetensors")
-        model.load_state_dict(ref_sd)
-        model.eval()
-        ref_cache = []
-        with torch.no_grad():
-            for s in range(0, len(bysplit["train"]), args.batch_questions):
-                group = bysplit["train"][s:s + args.batch_questions]
-                lg, _ = model(group, tokenizer.pad_token_id)
-                for i, ex in enumerate(group):
-                    k = len(ex["candidate_ids"])
-                    ref_cache.append(lg[i, :k].float().cpu())
-        model.train()
-        print(f"[rlcd] reference logits cached for {len(ref_cache)} questions",
-              flush=True)
-
-        rlcd_opt = torch.optim.AdamW(
-            [{"params": list(model.backbone.parameters()),
-              "lr": args.backbone_lr * 0.5},
-             {"params": [p for n, p in model.named_parameters()
-                         if not n.startswith("backbone.")],
-              "lr": args.head_lr * 0.5}], weight_decay=0.01)
-        rlcd_logs, rlcd_best, rlcd_best_step = [], float("inf"), None
-        rng = random.Random(args.seed + 7)
-        t_rlcd = time.perf_counter()
-        for rstep in range(args.rlcd_steps):
-            idxs = rng.sample(range(len(bysplit["train"])),
-                              min(args.batch_questions, len(bysplit["train"])))
-            group = [bysplit["train"][i] for i in idxs]
-            lg, _ = model(group, tokenizer.pad_token_id)
-            losses, diags = [], []
-            for i, ex in enumerate(group):
-                k = len(ex["candidate_ids"])
-                if ex["teacher_probs"] is None:
-                    continue
-                target = torch.tensor(ex["teacher_probs"][:k], device=lg.device)
-                loss, diag = rlcd_loss(lg[i, :k], target,
-                                        ref_cache[idxs[i]].to(lg.device),
-                                        args.rlcd_utility_weight,
-                                        args.rlcd_calibration_weight,
-                                        args.rlcd_kl_weight)
-                losses.append(loss)
-                diags.append(diag)
-            if not losses:
-                continue
-            rloss = torch.stack(losses).mean()
-            rlcd_opt.zero_grad(set_to_none=True)
-            rloss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            rlcd_opt.step()
-            entry = {"rlcd_step": rstep + 1, "rlcd_loss": round(float(rloss), 4),
-                     **{k: round(sum(d[k] for d in diags) / len(diags), 4)
-                        for k in diags[0]}}
-            if (rstep + 1) % args.eval_every == 0 or rstep + 1 == args.rlcd_steps:
-                torch.cuda.empty_cache()
-                try:
-                    m = evaluate(model, bysplit["dev"][:300],
-                                 tokenizer.pad_token_id, 2)
-                    entry["dev"] = m
-                    sc = m["teacher_ce" if args.objective == "teacher"
-                            else "gold_nll"]
-                    if sc is not None and sc < rlcd_best:
-                        rlcd_best, rlcd_best_step = sc, rstep + 1
-                        save_file({kk: v.detach().cpu().contiguous().clone()
-                                   for kk, v in model.state_dict().items()},
-                                  out / "rlcd_best.safetensors")
-                except torch.OutOfMemoryError:
-                    torch.cuda.empty_cache()
-                    print("[rlcd] eval OOM, skipped", flush=True)
-            rlcd_logs.append(entry)
-            if (rstep + 1) % 25 == 0:
-                print(json.dumps(entry), flush=True)
-        dump(out / "rlcd_log.json", rlcd_logs)
-        if rlcd_best_step:
-            model.load_state_dict(load_file(out / "rlcd_best.safetensors"))
-            temperature, calib_nll = fit_temperature(
-                model, bysplit["calibration"], tokenizer.pad_token_id, amp_dtype)
-            dump(out / "temperature.json", {
-                "T": temperature, "calib_nll_at_T": calib_nll,
-                "stage": "rlcd", "rlcd_best_step": rlcd_best_step,
-                "calibration_questions": len(bysplit["calibration"])})
-            final = evaluate(model, evaluation, tokenizer.pad_token_id,
-                             args.batch_questions, out / "predictions.jsonl")
-            dump(out / "summary.json", {
-                "best_step": best_step, "rlcd_best_step": rlcd_best_step,
-                "temperature": temperature,
-                "selected_on": "dev CE after RLCD", "init": init_info,
-                "training_seconds": time.perf_counter() - start,
-                "rlcd_seconds": time.perf_counter() - t_rlcd,
-                "final_all_eval": final,
-                "max_gpu_allocated_gb": torch.cuda.max_memory_allocated() / 1e9})
-            print(f"[rlcd] DONE best={rlcd_best:.4f} step={rlcd_best_step}",
-                  flush=True)
-        else:
-            print("[rlcd] no dev improvement; keeping SFT checkpoint", flush=True)
 
 
 if __name__ == "__main__":
