@@ -129,6 +129,10 @@ def main():
                     help="8-bit AdamW (bitsandbytes); needed for 1.2B+ MoE on 16GB")
     ap.add_argument("--freeze-backbone", action="store_true",
                     help="CPU rehearsal: train head only, no backbone grads")
+    ap.add_argument("--eval-batch", type=int, default=None,
+                    help="questions per eval batch (default: batch-questions)")
+    ap.add_argument("--eval-subset", type=int, default=0,
+                    help="cap dev questions for periodic evals; 0 = full dev")
     ap.add_argument("--dtype", default="fp16", choices=["fp16", "bf16", "fp32"],
                     help="autocast dtype; fp16 uses T4-native tensor cores + GradScaler")
     ap.add_argument("--temperature", type=float, default=1.0,
@@ -373,9 +377,12 @@ def main():
             torch.cuda.empty_cache()
             time.sleep(5)
             router_buf.clear()
+            _eval_bs = args.eval_batch or args.batch_questions
+            _dev_set = (bysplit["dev"][:args.eval_subset]
+                        if args.eval_subset else bysplit["dev"])
             try:
-                metrics = evaluate(model, bysplit["dev"], tokenizer.pad_token_id,
-                                   args.batch_questions)
+                metrics = evaluate(model, _dev_set, tokenizer.pad_token_id,
+                                   _eval_bs)
                 router_buf.clear()
                 item["dev"] = metrics
                 score = metrics["teacher_ce" if args.objective == "teacher" else "gold_nll"]
@@ -385,8 +392,8 @@ def main():
                 router_buf.clear()
                 print("[eval] OOM, retrying with halved batch", flush=True)
                 try:
-                    metrics = evaluate(model, bysplit["dev"], tokenizer.pad_token_id,
-                                       max(1, args.batch_questions // 2))
+                    metrics = evaluate(model, _dev_set, tokenizer.pad_token_id,
+                                       max(1, _eval_bs // 2))
                     router_buf.clear()
                     item["dev"] = metrics
                     score = metrics["teacher_ce" if args.objective == "teacher" else "gold_nll"]
@@ -419,7 +426,8 @@ def main():
         "calibration_questions": len(bysplit["calibration"])})
 
     final = evaluate(model, evaluation, tokenizer.pad_token_id,
-                     args.batch_questions, out / "predictions.jsonl")
+                     args.eval_batch or args.batch_questions,
+                     out / "predictions.jsonl")
     timing = benchmark(model, bysplit["test"], tokenizer.pad_token_id)
     dump(out / "timing.json", timing)
     dump(out / "train_log.json", logs)
