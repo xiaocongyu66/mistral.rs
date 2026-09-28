@@ -159,6 +159,7 @@ def main():
         tokenizer.pad_token = tokenizer.eos_token
     param_dtype = {"fp16": torch.float16, "bf16": torch.bfloat16,
                    "fp32": torch.float32}[args.dtype]
+    _dev = "cuda" if torch.cuda.is_available() else "cpu"
     fix_gate_orientation(args.model)
     _cfg = AutoConfig.from_pretrained(args.model)
     _mt = getattr(_cfg, "model_type", "")
@@ -170,7 +171,7 @@ def main():
             if torch.cuda.device_count() > 1:
                 lm = _Moe.from_pretrained(args.model, device_map="auto", **kw)
             else:
-                lm = _Moe.from_pretrained(args.model, **kw).cuda()
+                lm = _Moe.from_pretrained(args.model, **kw).to(_dev)
             print(f"loaded {_Moe.__name__} (explicit MoE class)", flush=True)
         except ImportError:
             print("FATAL: qwen3_moe config but Qwen3MoeForCausalLM missing "
@@ -183,7 +184,7 @@ def main():
                 device_map="auto")
         else:
             lm = AutoModelForCausalLM.from_pretrained(
-                args.model, torch_dtype=param_dtype, attn_implementation="sdpa").cuda()
+                args.model, torch_dtype=param_dtype, attn_implementation="sdpa").to(_dev)
         print(f"loaded {type(lm).__name__} via AutoModel (model_type={_mt})", flush=True)
     if torch.cuda.device_count() > 1:
         print(f"device_map=auto across {torch.cuda.device_count()} GPUs", flush=True)
@@ -241,7 +242,7 @@ def main():
               "data_sha256": hashlib.sha256(clean_input.read_bytes()).hexdigest(),
               "deps": {k: importlib.metadata.version(k)
                        for k in ["torch", "transformers", "safetensors"]},
-              "gpu": torch.cuda.get_device_name(0),
+              "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else "cpu",
               "train_questions": len(train),
               "questions_per_split": {s: len(g) for s, g in bysplit.items()},
               "parameter_count": sum(t.numel() for t in model.parameters())}
